@@ -7,6 +7,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Heading, Body, Overline } from '@/src/components/UI';
+import { TabsTopBar } from '@/src/components/TabsTopBar';
 import { api } from '@/src/api/client';
 import { colors, spacing, radii, fonts } from '@/src/theme';
 
@@ -37,6 +38,7 @@ export default function Journey() {
     <View style={styles.root}>
       <LinearGradient colors={[colors.bg.primary, colors.bg.tertiary]} style={StyleSheet.absoluteFill} />
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+        <TabsTopBar />
         <ScrollView
           contentContainerStyle={styles.container}
           showsVerticalScrollIndicator={false}

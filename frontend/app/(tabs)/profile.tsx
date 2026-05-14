@@ -9,6 +9,7 @@ import * as ImagePicker from 'expo-image-picker';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Heading, Body, Overline, GlowCard, AuraButton, BreathingGlow, XPBar } from '@/src/components/UI';
 import { LevelRing } from '@/src/components/LevelRing';
+import { TabsTopBar } from '@/src/components/TabsTopBar';
 import { useAuth } from '@/src/auth/AuthContext';
 import { api } from '@/src/api/client';
 import { LEVEL_TITLES, levelBounds, LEVELS, LEVEL_THRESHOLDS } from '@/src/constants/levels';
@@ -68,6 +69,7 @@ export default function Profile() {
     <View style={styles.root}>
       <LinearGradient colors={[colors.bg.primary, colors.bg.tertiary, colors.bg.primary]} locations={[0, 0.4, 1]} style={StyleSheet.absoluteFill} />
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+        <TabsTopBar />
         <ScrollView
           contentContainerStyle={styles.container}
           showsVerticalScrollIndicator={false}
@@ -165,13 +167,7 @@ export default function Profile() {
           </Animated.View>
 
           {/* Actions */}
-          <Animated.View entering={FadeInDown.delay(550).duration(600)} style={{ marginTop: spacing.lg, gap: spacing.sm }}>
-            <AuraButton
-              testID="view-public-site-btn"
-              label="View Public Site"
-              onPress={() => router.push('/')}
-              icon={<Ionicons name="home-outline" size={14} color={colors.accent.gold} />}
-            />
+          <Animated.View entering={FadeInDown.delay(550).duration(600)} style={{ marginTop: spacing.lg }}>
             <AuraButton testID="logout-btn" label="Leave the Temple" onPress={async () => { await logout(); router.replace('/'); }} />
           </Animated.View>
 

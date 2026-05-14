@@ -7,6 +7,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Heading, Body, Overline, GlowCard, XPBar } from '@/src/components/UI';
+import { TabsTopBar } from '@/src/components/TabsTopBar';
 import { useAuth } from '@/src/auth/AuthContext';
 import { api } from '@/src/api/client';
 import { LEVEL_TITLES, levelBounds } from '@/src/constants/levels';
@@ -44,6 +45,7 @@ export default function Academy() {
     <View style={styles.root}>
       <LinearGradient colors={[colors.bg.primary, colors.bg.tertiary]} style={StyleSheet.absoluteFill} />
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+        <TabsTopBar />
         <ScrollView
           contentContainerStyle={styles.container}
           showsVerticalScrollIndicator={false}

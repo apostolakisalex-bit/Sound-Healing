@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Heading, Body, Overline, GlowCard, AuraButton, BreathingGlow, XPBar } from '@/src/components/UI';
 import { LevelRing } from '@/src/components/LevelRing';
+import { TabsTopBar } from '@/src/components/TabsTopBar';
 import { useAuth } from '@/src/auth/AuthContext';
 import { api } from '@/src/api/client';
 import { LEVEL_THEMES, levelBounds, LEVEL_TITLES } from '@/src/constants/levels';
@@ -47,6 +48,7 @@ export default function Sanctuary() {
     <View style={styles.root}>
       <LinearGradient colors={[colors.bg.primary, colors.bg.tertiary, colors.bg.primary]} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+        <TabsTopBar />
         <ScrollView
           contentContainerStyle={styles.container}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent.gold} />}
