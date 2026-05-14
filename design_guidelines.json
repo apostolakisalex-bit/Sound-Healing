@@ -1,0 +1,198 @@
+{
+  "theme": "DARK",
+  "archetype": "Jewel & Luxury mixed with spiritual aesthetics",
+  "colors": {
+    "background": {
+      "primary": "#05050A",
+      "secondary": "#0B0C15",
+      "tertiary": "#121421",
+      "tabBar": "#05050A"
+    },
+    "text": {
+      "primary": "#F7F5F0",
+      "secondary": "#B0AEAA",
+      "accent": "#CCA352",
+      "inverse": "#05050A"
+    },
+    "accent": {
+      "gold": "#CCA352",
+      "bronze": "#A57743",
+      "cyan": "#4DD0E1",
+      "purple": "#9D4CDD",
+      "coral": "#FF7A59",
+      "turquoise": "#00B4D8",
+      "lavender": "#B39DDB"
+    },
+    "border": {
+      "default": "rgba(204, 163, 82, 0.2)",
+      "subtle": "rgba(247, 245, 240, 0.08)",
+      "glow": "rgba(77, 208, 225, 0.5)"
+    }
+  },
+  "typography": {
+    "fonts": {
+      "heading": "CormorantGaramond_600SemiBold",
+      "title": "CormorantGaramond_500Medium",
+      "body": "Inter_400Regular",
+      "bodyMedium": "Inter_500Medium",
+      "button": "Inter_600SemiBold"
+    },
+    "sizes": {
+      "h1": 48,
+      "h2": 36,
+      "h3": 28,
+      "h4": 22,
+      "bodyLarge": 18,
+      "body": 16,
+      "bodySmall": 14,
+      "caption": 12,
+      "overline": 10
+    },
+    "letterSpacing": {
+      "tight": -0.5,
+      "normal": 0,
+      "wide": 1.5,
+      "widest": 3
+    }
+  },
+  "spacing": {
+    "xs": 4,
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
+    "xl": 32,
+    "2xl": 48,
+    "3xl": 64,
+    "4xl": 96
+  },
+  "radii": {
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
+    "xl": 32,
+    "full": 9999
+  },
+  "components": {
+    "cards": {
+      "default": {
+        "backgroundColor": "colors.background.secondary",
+        "borderRadius": "radii.lg",
+        "borderWidth": 1,
+        "borderColor": "colors.border.subtle",
+        "padding": "spacing.lg"
+      },
+      "glowing": {
+        "backgroundColor": "colors.background.tertiary",
+        "borderRadius": "radii.xl",
+        "borderWidth": 1,
+        "borderColor": "colors.border.default",
+        "shadowColor": "colors.accent.gold",
+        "shadowOffset": {
+          "width": 0,
+          "height": 0
+        },
+        "shadowOpacity": 0.3,
+        "shadowRadius": 15,
+        "elevation": 10
+      }
+    },
+    "buttons": {
+      "primary": {
+        "backgroundColor": "colors.accent.gold",
+        "borderRadius": "radii.full",
+        "paddingVertical": "spacing.md",
+        "paddingHorizontal": "spacing.xl",
+        "alignItems": "center",
+        "justifyContent": "center"
+      },
+      "auraGlow": {
+        "backgroundColor": "colors.background.primary",
+        "borderWidth": 1,
+        "borderColor": "colors.accent.cyan",
+        "borderRadius": "radii.full",
+        "shadowColor": "colors.accent.cyan",
+        "shadowOpacity": 0.5,
+        "shadowRadius": 10,
+        "elevation": 5
+      }
+    },
+    "tabBar": {
+      "backgroundColor": "colors.background.tabBar",
+      "borderTopWidth": 1,
+      "borderTopColor": "colors.border.subtle",
+      "activeTintColor": "colors.accent.gold",
+      "inactiveTintColor": "colors.text.secondary",
+      "height": 80,
+      "paddingBottom": "spacing.lg"
+    },
+    "levelRing": {
+      "size": 120,
+      "strokeWidth": 6,
+      "activeColor": "colors.accent.cyan",
+      "inactiveColor": "colors.border.subtle",
+      "glowColor": "colors.accent.purple"
+    },
+    "stampTile": {
+      "width": 64,
+      "height": 64,
+      "borderRadius": "radii.md",
+      "backgroundColor": "colors.background.tertiary",
+      "borderWidth": 1,
+      "borderColor": "colors.accent.bronze"
+    }
+  },
+  "animations": {
+    "breathingGlow": {
+      "duration": 4000,
+      "easing": "ease-in-out",
+      "opacityRange": [
+        0.4,
+        1,
+        0.4
+      ],
+      "scaleRange": [
+        1,
+        1.05,
+        1
+      ]
+    },
+    "particleFloats": {
+      "duration": 10000,
+      "easing": "linear",
+      "translateYRange": [
+        0,
+        -100
+      ],
+      "opacityRange": [
+        0,
+        0.8,
+        0
+      ]
+    }
+  },
+  "media": {
+    "realms": {
+      "sacred_mountain": "https://static.prod-images.emergentagent.com/jobs/c2cb8af1-2a04-4bb0-b7b5-e596a8e90f2a/images/51acd6a43b04161047311d5fed072955cff5272e899faff68886fda62be120bd.png",
+      "inner_ocean": "https://static.prod-images.emergentagent.com/jobs/c2cb8af1-2a04-4bb0-b7b5-e596a8e90f2a/images/3f6719440baf2be093bf3b152abd2db880de87352fc555cb915dd0ea80274d0d.png",
+      "sonic_forest": "https://static.prod-images.emergentagent.com/jobs/c2cb8af1-2a04-4bb0-b7b5-e596a8e90f2a/images/bd42511ade3618b8c1e4c3fd7a2428a53f4c061fe429c42274ab520dbfa4e1cb.png",
+      "himalayan_temple": "https://static.prod-images.emergentagent.com/jobs/c2cb8af1-2a04-4bb0-b7b5-e596a8e90f2a/images/cd48cdb5079d8a657abae113df6a88bb41f0e3569bf4f3c6804a8b95ce356dda.png",
+      "cosmic_path": "https://static.prod-images.emergentagent.com/jobs/c2cb8af1-2a04-4bb0-b7b5-e596a8e90f2a/images/75be05b44085856f15af9c8232168501507e733e3bbdc992125e67882c7ce5e5.png"
+    },
+    "hero": {
+      "level_up_burst": "https://static.prod-images.emergentagent.com/jobs/c2cb8af1-2a04-4bb0-b7b5-e596a8e90f2a/images/1bd03f76b9a3274608524fcf722ca0012f3ccb1fbfeb19ad566d0d022a2e0660.png",
+      "abstract_resonance": "https://static.prod-images.emergentagent.com/jobs/c2cb8af1-2a04-4bb0-b7b5-e596a8e90f2a/images/b31a2bf6323cdce4d56dd4599de8502bc6d78800b468caf8a35827946c27e6d2.png",
+      "sound_healing_bowls": "https://images.unsplash.com/photo-1593811167562-9cef47bfc4d7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MTJ8MHwxfHNlYXJjaHwyfHxzb3VuZCUyMGhlYWxpbmclMjBib3dsc3xlbnwwfHx8fDE3Nzg3Nzk3ODh8MA&ixlib=rb-4.1.0&q=85"
+    },
+    "profile_placeholder": "https://images.unsplash.com/photo-1505274664176-44ccaa7969a8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwxfHxjaW5lbWF0aWMlMjBwb3J0cmFpdCUyMGRhcmslMjBiYWNrZ3JvdW5kfGVufDB8fHx8MTc3ODc3OTc4OHww&ixlib=rb-4.1.0&q=85"
+  },
+  "instructions_to_main_agent": [
+    "Use expo-google-fonts to load CormorantGaramond and Inter. Apply Cormorant Garamond for main headings and Inter for body text.",
+    "Use react-native-reanimated for the 'breathing glow' and 'level-up ceremony' animations.",
+    "For floating particles, consider lightweight SVG animations or react-native-particles.",
+    "Use react-native-linear-gradient for the glowing gradients and aura lighting overlays.",
+    "Implement 'Glassmorphism' effect on cards using transparent background colors with subtle white/gold borders. (Use expo-blur or similar if supported).",
+    "All navigation components (Tab Bar, Header) should have an Obsidian Black or transparent background layered over the cinematic realm backgrounds.",
+    "Ensure the design remains cinematic and un-cluttered. Limit the amount of content per screen; use negative space generously.",
+    "All interactive elements must include a `testID` attribute mapped to `data-testid` convention, e.g., `testID='login-button'`."
+  ]
+}
