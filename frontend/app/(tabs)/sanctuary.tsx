@@ -124,7 +124,7 @@ export default function Sanctuary() {
                     <View style={{ flex: 1 }}>
                       <Overline color={p.status === 'XP Awarded' ? colors.status.success : colors.accent.gold}>{p.status}</Overline>
                       <Body weight="semi" color={colors.text.primary} style={{ marginTop: 4 }}>{p.session_type}</Body>
-                      <Body size="small" style={{ marginTop: 4 }}>{p.duration_minutes} min · {p.session_date}</Body>
+                      <Body size="small" style={{ marginTop: 4 }}>{`${p.duration_minutes} min · ${p.session_date}`}</Body>
                     </View>
                     <Ionicons name="chevron-forward" size={20} color={colors.text.muted} style={{ alignSelf: 'center' }} />
                   </View>
