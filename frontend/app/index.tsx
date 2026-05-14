@@ -33,7 +33,7 @@ export default function Landing() {
         />
       </ImageBackground>
 
-      <Animated.View style={[styles.aura, glowStyle]} pointerEvents="none">
+      <Animated.View style={[styles.aura, glowStyle, { pointerEvents: 'none' }]}>
         <LinearGradient
           colors={['rgba(204,163,82,0.18)', 'transparent']}
           style={StyleSheet.absoluteFill}

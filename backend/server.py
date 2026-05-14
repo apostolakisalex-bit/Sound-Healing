@@ -636,13 +636,13 @@ async def get_practice(practice_id: str, user: dict = Depends(get_current_user))
 # PUBLIC — receiver feedback
 @api.get("/feedback/{token}")
 async def get_feedback_form(token: str):
-    doc = await db.practices.find_one({"feedback_token": token}, {"_id": 0, "user_id": 0})
+    doc = await db.practices.find_one({"feedback_token": token}, {"_id": 0})
     if not doc:
         raise HTTPException(404, "Invalid or expired feedback link")
     if doc.get("feedback"):
         return {"already_submitted": True, "practitioner_name": "this practitioner",
                 "session_date": doc["session_date"], "session_type": doc["session_type"]}
-    user = await db.users.find_one({"id": doc.get("user_id") or (await db.practices.find_one({"feedback_token": token}))["user_id"]}, {"_id": 0, "name": 1})
+    user = await db.users.find_one({"id": doc["user_id"]}, {"_id": 0, "name": 1})
     return {
         "already_submitted": False,
         "practitioner_name": user["name"] if user else "Practitioner",

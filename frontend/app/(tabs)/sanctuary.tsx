@@ -109,7 +109,7 @@ export default function Sanctuary() {
 
           {/* Recent Practices */}
           <Animated.View entering={FadeInDown.delay(450).duration(600)}>
-            <SectionHeader title="Recent Practices" hint={recentPractices.length > 0 ? 'View all →' : ''}
+          <SectionHeader title="Recent Practices" hint={recentPractices.length > 0 ? 'View all →' : undefined}
               onPress={() => router.push('/(tabs)/practice')} />
             {recentPractices.length === 0 ? (
               <GlowCard testID="practices-empty">
@@ -167,9 +167,9 @@ function SectionHeader({ title, hint, onPress }: { title: string; hint?: string;
   return (
     <View style={styles.sectionHeader}>
       <Heading size="h4">{title}</Heading>
-      {hint && (
+      {hint ? (
         <Pressable onPress={onPress}><Body size="small" color={colors.accent.gold} weight="semi">{hint}</Body></Pressable>
-      )}
+      ) : null}
     </View>
   );
 }
