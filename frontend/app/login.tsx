@@ -33,7 +33,7 @@ export default function Login() {
 
   return (
     <View style={styles.root}>
-      <LinearGradient colors={['#0A0815', '#05050A']} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={[colors.bg.primary, colors.bg.tertiary]} style={StyleSheet.absoluteFill} />
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
           <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">

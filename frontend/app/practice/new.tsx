@@ -70,7 +70,7 @@ export default function NewPractice() {
 
   return (
     <View style={styles.root}>
-      <LinearGradient colors={['#0A0F1D', '#05050A']} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={[colors.bg.primary, colors.bg.tertiary]} style={StyleSheet.absoluteFill} />
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
           <View style={styles.header}>

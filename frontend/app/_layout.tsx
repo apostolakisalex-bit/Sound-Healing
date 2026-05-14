@@ -1,4 +1,4 @@
-// Root layout: load fonts, wrap in AuthProvider, route based on auth state.
+// Root layout: load Raleway + Cormorant, wrap in AuthProvider, route by auth.
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
@@ -10,11 +10,11 @@ import {
   CormorantGaramond_600SemiBold,
 } from '@expo-google-fonts/cormorant-garamond';
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from '@expo-google-fonts/inter';
+  Raleway_400Regular,
+  Raleway_500Medium,
+  Raleway_600SemiBold,
+  Raleway_700Bold,
+} from '@expo-google-fonts/raleway';
 import { AuthProvider, useAuth } from '@/src/auth/AuthContext';
 import { colors } from '@/src/theme';
 
@@ -64,13 +64,12 @@ export default function RootLayout() {
     CormorantGaramond_400Regular_Italic,
     CormorantGaramond_500Medium,
     CormorantGaramond_600SemiBold,
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
+    Raleway_400Regular,
+    Raleway_500Medium,
+    Raleway_600SemiBold,
+    Raleway_700Bold,
   });
 
-  // Render anyway after error to avoid blocking forever
   if (!loaded && !error) {
     return (
       <View style={styles.loader}>
@@ -81,7 +80,7 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <AuthGate />
     </AuthProvider>
   );

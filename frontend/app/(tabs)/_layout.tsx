@@ -31,7 +31,7 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: colors.text.muted,
         tabBarStyle: {
           position: 'absolute',
-          backgroundColor: 'rgba(5,5,10,0.85)',
+          backgroundColor: 'rgba(252,251,249,0.94)',
           borderTopWidth: 1,
           borderTopColor: colors.border.subtle,
           height: Platform.OS === 'ios' ? 88 : 72,
@@ -40,7 +40,7 @@ export default function TabsLayout() {
         },
         tabBarBackground: () => (
           Platform.OS === 'ios'
-            ? <BlurView tint="dark" intensity={60} style={StyleSheet.absoluteFill} />
+            ? <BlurView tint="light" intensity={80} style={StyleSheet.absoluteFill} />
             : <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.bg.primary }]} />
         ),
         tabBarLabelStyle: { fontFamily: fonts.bodySemi, fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase' },

@@ -34,7 +34,7 @@ export default function PublicLanding() {
 
   return (
     <View style={styles.root}>
-      <LinearGradient colors={['#05050A', '#0A0815', '#05050A']} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={[colors.bg.primary, colors.bg.tertiary, colors.bg.primary]} style={StyleSheet.absoluteFill} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: spacing.xxxl }}
@@ -65,7 +65,7 @@ function TopBar({ router }: { router: ReturnType<typeof useRouter> }) {
   return (
     <View style={styles.topBar}>
       <LinearGradient
-        colors={['rgba(5,5,10,0.95)', 'rgba(5,5,10,0.85)']}
+        colors={['rgba(252,251,249,0.98)', 'rgba(252,251,249,0.92)']}
         style={StyleSheet.absoluteFill}
       />
       <SafeAreaView edges={['top']}>
@@ -78,14 +78,14 @@ function TopBar({ router }: { router: ReturnType<typeof useRouter> }) {
           </View>
           <View style={{ flexDirection: 'row', gap: spacing.sm }}>
             <Pressable onPress={() => router.push('/login')} testID="nav-login">
-              <Body size="small" color={colors.text.secondary} weight="semi">Sign In</Body>
+              <Body size="small" color={colors.text.primary} weight="semi">Sign In</Body>
             </Pressable>
             <Pressable
               onPress={() => router.push('/register')}
               testID="nav-register"
               style={styles.topBarCta}
             >
-              <Body size="small" weight="semi" color={colors.bg.primary}>Join</Body>
+              <Body size="small" weight="semi" color="#FFFFFF">Join</Body>
             </Pressable>
           </View>
         </View>
@@ -111,7 +111,7 @@ function Hero({ router }: { router: ReturnType<typeof useRouter> }) {
     <View style={styles.hero}>
       <ImageBackground source={{ uri: HERO_IMAGES.main }} style={StyleSheet.absoluteFill} resizeMode="cover">
         <LinearGradient
-          colors={['rgba(5,5,10,0.55)', 'rgba(5,5,10,0.85)', 'rgba(5,5,10,1)']}
+          colors={['rgba(20,22,24,0.45)', 'rgba(20,22,24,0.75)', 'rgba(20,22,24,0.95)']}
           locations={[0, 0.55, 1]}
           style={StyleSheet.absoluteFill}
         />
@@ -130,10 +130,10 @@ function Hero({ router }: { router: ReturnType<typeof useRouter> }) {
         <View style={styles.heroContent}>
           <Animated.View entering={FadeInDown.duration(1000)}>
             <Overline testID="hero-overline">Sound Healing · Sound Therapy · Greece</Overline>
-            <Heading size="h1" style={styles.heroTitle} testID="hero-title">
+            <Heading size="h1" style={[styles.heroTitle, { color: colors.text.inverse }]} testID="hero-title">
               Enter the{'\n'}world of{'\n'}sound healing.
             </Heading>
-            <Body size="bodyLg" color={colors.text.secondary} style={styles.heroSubtitle}>
+            <Body size="bodyLg" color={colors.text.inverseSecondary} style={styles.heroSubtitle}>
               An immersive academy, ritual progression, and global healing community —
               rooted in nervous system regulation and the timeless practice of deep listening.
             </Body>
@@ -150,12 +150,12 @@ function Hero({ router }: { router: ReturnType<typeof useRouter> }) {
               testID="hero-cta-explore"
               label="Explore the Academy"
               onPress={() => router.push('/login')}
-              icon={<Ionicons name="arrow-down" size={14} color={colors.accent.cyan} />}
+              icon={<Ionicons name="arrow-down" size={14} color={colors.accent.gold} />}
             />
           </Animated.View>
 
           <Animated.View entering={FadeIn.delay(900).duration(1200)} style={styles.heroFooter}>
-            <Overline color={colors.text.muted}>ISTA · IPHM Certified · 4 Progressive Levels</Overline>
+            <Overline color="rgba(252,251,249,0.6)">ISTA · IPHM Certified · 4 Progressive Levels</Overline>
           </Animated.View>
         </View>
       </SafeAreaView>
@@ -418,16 +418,16 @@ function CommunitySection({ router }: { router: ReturnType<typeof useRouter> }) 
       <View style={styles.communityHero}>
         <ImageBackground source={{ uri: HERO_IMAGES.community }} style={StyleSheet.absoluteFill} resizeMode="cover">
           <LinearGradient
-            colors={['rgba(5,5,10,0.4)', 'rgba(5,5,10,0.9)']}
+            colors={['rgba(20,22,24,0.35)', 'rgba(20,22,24,0.9)']}
             style={StyleSheet.absoluteFill}
           />
         </ImageBackground>
         <View style={styles.communityContent}>
           <Overline color={colors.accent.gold}>The Resonance Collective</Overline>
-          <Heading size="h2" style={{ marginTop: spacing.sm }}>
+          <Heading size="h2" style={{ marginTop: spacing.sm, color: colors.text.inverse }}>
             A worldwide{'\n'}sangha of{'\n'}sound.
           </Heading>
-          <Body size="bodyLg" style={{ marginTop: spacing.md, lineHeight: 26 }}>
+          <Body size="bodyLg" color={colors.text.inverseSecondary} style={{ marginTop: spacing.md, lineHeight: 26 }}>
             Practitioners from Crete to Athens, from Bali to Berlin. We gather digitally and physically
             — in healing circles, full-moon ceremonies, supervision groups, and quiet conversations
             between two people who have both held the bowl.
@@ -547,10 +547,10 @@ function FinalCTASection({ router }: { router: ReturnType<typeof useRouter> }) {
       <View style={styles.finalCtaContent}>
         <Animated.View entering={FadeInDown.duration(800)}>
           <Overline color={colors.accent.gold}>The Threshold Awaits</Overline>
-          <Heading size="h1" style={{ marginTop: spacing.md }}>
+          <Heading size="h1" style={{ marginTop: spacing.md, color: colors.text.inverse }}>
             Become part of{'\n'}the resonance.
           </Heading>
-          <Body size="bodyLg" style={{ marginTop: spacing.md, lineHeight: 26 }}>
+          <Body size="bodyLg" color={colors.text.inverseSecondary} style={{ marginTop: spacing.md, lineHeight: 26 }}>
             Join a global academy of sound. Begin your practitioner journey at Level 1.
             Every threshold opens a new chamber. Every chamber, a new way of listening.
           </Body>
@@ -653,8 +653,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border.subtle,
     zIndex: 10,
-  },
-  topBarRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
+  },  topBarRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
   topBarCta: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
@@ -673,7 +672,7 @@ const styles = StyleSheet.create({
 
   // Section
   section: { paddingHorizontal: spacing.lg, paddingVertical: spacing.xxxl },
-  sectionDark: { backgroundColor: 'rgba(15,10,29,0.4)', borderTopWidth: 1, borderBottomWidth: 1, borderColor: colors.border.subtle },
+  sectionDark: { backgroundColor: colors.bg.tertiary, borderTopWidth: 1, borderBottomWidth: 1, borderColor: colors.border.subtle },
 
   // Philosophy
   pillarsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, marginTop: spacing.lg },
@@ -726,3 +725,4 @@ const styles = StyleSheet.create({
   socialBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: spacing.sm, paddingHorizontal: spacing.md, borderRadius: radii.full, backgroundColor: 'rgba(204,163,82,0.06)', borderWidth: 1, borderColor: colors.border.default },
   footerMeta: { marginTop: spacing.xxl, alignItems: 'center' },
 });
+;

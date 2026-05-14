@@ -1,6 +1,6 @@
 // Tiny shared UI primitives for Sound Healing Greece — cinematic, glowing, breathing.
 import React, { ReactNode, useEffect } from 'react';
-import { View, Text, StyleSheet, ViewStyle, TextStyle, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ViewStyle, TextStyle, Pressable, ActivityIndicator, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence, Easing } from 'react-native-reanimated';
 import { colors, fonts, fontSizes, radii, spacing } from '@/src/theme';
@@ -44,7 +44,7 @@ export function GlowCard({ children, style, testID }: { children: ReactNode; sty
   return (
     <View testID={testID} style={[styles.glowCard, style]}>
       <LinearGradient
-        colors={['rgba(204,163,82,0.06)', 'rgba(77,208,225,0.04)', 'transparent']}
+        colors={['rgba(212,163,55,0.04)', 'rgba(212,163,55,0.01)', 'transparent']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
@@ -75,7 +75,7 @@ export function PrimaryButton({
         style={StyleSheet.absoluteFill}
       />
       {loading
-        ? <ActivityIndicator color={colors.bg.primary} />
+        ? <ActivityIndicator color="#FFFFFF" />
         : <Text style={styles.primaryBtnText}>{label}</Text>}
     </Pressable>
   );
@@ -126,9 +126,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg.secondary,
     borderRadius: radii.lg,
     borderWidth: 1,
-    borderColor: colors.border.default,
+    borderColor: colors.border.subtle,
     padding: spacing.lg,
     overflow: 'hidden',
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0px 4px 16px rgba(21, 21, 21, 0.06)' } as any)
+      : { elevation: 2 }),
   },
   primaryBtn: {
     height: 54,
@@ -139,28 +142,28 @@ const styles = StyleSheet.create({
   },
   primaryBtnText: {
     fontFamily: fonts.bodySemi,
-    color: colors.bg.primary,
-    fontSize: 16,
-    letterSpacing: 1.2,
+    color: '#FFFFFF',
+    fontSize: 14,
+    letterSpacing: 1.6,
     textTransform: 'uppercase',
   },
   auraBtn: {
     height: 50,
     borderRadius: radii.full,
     borderWidth: 1,
-    borderColor: colors.accent.cyan,
+    borderColor: colors.accent.gold,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
-    backgroundColor: 'rgba(77,208,225,0.06)',
+    backgroundColor: 'transparent',
     flexDirection: 'row',
     gap: 8,
   },
   auraBtnText: {
     fontFamily: fonts.bodySemi,
-    color: colors.accent.cyan,
-    fontSize: 14,
-    letterSpacing: 1.2,
+    color: colors.accent.gold,
+    fontSize: 13,
+    letterSpacing: 1.6,
     textTransform: 'uppercase',
   },
   xpTrack: {

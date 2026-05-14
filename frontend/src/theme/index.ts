@@ -1,41 +1,48 @@
-// Design tokens for Sound Healing Greece
-// All UI components import from here to maintain cinematic consistency.
+// Sound Healing Greece — design tokens
+// Palette extracted directly from soundhealing.gr:
+//   warm ivory backgrounds, deep charcoal text, classic gold accents (#D4AF37).
+//   Font: Raleway (sans) paired with Cormorant Garamond (editorial serif headings).
 
 export const colors = {
   bg: {
-    primary: '#05050A',
-    secondary: '#0B0C15',
-    tertiary: '#121421',
-    elevated: '#191B2A',
-    overlay: 'rgba(5,5,10,0.7)',
+    primary: '#FCFBF9',     // warm ivory — main background
+    secondary: '#FFFFFF',   // pure white — cards
+    tertiary: '#F4F2EE',    // subtle warm grey — input chrome
+    elevated: '#FFFFFF',
+    overlay: 'rgba(20, 22, 24, 0.55)',
+    dark: '#141618',        // dark sections / hero overlays
+    darkSoft: '#1F2124',    // softer dark
   },
   text: {
-    primary: '#F7F5F0',
-    secondary: '#B0AEAA',
-    muted: '#6B6A66',
-    accent: '#CCA352',
-    inverse: '#05050A',
+    primary: '#151515',     // headings, deep charcoal
+    secondary: '#333333',   // body — warm dark grey
+    muted: '#888888',       // captions
+    accent: '#D4AF37',      // classic gold
+    inverse: '#FCFBF9',     // text on dark surfaces
+    inverseSecondary: 'rgba(252,251,249,0.78)',
   },
   accent: {
-    gold: '#CCA352',
-    goldDeep: '#A57743',
-    bronze: '#8B5E2B',
-    cyan: '#4DD0E1',
-    purple: '#9D4CDD',
-    coral: '#FF7A59',
-    turquoise: '#00B4D8',
-    lavender: '#B39DDB',
-    indigo: '#3D2A8C',
+    gold: '#D4AF37',        // primary brand accent
+    goldDeep: '#B8941F',
+    goldSoft: '#E5C76B',
+    bronze: '#8B6F2C',
+    cyan: '#3D8B9C',        // muted teal — refined complement
+    purple: '#6E5C8B',      // soft heather
+    coral: '#C8704D',       // earthy clay
+    turquoise: '#4A9CA8',
+    lavender: '#A89BB8',
+    indigo: '#2C2A4A',
   },
   border: {
-    default: 'rgba(204, 163, 82, 0.25)',
-    subtle: 'rgba(247, 245, 240, 0.08)',
-    glow: 'rgba(77, 208, 225, 0.5)',
+    default: 'rgba(212, 175, 55, 0.35)',
+    subtle: 'rgba(21, 21, 21, 0.08)',
+    strong: 'rgba(21, 21, 21, 0.18)',
+    glow: 'rgba(212, 175, 55, 0.5)',
   },
   status: {
-    success: '#7BC47F',
-    warning: '#F0B86E',
-    danger: '#E66767',
+    success: '#5A8A5C',
+    warning: '#C9923F',
+    danger: '#B8553F',
   },
 };
 
@@ -58,13 +65,15 @@ export const radii = {
 };
 
 export const fonts = {
+  // Editorial serif — large cinematic headings
   heading: 'CormorantGaramond_600SemiBold',
   title: 'CormorantGaramond_500Medium',
   italic: 'CormorantGaramond_400Regular_Italic',
-  body: 'Inter_400Regular',
-  bodyMed: 'Inter_500Medium',
-  bodySemi: 'Inter_600SemiBold',
-  bodyBold: 'Inter_700Bold',
+  // Raleway — matches soundhealing.gr exactly
+  body: 'Raleway_400Regular',
+  bodyMed: 'Raleway_500Medium',
+  bodySemi: 'Raleway_600SemiBold',
+  bodyBold: 'Raleway_700Bold',
 };
 
 export const fontSizes = {

@@ -42,7 +42,7 @@ export default function PracticeDetail() {
 
   return (
     <View style={styles.root}>
-      <LinearGradient colors={['#0A0F1D', '#05050A']} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={[colors.bg.primary, colors.bg.tertiary]} style={StyleSheet.absoluteFill} />
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <Pressable onPress={() => router.back()} style={styles.backBtn} testID="back-btn">
           <Ionicons name="chevron-back" size={22} color={colors.text.primary} />

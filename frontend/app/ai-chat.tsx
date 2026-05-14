@@ -60,7 +60,7 @@ export default function AIChat() {
 
   return (
     <View style={styles.root}>
-      <LinearGradient colors={['#0F0A1D', '#05050A']} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={[colors.bg.primary, colors.bg.tertiary]} style={StyleSheet.absoluteFill} />
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={20}>
           <View style={styles.header}>

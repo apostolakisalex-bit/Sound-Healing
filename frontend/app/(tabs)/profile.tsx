@@ -66,7 +66,7 @@ export default function Profile() {
 
   return (
     <View style={styles.root}>
-      <LinearGradient colors={['#1A0F2E', '#0A0815', '#05050A']} locations={[0, 0.4, 1]} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={[colors.bg.primary, colors.bg.tertiary, colors.bg.primary]} locations={[0, 0.4, 1]} style={StyleSheet.absoluteFill} />
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <ScrollView
           contentContainerStyle={styles.container}

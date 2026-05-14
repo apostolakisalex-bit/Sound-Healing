@@ -38,13 +38,13 @@ export default function RealmDetail() {
     <View style={styles.root}>
       <ImageBackground source={{ uri: realm.image }} style={styles.hero} imageStyle={{ resizeMode: 'cover' }}>
         <LinearGradient
-          colors={['rgba(5,5,10,0.3)', 'rgba(5,5,10,0.6)', colors.bg.primary]}
+          colors={['rgba(20,22,24,0.25)', 'rgba(20,22,24,0.55)', colors.bg.primary]}
           locations={[0, 0.6, 1]}
           style={StyleSheet.absoluteFill}
         />
         <SafeAreaView style={{ flex: 1 }}>
           <Pressable onPress={() => router.back()} style={styles.backBtn} testID="back-btn">
-            <Ionicons name="chevron-back" size={26} color={colors.text.primary} />
+            <Ionicons name="chevron-back" size={26} color={colors.text.inverse} />
           </Pressable>
         </SafeAreaView>
       </ImageBackground>

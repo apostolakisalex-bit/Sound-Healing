@@ -40,7 +40,7 @@ export default function Practice() {
 
   return (
     <View style={styles.root}>
-      <LinearGradient colors={['#0A0F1D', '#05050A']} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={[colors.bg.primary, colors.bg.tertiary]} style={StyleSheet.absoluteFill} />
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <ScrollView
           contentContainerStyle={styles.container}

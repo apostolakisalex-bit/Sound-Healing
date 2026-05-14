@@ -35,7 +35,7 @@ export default function Journey() {
 
   return (
     <View style={styles.root}>
-      <LinearGradient colors={['#0A0815', '#05050A']} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={[colors.bg.primary, colors.bg.tertiary]} style={StyleSheet.absoluteFill} />
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <ScrollView
           contentContainerStyle={styles.container}
@@ -79,9 +79,9 @@ function RealmCard({ realm, onPress }: { realm: Realm; onPress: () => void }) {
           </View>
         )}
         <View style={styles.cardBody}>
-          <Overline color={colors.accent.cyan}>{realm.element} · {realm.level_required}+</Overline>
-          <Heading size="h3" style={{ marginTop: spacing.xs }}>{realm.name}</Heading>
-          <Body size="small" color={colors.text.secondary} style={{ marginTop: spacing.xs, fontStyle: 'italic' }}>
+          <Overline color={colors.accent.gold}>{realm.element} · {realm.level_required}+</Overline>
+          <Heading size="h3" style={{ marginTop: spacing.xs, color: colors.text.inverse }}>{realm.name}</Heading>
+          <Body size="small" color={colors.text.inverseSecondary} style={{ marginTop: spacing.xs, fontStyle: 'italic' }}>
             {realm.subtitle}
           </Body>
         </View>

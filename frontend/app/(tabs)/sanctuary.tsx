@@ -45,7 +45,7 @@ export default function Sanctuary() {
 
   return (
     <View style={styles.root}>
-      <LinearGradient colors={['#0F0A1D', '#05050A', '#05050A']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={[colors.bg.primary, colors.bg.tertiary, colors.bg.primary]} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <ScrollView
           contentContainerStyle={styles.container}
