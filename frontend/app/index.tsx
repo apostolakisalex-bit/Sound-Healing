@@ -19,6 +19,7 @@ import Animated, {
 
 import { Heading, Body, Overline, PrimaryButton, AuraButton, GlowCard, BreathingGlow } from '@/src/components/UI';
 import { colors, spacing, radii, fonts } from '@/src/theme';
+import { useAuth } from '@/src/auth/AuthContext';
 import {
   FOUNDER, PHILOSOPHY_PILLARS, WHAT_IS_SOUND_HEALING, BENEFITS, INSTRUMENTS,
   ACADEMY_PREVIEW, OFFERINGS, TESTIMONIALS, FAQS, SOCIAL_LINKS, HERO_IMAGES,
@@ -62,6 +63,7 @@ export default function PublicLanding() {
 // ║                              TOP BAR                                 ║
 // ╚══════════════════════════════════════════════════════════════════════╝
 function TopBar({ router }: { router: ReturnType<typeof useRouter> }) {
+  const { user } = useAuth();
   return (
     <View style={styles.topBar}>
       <LinearGradient
@@ -76,17 +78,29 @@ function TopBar({ router }: { router: ReturnType<typeof useRouter> }) {
               Chania · Athens · Online
             </Body>
           </View>
-          <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-            <Pressable onPress={() => router.push('/login')} testID="nav-login">
-              <Body size="small" color={colors.text.primary} weight="semi">Sign In</Body>
-            </Pressable>
-            <Pressable
-              onPress={() => router.push('/register')}
-              testID="nav-register"
-              style={styles.topBarCta}
-            >
-              <Body size="small" weight="semi" color="#FFFFFF">Join</Body>
-            </Pressable>
+          <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center' }}>
+            {user ? (
+              <Pressable
+                onPress={() => router.replace('/(tabs)/sanctuary')}
+                testID="nav-back-dashboard"
+                style={styles.topBarCta}
+              >
+                <Body size="small" weight="semi" color="#FFFFFF">← Dashboard</Body>
+              </Pressable>
+            ) : (
+              <>
+                <Pressable onPress={() => router.push('/login')} testID="nav-login">
+                  <Body size="small" color={colors.text.primary} weight="semi">Sign In</Body>
+                </Pressable>
+                <Pressable
+                  onPress={() => router.push('/register')}
+                  testID="nav-register"
+                  style={styles.topBarCta}
+                >
+                  <Body size="small" weight="semi" color="#FFFFFF">Join</Body>
+                </Pressable>
+              </>
+            )}
           </View>
         </View>
       </SafeAreaView>

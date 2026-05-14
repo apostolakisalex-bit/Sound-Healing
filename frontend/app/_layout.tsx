@@ -1,6 +1,6 @@
 // Root layout: load Raleway + Cormorant, wrap in AuthProvider, route by auth.
 import { Stack, useRouter, useSegments } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -22,16 +22,34 @@ function AuthGate() {
   const { user, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const initialRouteHandled = useRef(false);
 
   useEffect(() => {
     if (loading) return;
-    const inAuthGroup = segments[0] === 'login' || segments[0] === 'register' || segments[0] === undefined;
+    const onLandingRoot = segments[0] === undefined;
+    const onAuthScreen = segments[0] === 'login' || segments[0] === 'register';
     const isPublicFeedback = segments[0] === 'feedback';
     if (isPublicFeedback) return;
-    if (!user && !inAuthGroup) {
+
+    // Unauthenticated: protect non-public routes
+    if (!user && !onLandingRoot && !onAuthScreen) {
       router.replace('/');
-    } else if (user && (segments[0] === 'login' || segments[0] === 'register' || segments[0] === undefined)) {
+      return;
+    }
+
+    // Authenticated: send to sanctuary from auth screens always
+    if (user && onAuthScreen) {
       router.replace('/(tabs)/sanctuary');
+      return;
+    }
+
+    // Authenticated: only auto-redirect from "/" on initial app load,
+    // so users can re-visit the public landing page via the Profile button.
+    if (user && onLandingRoot && !initialRouteHandled.current) {
+      initialRouteHandled.current = true;
+      router.replace('/(tabs)/sanctuary');
+    } else if (!initialRouteHandled.current) {
+      initialRouteHandled.current = true;
     }
   }, [user, loading, segments, router]);
 

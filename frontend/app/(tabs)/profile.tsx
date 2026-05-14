@@ -164,8 +164,14 @@ export default function Profile() {
             </View>
           </Animated.View>
 
-          {/* Logout */}
-          <Animated.View entering={FadeInDown.delay(550).duration(600)} style={{ marginTop: spacing.lg }}>
+          {/* Actions */}
+          <Animated.View entering={FadeInDown.delay(550).duration(600)} style={{ marginTop: spacing.lg, gap: spacing.sm }}>
+            <AuraButton
+              testID="view-public-site-btn"
+              label="View Public Site"
+              onPress={() => router.push('/')}
+              icon={<Ionicons name="home-outline" size={14} color={colors.accent.gold} />}
+            />
             <AuraButton testID="logout-btn" label="Leave the Temple" onPress={async () => { await logout(); router.replace('/'); }} />
           </Animated.View>
 
