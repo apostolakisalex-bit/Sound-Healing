@@ -7,7 +7,12 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
-import os, logging, uuid, jwt, bcrypt, secrets
+import os
+import logging
+import uuid
+import jwt
+import bcrypt
+import secrets
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Literal
@@ -377,7 +382,7 @@ async def seed_db():
         logger.info("Seeded realms")
     # Academy
     if await db.academy.count_documents({}) == 0:
-        await db.academy.insert_many([dict(l) for l in ACADEMY_SEED])
+        await db.academy.insert_many([dict(lvl) for lvl in ACADEMY_SEED])
         logger.info("Seeded academy")
     # Stamps
     if await db.stamps.count_documents({}) == 0:
@@ -753,8 +758,6 @@ async def ai_chat(payload: ChatIn, user: dict = Depends(get_current_user)):
             session_id=session_id,
             system_message=system_msg,
         ).with_model("anthropic", "claude-sonnet-4-5-20250929")
-        # Persist history in our db
-        history = await db.chat_messages.find({"session_id": session_id}, {"_id": 0}).sort("created_at", 1).to_list(100)
         # Save user message
         await db.chat_messages.insert_one({
             "id": str(uuid.uuid4()),

@@ -7,8 +7,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   View, StyleSheet, ScrollView, ImageBackground, Image, Pressable,
   Linking, useWindowDimensions, Platform,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+} from 'react-native';import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -44,7 +43,7 @@ export default function PublicLanding() {
         <TopBar router={router} />
         <Hero router={router} />
         <WhatIsSection />
-        <PhilosophySection />
+        <PhilosophySection isWide={isWide} />
         <AcademySection router={router} isWide={isWide} />
         <BenefitsSection isWide={isWide} />
         <InstrumentsSection />
@@ -205,7 +204,7 @@ function WhatIsSection() {
 // ╔══════════════════════════════════════════════════════════════════════╗
 // ║                            PHILOSOPHY                                ║
 // ╚══════════════════════════════════════════════════════════════════════╝
-function PhilosophySection() {
+function PhilosophySection({ isWide }: { isWide: boolean }) {
   return (
     <SectionWrap testID="section-philosophy" dark>
       <SectionTitle eyebrow="The Philosophy" title={`Grounded.\nRefined.\nReverent.`} />
@@ -216,13 +215,15 @@ function PhilosophySection() {
         supports relaxation, awareness, and the body's natural capacity for regulation.
       </Body>
 
-      <View style={styles.pillarsGrid}>
+      <View style={[styles.benefitsGrid, isWide && { gap: spacing.lg }]}>
         {PHILOSOPHY_PILLARS.map((p, i) => (
-          <Animated.View key={p.title} entering={FadeInDown.delay(i * 120).duration(600)} style={styles.pillarBox}>
-            <View style={styles.pillarIcon}>
-              <Ionicons name={`${p.icon}-outline` as keyof typeof Ionicons.glyphMap} size={26} color={colors.accent.gold} />
+          <Animated.View key={p.title} entering={FadeInDown.delay(i * 100).duration(500)}
+            style={[styles.benefitCard, isWide && { width: '31%' }]}
+          >
+            <View style={styles.benefitIcon}>
+              <Ionicons name={`${p.icon}-outline` as keyof typeof Ionicons.glyphMap} size={22} color={colors.accent.gold} />
             </View>
-            <Heading size="h4" style={{ marginTop: spacing.md }}>{p.title}</Heading>
+            <Heading size="h4" style={{ marginTop: spacing.sm, fontSize: 18 }}>{p.title}</Heading>
             <Body size="small" style={{ marginTop: spacing.xs, lineHeight: 20 }}>{p.body}</Body>
           </Animated.View>
         ))}
@@ -231,12 +232,17 @@ function PhilosophySection() {
       {/* Founder */}
       <Animated.View entering={FadeInDown.delay(200).duration(800)}>
         <GlowCard style={{ marginTop: spacing.xl }} testID="founder-card">
-          <Overline color={colors.accent.gold}>Founder & Guide</Overline>
-          <Heading size="h2" style={{ marginTop: spacing.xs }}>{FOUNDER.name}</Heading>
-          <Body size="caption" color={colors.accent.cyan} style={{ marginTop: 4, letterSpacing: 2, textTransform: 'uppercase' }}>
-            {FOUNDER.title}
-          </Body>
-          <Body size="small" style={{ marginTop: spacing.md, lineHeight: 22 }}>
+          <View style={styles.founderHead}>
+            <Image source={{ uri: FOUNDER.photo }} style={styles.founderPhoto} testID="founder-photo" />
+            <View style={{ flex: 1 }}>
+              <Overline color={colors.accent.gold}>Founder & Guide</Overline>
+              <Heading size="h3" style={{ marginTop: spacing.xs }}>{FOUNDER.name}</Heading>
+              <Body size="caption" color={colors.accent.gold} style={{ marginTop: 4, letterSpacing: 2, textTransform: 'uppercase' }}>
+                {FOUNDER.title}
+              </Body>
+            </View>
+          </View>
+          <Body size="small" style={{ marginTop: spacing.lg, lineHeight: 22 }}>
             {FOUNDER.bio}
           </Body>
           <View style={{ marginTop: spacing.md }}>
@@ -688,12 +694,13 @@ const styles = StyleSheet.create({
   section: { paddingHorizontal: spacing.lg, paddingVertical: spacing.xxxl },
   sectionDark: { backgroundColor: colors.bg.tertiary, borderTopWidth: 1, borderBottomWidth: 1, borderColor: colors.border.subtle },
 
-  // Philosophy
-  pillarsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, marginTop: spacing.lg },
-  pillarBox: { width: '47%', padding: spacing.md, borderRadius: radii.md, backgroundColor: colors.bg.secondary, borderWidth: 1, borderColor: colors.border.subtle },
-  pillarIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(204,163,82,0.1)', borderWidth: 1, borderColor: colors.accent.gold },
-  credRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
-  locPill: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 6, paddingHorizontal: spacing.sm, borderRadius: radii.full, backgroundColor: 'rgba(204,163,82,0.08)', borderWidth: 1, borderColor: colors.accent.gold },
+  // Philosophy / Founder
+  founderHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  founderPhoto: {
+    width: 96, height: 96, borderRadius: 48,
+    borderWidth: 2, borderColor: colors.accent.gold,
+    backgroundColor: colors.bg.tertiary,
+  },
 
   // Academy
   levelHead: { flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' },

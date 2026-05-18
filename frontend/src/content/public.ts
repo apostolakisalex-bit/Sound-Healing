@@ -4,6 +4,7 @@
 export const FOUNDER = {
   name: 'Manolis Zografakis',
   title: 'Certified Sound Therapist · ISTA · IPHM',
+  photo: 'https://customer-assets.emergentagent.com/job_healing-universe/artifacts/0ly78lzw_Captura%20de%20pantalla%202026-05-18%20130726.png',
   bio: 'Vipassana practitioner, breathwork facilitator, and music producer. Manolis integrates sound-based practices with principles of nervous system regulation — combining structured methodology with a refined, intuitive approach.',
   bases: ['Chania, Crete', 'Athens, Greece'],
   credentials: [
