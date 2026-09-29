@@ -157,6 +157,32 @@ class ChatIn(BaseModel):
     session_id: Optional[str] = None
 
 
+class ResourceIn(BaseModel):
+    name: str
+    description: Optional[str] = ""
+    parent_type: Literal["academy_level", "academy_lesson", "realm"]
+    parent_id: str                      # level_id, lesson_id, or realm_id
+    level_id: Optional[str] = None      # for academy_lesson — parent level
+    file_data: str                      # base64 encoded
+    content_type: str                   # MIME type
+    file_size: int                      # bytes
+
+
+class ResourcePublic(BaseModel):
+    id: str
+    name: str
+    description: str
+    parent_type: str
+    parent_id: str
+    level_id: Optional[str] = None
+    content_type: str
+    file_size: int
+    required_level: Optional[str] = None
+    required_xp: int = 0
+    uploaded_by: str
+    created_at: datetime
+
+
 # ============================================================
 # AUTH HELPERS
 # ============================================================
@@ -191,6 +217,12 @@ async def get_current_user(creds: Optional[HTTPAuthorizationCredentials] = Depen
     user = await db.users.find_one({"id": user_id}, {"_id": 0, "password_hash": 0})
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
+    return user
+
+
+async def get_admin_user(user: dict = Depends(get_current_user)) -> dict:
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
     return user
 
 
@@ -787,6 +819,138 @@ async def ai_history(user: dict = Depends(get_current_user)):
     session_id = f"shg-{user['id']}"
     msgs = await db.chat_messages.find({"session_id": session_id}, {"_id": 0}).sort("created_at", 1).to_list(200)
     return [{"role": m["role"], "content": m["content"], "created_at": m["created_at"]} for m in msgs]
+
+
+# ============================================================
+# ROUTES — RESOURCES (admin uploads attached to lessons / levels / realms)
+# ============================================================
+ALLOWED_CONTENT_TYPES = {
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "image/jpeg", "image/png", "image/webp", "image/gif",
+}
+MAX_FILE_SIZE = 12 * 1024 * 1024  # 12 MB
+
+
+async def resolve_required_level(parent_type: str, parent_id: str, level_id: Optional[str]) -> tuple[str, int]:
+    """Determine which level / xp is required to access this resource."""
+    if parent_type == "academy_level":
+        lvl = await db.academy.find_one({"id": parent_id}, {"_id": 0, "level": 1, "xp_required": 1})
+        if not lvl:
+            return ("L1", 0)
+        return (lvl["level"], lvl["xp_required"])
+    if parent_type == "academy_lesson":
+        # Use level_id to find required level
+        lvl = await db.academy.find_one({"id": level_id}, {"_id": 0, "level": 1, "xp_required": 1}) if level_id else None
+        if not lvl:
+            return ("L1", 0)
+        return (lvl["level"], lvl["xp_required"])
+    if parent_type == "realm":
+        r = await db.realms.find_one({"id": parent_id}, {"_id": 0, "level_required": 1, "xp_required": 1})
+        if not r:
+            return ("L1", 0)
+        return (r["level_required"], r["xp_required"])
+    return ("L1", 0)
+
+
+def resource_doc_to_public(doc: dict) -> dict:
+    return {
+        "id": doc["id"],
+        "name": doc["name"],
+        "description": doc.get("description", ""),
+        "parent_type": doc["parent_type"],
+        "parent_id": doc["parent_id"],
+        "level_id": doc.get("level_id"),
+        "content_type": doc["content_type"],
+        "file_size": doc["file_size"],
+        "required_level": doc.get("required_level"),
+        "required_xp": doc.get("required_xp", 0),
+        "uploaded_by": doc["uploaded_by"],
+        "created_at": doc["created_at"],
+    }
+
+
+@api.post("/admin/resources", response_model=ResourcePublic)
+async def create_resource(payload: ResourceIn, admin: dict = Depends(get_admin_user)):
+    if payload.content_type not in ALLOWED_CONTENT_TYPES:
+        raise HTTPException(400, f"Unsupported file type: {payload.content_type}")
+    if payload.file_size > MAX_FILE_SIZE:
+        raise HTTPException(400, f"File too large (max {MAX_FILE_SIZE // (1024*1024)}MB)")
+    if not payload.file_data:
+        raise HTTPException(400, "file_data is required")
+    required_level, required_xp = await resolve_required_level(
+        payload.parent_type, payload.parent_id, payload.level_id
+    )
+    doc = {
+        "id": str(uuid.uuid4()),
+        "name": payload.name,
+        "description": payload.description or "",
+        "parent_type": payload.parent_type,
+        "parent_id": payload.parent_id,
+        "level_id": payload.level_id,
+        "file_data": payload.file_data,
+        "content_type": payload.content_type,
+        "file_size": payload.file_size,
+        "required_level": required_level,
+        "required_xp": required_xp,
+        "uploaded_by": admin["name"],
+        "created_at": datetime.now(timezone.utc),
+    }
+    await db.resources.insert_one(dict(doc))
+    return resource_doc_to_public(doc)
+
+
+@api.get("/resources")
+async def list_resources(
+    parent_type: str,
+    parent_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """List resources for a parent. Filters out resources the user can't access yet."""
+    query = {"parent_type": parent_type, "parent_id": parent_id}
+    docs = await db.resources.find(query, {"_id": 0, "file_data": 0}).sort("created_at", -1).to_list(200)
+    # XP-gate
+    user_xp = user.get("xp", 0)
+    is_admin = user.get("role") == "admin"
+    out = []
+    for d in docs:
+        is_unlocked = is_admin or user_xp >= d.get("required_xp", 0)
+        item = resource_doc_to_public(d)
+        item["is_unlocked"] = is_unlocked
+        out.append(item)
+    return out
+
+
+@api.get("/admin/resources")
+async def admin_list_all_resources(admin: dict = Depends(get_admin_user)):
+    docs = await db.resources.find({}, {"_id": 0, "file_data": 0}).sort("created_at", -1).to_list(500)
+    return [resource_doc_to_public(d) for d in docs]
+
+
+@api.get("/resources/{resource_id}/download")
+async def download_resource(resource_id: str, user: dict = Depends(get_current_user)):
+    doc = await db.resources.find_one({"id": resource_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(404, "Resource not found")
+    is_admin = user.get("role") == "admin"
+    if not is_admin and user.get("xp", 0) < doc.get("required_xp", 0):
+        raise HTTPException(403, "Locked — earn more Sound XP to unlock this resource")
+    return {
+        "id": doc["id"],
+        "name": doc["name"],
+        "content_type": doc["content_type"],
+        "file_size": doc["file_size"],
+        "file_data": doc["file_data"],
+    }
+
+
+@api.delete("/admin/resources/{resource_id}")
+async def delete_resource(resource_id: str, admin: dict = Depends(get_admin_user)):
+    res = await db.resources.delete_one({"id": resource_id})
+    if res.deleted_count == 0:
+        raise HTTPException(404, "Not found")
+    return {"ok": True}
 
 
 # ============================================================

@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Heading, Body, Overline, GlowCard } from '@/src/components/UI';
+import { ResourcesSection } from '@/src/components/ResourcesSection';
 import { useAuth } from '@/src/auth/AuthContext';
 import { api } from '@/src/api/client';
 import { colors, spacing, radii } from '@/src/theme';
@@ -65,6 +66,13 @@ export default function LevelDetail() {
             <Body style={{ marginTop: spacing.md, lineHeight: 24 }}>{level.description}</Body>
           </Animated.View>
 
+          {/* LEVEL-WIDE resources */}
+          <ResourcesSection
+            parentType="academy_level"
+            parentId={level.id}
+            title="Level Documents"
+          />
+
           <Heading size="h4" style={{ marginTop: spacing.xl, marginBottom: spacing.sm }}>Lessons</Heading>
           {level.lessons.map((lesson: any, i: number) => (
             <Animated.View key={lesson.id} entering={FadeInDown.delay(i * 80).duration(400)}>
@@ -92,6 +100,13 @@ export default function LevelDetail() {
                     </Body>
                   </Pressable>
                 )}
+                {/* LESSON-SPECIFIC resources */}
+                <ResourcesSection
+                  parentType="academy_lesson"
+                  parentId={lesson.id}
+                  levelId={level.id}
+                  title="Lesson Documents"
+                />
               </GlowCard>
             </Animated.View>
           ))}
