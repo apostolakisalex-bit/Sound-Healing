@@ -113,3 +113,6 @@ Added server-side progress filters for Level and active/paused enrollment, retai
 
 ## Admin activity — 2026-09-29
 Added read-only, admin-only paginated activity history for recorded CMS and school actions, with actor names and timezone-aware timestamps. Explicit response fields exclude any future internal payloads. This is an operational history, not a tamper-proof or complete security audit. Validation: 21 backend tests and TypeScript pass.
+
+## Request lifecycle — 2026-09-29
+Shared data loading now aborts superseded requests and requests from unmounted views. Cancelled responses cannot overwrite newer data, errors or loading status. Loaded lists are cleared while refreshing, removing stale action targets. TypeScript passes; runtime throttled-network UI testing remains pending.

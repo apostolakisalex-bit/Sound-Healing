@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Linking,
@@ -173,22 +173,31 @@ export function Choices({
   );
 }
 export function useLoad<T>(url: string, initial: T) {
+  const empty = useRef(initial);
+  const pending = useRef<AbortController | null>(null);
   const [data, setData] = useState<T>(initial),
     [loading, setLoading] = useState(true),
     [error, setError] = useState("");
   const reload = useCallback(async () => {
+    pending.current?.abort();
+    const request = new AbortController();
+    pending.current = request;
     setLoading(true);
     setError("");
+    setData(empty.current);
     try {
-      setData((await api.get(url)).data);
+      const response = await api.get(url, { signal: request.signal });
+      if (!request.signal.aborted) setData(response.data);
     } catch {
-      setError("Δεν μπορέσαμε να φορτώσουμε τα στοιχεία. Δοκίμασε ξανά.");
+      if (!request.signal.aborted)
+        setError("Δεν μπορέσαμε να φορτώσουμε τα στοιχεία. Δοκίμασε ξανά.");
     } finally {
-      setLoading(false);
+      if (!request.signal.aborted) setLoading(false);
     }
   }, [url]);
   useEffect(() => {
     void reload();
+    return () => pending.current?.abort();
   }, [reload]);
   return { data, loading, error, reload };
 }
