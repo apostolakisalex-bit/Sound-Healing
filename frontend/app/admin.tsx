@@ -59,6 +59,21 @@ type Workspace = {
     status: string;
   }[];
 };
+const attendanceLabels: Record<string, string> = {
+  present: "Παρουσία",
+  absent: "Απουσία",
+  excused: "Δικαιολογημένη απουσία",
+};
+const practiceLabels: Record<string, string> = {
+  submitted: "Για έλεγχο",
+  changes_requested: "Για διόρθωση",
+  reviewed: "Ελεγμένη",
+};
+const normalize = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("el-GR");
 const fresh: Draft = {
   title: "",
   summary: "",
@@ -97,6 +112,7 @@ function WorkspaceScreen() {
     [edit, setEdit] = useState<Item | null>(null),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
+    [search, setSearch] = useState(""),
     [cohortTitle, setCohortTitle] = useState(""),
     [level, setLevel] = useState("L1"),
     [instructor, setInstructor] = useState(""),
@@ -150,9 +166,20 @@ function WorkspaceScreen() {
             : ["Παρουσίες", "Πρόοδος", "Αξιολογήσεις"]
         }
         value={section}
-        onChange={setSection}
+        onChange={(value) => {
+          setSection(value);
+          setSearch("");
+          setMessage("");
+        }}
       />
       <Status state={state} />
+      {["Εγγραφές", "Παρουσίες"].includes(section) && (
+        <Field
+          label="Αναζήτηση στην τρέχουσα λίστα: όνομα, email ή τμήμα"
+          value={search}
+          onChange={setSearch}
+        />
+      )}
       {section === "Πρόοδος" && <Progress staff />}
       {!!message && (
         <View style={ui.card}>
@@ -379,14 +406,18 @@ function WorkspaceScreen() {
           <Text style={ui.heading}>Εγγραφή μαθητή</Text>
           <Text style={ui.body}>Λογαριασμός</Text>
           <View style={ui.row}>
-            {state.data.users.map((u) => (
-              <Button
-                secondary={student !== u.id}
-                key={u.id}
-                label={`${u.name} · ${u.email}`}
-                onPress={() => setStudent(u.id)}
-              />
-            ))}
+            {state.data.users
+              .filter((u) =>
+                normalize(`${u.name} ${u.email}`).includes(normalize(search)),
+              )
+              .map((u) => (
+                <Button
+                  secondary={student !== u.id}
+                  key={u.id}
+                  label={`${u.name} · ${u.email}`}
+                  onPress={() => setStudent(u.id)}
+                />
+              ))}
           </View>
           <Text style={ui.body}>Τμήμα</Text>
           <View style={ui.row}>
@@ -414,51 +445,64 @@ function WorkspaceScreen() {
           <Text style={ui.body}>
             {state.data.enrollments.length} εγγραφές στη λίστα
           </Text>
-          {state.data.enrollments.map((entry) => (
-            <View key={entry.id} style={ui.card}>
-              <Text style={ui.heading}>
-                {state.data.users.find((u) => u.id === entry.user_id)?.name ||
-                  "Μαθητής"}{" "}
-                · {entry.cohort_title}
-              </Text>
-              <Text style={ui.body}>
-                {entry.status === "active" ? "Ενεργή εγγραφή" : "Σε παύση"}
-              </Text>
-              <Button
-                secondary
-                disabled={busy}
-                label={
-                  entry.status === "active"
-                    ? "Παύση πρόσβασης"
-                    : "Επανενεργοποίηση"
-                }
-                onPress={() =>
-                  void run(
-                    () =>
-                      api.put(`/admin/enrollments/${entry.id}/status`, {
-                        expected_status: entry.status,
-                        status: entry.status === "active" ? "paused" : "active",
-                      }),
-                    "Η πρόσβαση ενημερώθηκε. Οι καταγραφές διατηρήθηκαν.",
-                  )
-                }
-              />
-            </View>
-          ))}
+          {state.data.enrollments
+            .filter((entry) =>
+              normalize(
+                `${entry.cohort_title} ${state.data.users.find((u) => u.id === entry.user_id)?.name || ""} ${state.data.users.find((u) => u.id === entry.user_id)?.email || ""}`,
+              ).includes(normalize(search)),
+            )
+            .map((entry) => (
+              <View key={entry.id} style={ui.card}>
+                <Text style={ui.heading}>
+                  {state.data.users.find((u) => u.id === entry.user_id)?.name ||
+                    "Μαθητής"}{" "}
+                  · {entry.cohort_title}
+                </Text>
+                <Text style={ui.body}>
+                  {entry.status === "active" ? "Ενεργή εγγραφή" : "Σε παύση"}
+                </Text>
+                <Button
+                  secondary
+                  disabled={busy}
+                  label={
+                    entry.status === "active"
+                      ? "Παύση πρόσβασης"
+                      : "Επανενεργοποίηση"
+                  }
+                  onPress={() =>
+                    void run(
+                      () =>
+                        api.put(`/admin/enrollments/${entry.id}/status`, {
+                          expected_status: entry.status,
+                          status:
+                            entry.status === "active" ? "paused" : "active",
+                        }),
+                      "Η πρόσβαση ενημερώθηκε. Οι καταγραφές διατηρήθηκαν.",
+                    )
+                  }
+                />
+              </View>
+            ))}
         </View>
       )}
       {section === "Παρουσίες" && (
         <View style={ui.card}>
           <Text style={ui.heading}>Καταγραφή παρουσίας</Text>
           <View style={ui.row}>
-            {state.data.enrollments.map((e) => (
-              <Button
-                secondary={enrollment !== e.id}
-                key={e.id}
-                label={`${state.data.users.find((u) => u.id === e.user_id)?.name || "Μαθητής"} · ${e.cohort_title}`}
-                onPress={() => setEnrollment(e.id)}
-              />
-            ))}
+            {state.data.enrollments
+              .filter((e) =>
+                normalize(
+                  `${e.cohort_title} ${state.data.users.find((u) => u.id === e.user_id)?.name || ""} ${state.data.users.find((u) => u.id === e.user_id)?.email || ""}`,
+                ).includes(normalize(search)),
+              )
+              .map((e) => (
+                <Button
+                  secondary={enrollment !== e.id}
+                  key={e.id}
+                  label={`${state.data.users.find((u) => u.id === e.user_id)?.name || "Μαθητής"} · ${e.cohort_title}`}
+                  onPress={() => setEnrollment(e.id)}
+                />
+              ))}
           </View>
           <Field
             label="Ημερομηνία (YYYY-MM-DD)"
@@ -472,9 +516,15 @@ function WorkspaceScreen() {
           />
           <Choices
             label="Παρουσία"
-            values={["present", "absent", "excused"]}
-            value={attendance}
-            onChange={setAttendance}
+            values={Object.values(attendanceLabels)}
+            value={attendanceLabels[attendance]}
+            onChange={(label) =>
+              setAttendance(
+                Object.keys(attendanceLabels).find(
+                  (key) => attendanceLabels[key] === label,
+                )!,
+              )
+            }
           />
           <Button
             disabled={busy || !enrollment}
@@ -508,7 +558,8 @@ function WorkspaceScreen() {
           {state.data.practices.map((p) => (
             <View key={p.id} style={ui.card}>
               <Text style={ui.label}>
-                {p.level_id} · {p.session_date} · {p.status}
+                {p.level_id} · {p.session_date} ·{" "}
+                {practiceLabels[p.status] || p.status}
               </Text>
               <Text style={ui.body}>
                 {p.receiver_code} ·{" "}

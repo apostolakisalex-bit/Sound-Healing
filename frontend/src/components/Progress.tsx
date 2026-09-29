@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Text, View } from "react-native";
-import { Button, Status, ui, useLoad } from "./Wellness";
+import { Button, Choices, Status, ui, useLoad } from "./Wellness";
 
 type Metric = { count: number; minutes: number };
 type Row = {
@@ -20,8 +20,10 @@ const labels: Record<string, string> = {
 };
 export function Progress({ staff = false }: { staff?: boolean }) {
   const [offset, setOffset] = useState(0);
+  const [level, setLevel] = useState("Όλα");
+  const [status, setStatus] = useState("Όλες");
   const state = useLoad<{ items: Row[]; total: number }>(
-    `/school/progress?staff_view=${staff}&offset=${offset}&limit=20`,
+    `/school/progress?staff_view=${staff}&offset=${offset}&limit=20${level === "Όλα" ? "" : `&level_id=${level}`}${status === "Όλες" ? "" : `&enrollment_status=${status === "Ενεργές" ? "active" : "paused"}`}`,
     { items: [], total: 0 },
   );
   return (
@@ -31,6 +33,24 @@ export function Progress({ staff = false }: { staff?: boolean }) {
         Παρουσίες και καταγραφές ανά εγγραφή. Ο αρχικός έλεγχος πρακτικής δεν
         αποτελεί πιστοποίηση.
       </Text>
+      <Choices
+        label="Level"
+        values={["Όλα", "L1", "L2", "L3", "L4"]}
+        value={level}
+        onChange={(v) => {
+          setOffset(0);
+          setLevel(v);
+        }}
+      />
+      <Choices
+        label="Κατάσταση εγγραφής"
+        values={["Όλες", "Ενεργές", "Σε παύση"]}
+        value={status}
+        onChange={(v) => {
+          setOffset(0);
+          setStatus(v);
+        }}
+      />
       <Button
         secondary
         label="Ανανέωση προόδου"
@@ -41,7 +61,9 @@ export function Progress({ staff = false }: { staff?: boolean }) {
       {!state.loading && !state.error && (
         <>
           {!state.data.items.length && (
-            <Text style={ui.body}>Δεν υπάρχουν εγγραφές για εμφάνιση.</Text>
+            <Text style={ui.body}>
+              Δεν βρέθηκαν εγγραφές με αυτά τα φίλτρα.
+            </Text>
           )}
           {state.data.items.map((row) => (
             <View key={row.enrollment_id} style={ui.card}>
@@ -54,15 +76,14 @@ export function Progress({ staff = false }: { staff?: boolean }) {
                 {row.cohort_title}
               </Text>
               <Text style={ui.body}>
-                {row.attendance.present.count} παρουσίες ·{" "}
+                Παρουσίες: {row.attendance.present.count} · Ώρες παρακολούθησης:{" "}
                 {(row.attendance.present.minutes / 60).toLocaleString("el-GR", {
                   maximumFractionDigits: 1,
                 })}{" "}
-                ώρες παρακολούθησης
               </Text>
               <Text style={ui.body}>
-                {row.attendance.absent.count} απουσίες ·{" "}
-                {row.attendance.excused.count} δικαιολογημένες
+                Απουσίες: {row.attendance.absent.count} · Δικαιολογημένες:{" "}
+                {row.attendance.excused.count}
               </Text>
               <View style={ui.row}>
                 {Object.entries(labels)
@@ -84,6 +105,9 @@ export function Progress({ staff = false }: { staff?: boolean }) {
               </View>
             </View>
           ))}
+          <Text style={ui.body}>
+            {state.data.total} εγγραφές με τα επιλεγμένα φίλτρα
+          </Text>
           <View style={ui.row}>
             <Button
               secondary

@@ -123,7 +123,7 @@ def build_school_router(db, current_user, admin_user):
         return {'enrollments': enrollments, 'attendance': attendance, 'practices': practices, 'certification_status': 'Requirements awaiting approval; no automatic certification.'}
 
     @router.get('/school/progress')
-    async def progress(offset: int = Query(default=0, ge=0), limit: int = Query(default=20, ge=1, le=50), staff_view: bool = False, user=Depends(current_user)):
+    async def progress(offset: int = Query(default=0, ge=0), limit: int = Query(default=20, ge=1, le=50), staff_view: bool = False, level_id: Level | None = None, enrollment_status: Literal['active', 'paused'] | None = None, user=Depends(current_user)):
         scope = {'user_id': user['id']}
         if staff_view:
             if user.get('role') not in ('admin', 'instructor'):
@@ -132,6 +132,10 @@ def build_school_router(db, current_user, admin_user):
             if user['role'] == 'instructor':
                 cohort_ids = [c['id'] async for c in db.school_cohorts.find({'instructor_id': user['id']}, {'id': 1})]
                 scope = {'cohort_id': {'$in': cohort_ids}}
+        if level_id:
+            scope['level_id'] = level_id
+        if enrollment_status:
+            scope['status'] = enrollment_status
         total = await db.school_enrollments.count_documents(scope)
         entries = await db.school_enrollments.find(scope, {'_id': 0}).sort('id', 1).skip(offset).limit(limit).to_list(limit)
         rows = []

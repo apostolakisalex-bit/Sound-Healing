@@ -210,3 +210,13 @@ def test_progress_scope_privacy_and_exact_aggregation(env):
     assert call(c,'get','/school/progress?offset=1&limit=1','student').json()['items']==[]
     assert call(c,'get','/school/progress?limit=51','student').status_code==422
     assert call(c,'get','/school/progress?offset=-1','student').status_code==422
+
+def test_progress_filters_preserve_scope(env):
+    c,_=env;e=enrollment(c)
+    assert call(c,'get','/school/progress?level_id=L1','student').json()['total']==1
+    assert call(c,'get','/school/progress?level_id=L2','student').json()['total']==0
+    assert call(c,'get','/school/progress?enrollment_status=paused','student').json()['total']==0
+    call(c,'put',f'/admin/enrollments/{e}/status',json={'expected_status':'active','status':'paused'})
+    assert call(c,'get','/school/progress?level_id=L1&enrollment_status=paused','student').json()['total']==1
+    assert call(c,'get','/school/progress?staff_view=true&level_id=L1&enrollment_status=paused','other_teacher').json()['total']==0
+    assert call(c,'get','/school/progress?level_id=L5','student').status_code==422

@@ -36,3 +36,6 @@ Implemented publication-history restoration into drafts and pause/reactivate enr
 
 ### Progress dashboard — 2026-09-29
 Added per-enrollment attendance and practice metrics to School and staff workspace. Aggregations cover the full record set. Assigned-cohort permissions and private drafts are tested. No inferred completion percentages or certification. 19 backend tests, TypeScript and web export pass; local attendance-to-progress browser flow verified.
+
+### Admin usability — 2026-09-29
+Progress filters by Level and enrollment status; Greek attendance/review labels; accent-insensitive current-list search. 20 backend tests pass, including filter scope protection.
