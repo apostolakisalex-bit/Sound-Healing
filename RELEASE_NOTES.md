@@ -97,3 +97,9 @@ Validation: 16 isolated API tests and TypeScript pass. Web export passes with
 the same missing local favicon warning. Browser keyboard smoke checks created
 a synthetic cycle and linked draft and opened the forms catalog. No live data
 or Emergent deployment was changed.
+
+## Admin controls continuation — 2026-09-29
+- Publication history can restore content fields into a new draft with revision conflict protection. Published content stays unchanged until explicit publication. Attachments are not rolled back; the UI explains this.
+- Administrators can pause/reactivate enrollments without removing practice or attendance records. Paused enrollment blocks academic entitlement and practice submission.
+- Duplicate enrollment creation returns the existing status instead of falsely reporting active access.
+- Validation: 18 backend tests pass; frontend TypeScript passes. Progress dashboard remains pending, as do official assessment activation and certification rules.

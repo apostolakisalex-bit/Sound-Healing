@@ -30,6 +30,14 @@ class Content(Strict):
 class ContentEdit(Content):
     revision: int = Field(ge=1)
 
+class RestoreContent(Strict):
+    revision: int = Field(ge=1)
+    source_revision: int = Field(ge=1)
+
+class EnrollmentStatus(Strict):
+    expected_status: Literal['active', 'paused']
+    status: Literal['active', 'paused']
+
 class Cohort(Strict):
     title: str = Field(min_length=2, max_length=160)
     level_id: Level
@@ -181,6 +189,21 @@ def build_school_router(db, current_user, admin_user):
         await audit(user, 'content.publish', item_id)
         return {'ok': True}
 
+    @router.post('/admin/content/{item_id}/restore')
+    async def restore_content(item_id: str, payload: RestoreContent, user=Depends(admin_user)):
+        item = await db.content_items.find_one({'id': item_id, 'revision': payload.revision})
+        if not item:
+            raise HTTPException(409, 'Reload before restoring')
+        source = next((h for h in item.get('history', []) if h['revision'] == payload.source_revision), None)
+        if not source:
+            raise HTTPException(404, 'Publication not found')
+        draft = {k: source[k] for k in Content.model_fields if k in source}
+        result = await db.content_items.update_one({'id': item_id, 'revision': payload.revision}, {'$set': {'draft': Content(**draft).model_dump(), 'updated_at': now()}, '$inc': {'revision': 1}})
+        if not result.modified_count:
+            raise HTTPException(409, 'Content changed while restoring')
+        await audit(user, 'content.restore_draft', item_id)
+        return {'ok': True}
+
     @router.post('/admin/content/{item_id}/archive')
     async def archive(item_id: str, user=Depends(admin_user)):
         result = await db.content_items.update_one({'id': item_id}, {'$set': {'archived': True, 'updated_at': now()}, '$inc': {'revision': 1}})
@@ -212,7 +235,15 @@ def build_school_router(db, current_user, admin_user):
         doc = {'id': key, **payload.model_dump(), 'level_id': cohort['level_id'], 'cohort_title': cohort['title'], 'status': 'active', 'created_at': now()}
         await db.school_enrollments.update_one({'_id': key}, {'$setOnInsert': doc}, upsert=True)
         await audit(user, 'enrollment.create', key)
-        return doc
+        return await db.school_enrollments.find_one({'_id': key}, {'_id': 0})
+
+    @router.put('/admin/enrollments/{enrollment_id}/status')
+    async def enrollment_status(enrollment_id: str, payload: EnrollmentStatus, user=Depends(admin_user)):
+        result = await db.school_enrollments.update_one({'id': enrollment_id, 'status': payload.expected_status}, {'$set': {'status': payload.status, 'updated_at': now()}})
+        if not result.matched_count:
+            raise HTTPException(409, 'Enrollment changed. Reload before saving.')
+        await audit(user, 'enrollment.' + payload.status, enrollment_id)
+        return {'ok': True}
 
     @router.post('/admin/attendance')
     async def attendance(payload: Attendance, user=Depends(staff)):

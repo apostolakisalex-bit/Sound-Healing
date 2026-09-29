@@ -24,6 +24,12 @@ When evidence or an owner decision arrives, update the same Master Specification
 - Official forms, certificates and production migration remain gated; see app/RELEASE_NOTES.md.
 - Synced sources and the live Emergent preview remain unchanged.
 
+- Review candidate: https://github.com/apostolakisalex-bit/Sound-Healing/pull/1 · branch shg/premium-renewal · commit 72574d5b63304db3ed99cd1c2f25b704d454639e.
+- Validation: 12 isolated API tests, TypeScript and web export passed; browser smoke checks on desktop and 390px viewport. No live deployment.
+
 - Added receiver cycles, group participant counts, optimistic draft revisions and retained review history.
 - Added admin-only immutable assessment draft versions; official activation remains disabled.
 - Validation now covers 16 isolated API tests plus TypeScript and web export.
+
+### Admin controls — 2026-09-29
+Implemented publication-history restoration into drafts and pause/reactivate enrollment controls. Existing records are preserved. Verified with 18 backend tests and TypeScript. Aggregate progress dashboard remains pending.

@@ -28,6 +28,7 @@ type Item = {
   revision: number;
   published: Draft | null;
   archived: boolean;
+  history?: (Draft & { revision: number; published_at: string })[];
 };
 type Workspace = {
   content: Item[];
@@ -43,6 +44,7 @@ type Workspace = {
     user_id: string;
     cohort_id: string;
     cohort_title: string;
+    status: string;
   }[];
   practices: {
     id: string;
@@ -238,6 +240,33 @@ function WorkspaceScreen() {
               </Text>
               <Text style={ui.heading}>{item.draft.title}</Text>
               <Text style={ui.body}>{item.draft.summary}</Text>
+              {!!item.history?.length && (
+                <View style={ui.card}>
+                  <Text style={ui.heading}>Ιστορικό δημοσιεύσεων</Text>
+                  <Text style={ui.body}>
+                    Η επαναφορά δημιουργεί πρόχειρο. Τα συνημμένα παραμένουν
+                    όπως είναι και ελέγχονται πριν από τη νέα δημοσίευση.
+                  </Text>
+                  {[...item.history].reverse().map((version) => (
+                    <Button
+                      key={version.revision}
+                      secondary
+                      disabled={busy}
+                      label={`Επαναφορά v${version.revision} · ${version.title}`}
+                      onPress={() =>
+                        void run(async () => {
+                          await api.post(`/admin/content/${item.id}/restore`, {
+                            revision: item.revision,
+                            source_revision: version.revision,
+                          });
+                          setEdit(null);
+                          setDraft({ ...fresh });
+                        }, "Η έκδοση επανήλθε σε πρόχειρο. Έλεγξε το περιεχόμενο πριν τη δημοσίευση.")
+                      }
+                    />
+                  ))}
+                </View>
+              )}
               <ResourcesSection
                 parentType="cms_content"
                 parentId={item.id}
@@ -380,8 +409,39 @@ function WorkspaceScreen() {
             }
           />
           <Text style={ui.body}>
-            {state.data.enrollments.length} συνολικές εγγραφές
+            {state.data.enrollments.length} εγγραφές στη λίστα
           </Text>
+          {state.data.enrollments.map((entry) => (
+            <View key={entry.id} style={ui.card}>
+              <Text style={ui.heading}>
+                {state.data.users.find((u) => u.id === entry.user_id)?.name ||
+                  "Μαθητής"}{" "}
+                · {entry.cohort_title}
+              </Text>
+              <Text style={ui.body}>
+                {entry.status === "active" ? "Ενεργή εγγραφή" : "Σε παύση"}
+              </Text>
+              <Button
+                secondary
+                disabled={busy}
+                label={
+                  entry.status === "active"
+                    ? "Παύση πρόσβασης"
+                    : "Επανενεργοποίηση"
+                }
+                onPress={() =>
+                  void run(
+                    () =>
+                      api.put(`/admin/enrollments/${entry.id}/status`, {
+                        expected_status: entry.status,
+                        status: entry.status === "active" ? "paused" : "active",
+                      }),
+                    "Η πρόσβαση ενημερώθηκε. Οι καταγραφές διατηρήθηκαν.",
+                  )
+                }
+              />
+            </View>
+          ))}
         </View>
       )}
       {section === "Παρουσίες" && (

@@ -154,3 +154,33 @@ def test_form_schema_rejects_ambiguous_or_invalid_options(env):
     question['options']=['Yes','No']
     assert call(c,'post','/admin/forms',json={**base,'questions':[question,question]}).status_code==422
     assert call(c,'post','/admin/forms',json={**base,'template_key':'invented','questions':[question]}).status_code==422
+
+def test_restore_is_draft_only_and_conflict_safe(env):
+    c,_=env
+    data={'title':'First version','kind':'page','body':'Original'}
+    item=call(c,'post','/admin/content',json=data).json()['id']
+    call(c,'post',f'/admin/content/{item}/publish?revision=1')
+    call(c,'put',f'/admin/content/{item}',json={**data,'body':'Second','revision':2})
+    call(c,'post',f'/admin/content/{item}/publish?revision=3')
+    payload={'revision':4,'source_revision':1}
+    assert call(c,'post',f'/admin/content/{item}/restore','teacher',json=payload).status_code==403
+    assert call(c,'post',f'/admin/content/{item}/restore',json=payload).status_code==200
+    assert call(c,'post',f'/admin/content/{item}/restore',json=payload).status_code==409
+    assert call(c,'get','/content/public').json()[0]['published']['body']=='Second'
+    saved=call(c,'get','/admin/workspace').json()['content'][0]
+    assert saved['draft']['body']=='Original' and len(saved['history'])==2
+
+
+def test_paused_enrollment_preserves_records_and_blocks_practice(env):
+    c,_=env;e=enrollment(c)
+    data={'enrollment_id':e,'session_date':'2026-09-29','duration_minutes':60,'mode':'group','receiver_code':'G01','participant_count':3,'reflection':'Reflection','contraindications_checked':True}
+    p=call(c,'post','/school/practices','student',json=data).json()['id']
+    payload={'expected_status':'active','status':'paused'}
+    assert call(c,'put',f'/admin/enrollments/{e}/status','teacher',json=payload).status_code==403
+    assert call(c,'put',f'/admin/enrollments/{e}/status',json=payload).status_code==200
+    assert call(c,'put',f'/admin/enrollments/{e}/status',json=payload).status_code==409
+    assert not call(c,'get','/school/catalog','student').json()[0]['is_enrolled']
+    assert call(c,'post',f'/school/practices/{p}/submit','student').status_code==403
+    assert len(call(c,'get','/school/me','student').json()['practices'])==1
+    assert call(c,'put',f'/admin/enrollments/{e}/status',json={'expected_status':'paused','status':'active'}).status_code==200
+    assert call(c,'post',f'/school/practices/{p}/submit','student').status_code==200
