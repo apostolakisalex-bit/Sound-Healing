@@ -220,3 +220,16 @@ def test_progress_filters_preserve_scope(env):
     assert call(c,'get','/school/progress?level_id=L1&enrollment_status=paused','student').json()['total']==1
     assert call(c,'get','/school/progress?staff_view=true&level_id=L1&enrollment_status=paused','other_teacher').json()['total']==0
     assert call(c,'get','/school/progress?level_id=L5','student').status_code==422
+
+def test_activity_admin_only_and_paginated(env):
+    c,_=env
+    cohort(c)
+    assert call(c,'get','/admin/activity','student').status_code==403
+    assert call(c,'get','/admin/activity','teacher').status_code==403
+    result=call(c,'get','/admin/activity?limit=1').json()
+    assert result['total']==1
+    assert result['items'][0]['action']=='cohort.create'
+    assert result['items'][0]['actor_name']=='admin'
+    assert 'email' not in result['items'][0]
+    assert call(c,'get','/admin/activity?offset=1').json()['items']==[]
+    assert call(c,'get','/admin/activity?limit=51').status_code==422

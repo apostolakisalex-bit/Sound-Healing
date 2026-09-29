@@ -377,6 +377,17 @@ def build_school_router(db, current_user, admin_user):
         await audit(user, 'practice.review', practice_id)
         return {'ok': True, 'counts_for_certification': False}
 
+    @router.get('/admin/activity')
+    async def activity(offset: int = Query(default=0, ge=0), limit: int = Query(default=20, ge=1, le=50), user=Depends(admin_user)):
+        total = await db.audit_events.count_documents({})
+        events = await db.audit_events.find({}, {'_id': 0, 'id': 1, 'actor_id': 1, 'action': 1, 'entity_id': 1, 'created_at': 1}).sort([('created_at', -1), ('id', -1)]).skip(offset).limit(limit).to_list(limit)
+        for event in events:
+            if event['created_at'].tzinfo is None:
+                event['created_at'] = event['created_at'].replace(tzinfo=timezone.utc)
+            actor = await db.users.find_one({'id': event['actor_id']}, {'name': 1})
+            event['actor_name'] = (actor or {}).get('name', 'Μη διαθέσιμος λογαριασμός')
+        return {'items': events, 'total': total}
+
     @router.get('/admin/export')
     async def export(user=Depends(admin_user)):
         # Deliberately excludes credentials, health records and receiver responses.

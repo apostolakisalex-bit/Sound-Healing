@@ -39,3 +39,6 @@ Added per-enrollment attendance and practice metrics to School and staff workspa
 
 ### Admin usability — 2026-09-29
 Progress filters by Level and enrollment status; Greek attendance/review labels; accent-insensitive current-list search. 20 backend tests pass, including filter scope protection.
+
+### Admin activity — 2026-09-29
+Added admin-only activity history with pagination, actor names and localized timestamps. 21 backend tests pass; TypeScript passes. Events cover existing CMS/school audit instrumentation, not every application action.

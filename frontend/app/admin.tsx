@@ -1,5 +1,6 @@
 import { FormWorkspace } from "@/src/components/FormWorkspace";
 import { Progress } from "@/src/components/Progress";
+import { Activity } from "@/src/components/Activity";
 import React, { useState } from "react";
 import { Text, View } from "react-native";
 import { ResourcesSection } from "@/src/components/ResourcesSection";
@@ -161,6 +162,7 @@ function WorkspaceScreen() {
                 "Εγγραφές",
                 "Παρουσίες",
                 "Πρόοδος",
+                "Ιστορικό",
                 "Αξιολογήσεις",
               ]
             : ["Παρουσίες", "Πρόοδος", "Αξιολογήσεις"]
@@ -173,6 +175,7 @@ function WorkspaceScreen() {
         }}
       />
       <Status state={state} />
+      {section === "Ιστορικό" && user?.role === "admin" && <Activity />}
       {["Εγγραφές", "Παρουσίες"].includes(section) && (
         <Field
           label="Αναζήτηση στην τρέχουσα λίστα: όνομα, email ή τμήμα"

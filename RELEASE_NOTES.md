@@ -110,3 +110,6 @@ Validation: 19 backend tests pass, including 501-record aggregation, ownership, 
 
 ## Admin usability — 2026-09-29
 Added server-side progress filters for Level and active/paused enrollment, retaining ownership/cohort scope and pagination. Added accent-insensitive local search over loaded admin enrollment/attendance lists; this is explicitly labelled as current-list search, not a full-directory search. Attendance and review status labels are Greek. Backend: 20 passing tests; TypeScript passes. Full directory pagination/search remains a scalability follow-up.
+
+## Admin activity — 2026-09-29
+Added read-only, admin-only paginated activity history for recorded CMS and school actions, with actor names and timezone-aware timestamps. Explicit response fields exclude any future internal payloads. This is an operational history, not a tamper-proof or complete security audit. Validation: 21 backend tests and TypeScript pass.
