@@ -1,3 +1,4 @@
+import { CyclePicker } from "./CyclePicker";
 import React, { useState } from "react";
 import { Text, View } from "react-native";
 import { useRouter } from "expo-router";
@@ -34,6 +35,9 @@ type Practice = {
   receiver_code: string;
   reflection: string;
   contraindications_checked: boolean;
+  cycle_id?: string;
+  participant_count?: number;
+  revision?: number;
 };
 type School = {
   enrollments: Enrollment[];
@@ -180,7 +184,10 @@ export function PracticeScreen() {
     [safety, setSafety] = useState("Όχι"),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
-    [editing, setEditing] = useState("");
+    [editing, setEditing] = useState(""),
+    [cycleId, setCycleId] = useState(""),
+    [participantCount, setParticipantCount] = useState(""),
+    [revision, setRevision] = useState(1);
   const router = useRouter();
   const save = async () => {
     setBusy(true);
@@ -190,6 +197,9 @@ export function PracticeScreen() {
         method: editing ? "PUT" : "POST",
         url: editing ? `/school/practices/${editing}` : "/school/practices",
         data: {
+          ...(editing ? { revision } : {}),
+          cycle_id: mode === "individual" ? cycleId || null : null,
+          participant_count: mode === "group" ? Number(participantCount) : null,
           enrollment_id: enrollment,
           session_date: date,
           duration_minutes: Number(duration),
@@ -204,6 +214,7 @@ export function PracticeScreen() {
         "Το πρόχειρο αποθηκεύτηκε. Μπορείς να το στείλεις για αρχικό έλεγχο.",
       );
       setCode("");
+      setCycleId("");
       setReflection("");
       await state.reload();
     } catch {
@@ -233,7 +244,11 @@ export function PracticeScreen() {
                   key={e.id}
                   secondary={enrollment !== e.id}
                   label={`${e.level_id} · ${e.cohort_title}`}
-                  onPress={() => setEnrollment(e.id)}
+                  onPress={() => {
+                    setEnrollment(e.id);
+                    setCycleId("");
+                    setCode("");
+                  }}
                 />
               ))}
           </View>
@@ -241,8 +256,31 @@ export function PracticeScreen() {
             label="Μορφή"
             values={["individual", "group"]}
             value={mode}
-            onChange={setMode}
+            onChange={(v) => {
+              setMode(v);
+              setCycleId("");
+              setCode("");
+              setParticipantCount("");
+            }}
           />
+          {mode === "individual" && (
+            <CyclePicker
+              key={`${enrollment}:${state.data.practices.length}`}
+              enrollment={enrollment}
+              value={cycleId}
+              onSelect={(id, code) => {
+                setCycleId(id);
+                setCode(code);
+              }}
+            />
+          )}
+          {mode === "group" && (
+            <Field
+              label="Αριθμός συμμετεχόντων"
+              value={participantCount}
+              onChange={setParticipantCount}
+            />
+          )}
           <Field
             label="Ημερομηνία (YYYY-MM-DD)"
             value={date}
@@ -272,7 +310,11 @@ export function PracticeScreen() {
           />
           <Button
             label={busy ? "Αποθήκευση…" : "Αποθήκευση προχείρου"}
-            disabled={busy || !enrollment}
+            disabled={
+              busy ||
+              !enrollment ||
+              (mode === "individual" && !cycleId && !editing)
+            }
             onPress={() => void save()}
           />
         </View>
@@ -304,6 +346,11 @@ export function PracticeScreen() {
               label="Επεξεργασία"
               onPress={() => {
                 setEditing(p.id);
+                setCycleId(p.cycle_id || "");
+                setParticipantCount(
+                  p.participant_count ? String(p.participant_count) : "",
+                );
+                setRevision(p.revision || 1);
                 setEnrollment(p.enrollment_id);
                 setDate(p.session_date);
                 setDuration(String(p.duration_minutes));

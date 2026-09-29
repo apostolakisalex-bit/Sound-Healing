@@ -46,6 +46,13 @@ class Attendance(Strict):
     minutes: int = Field(ge=0, le=1440)
     status: Literal['present', 'absent', 'excused']
 
+class Cycle(Strict):
+    enrollment_id: str
+    receiver_code: str = Field(min_length=1, max_length=100)
+    intended_focus: str = Field(default='', max_length=3000)
+    receiver_expectations: str = Field(default='', max_length=3000)
+    planned_sessions: int | None = Field(default=None, ge=1, le=1000)
+
 class Draft(Strict):
     enrollment_id: str
     session_date: str = Field(pattern=r'^\d{4}-\d{2}-\d{2}$')
@@ -54,6 +61,11 @@ class Draft(Strict):
     receiver_code: str = Field(min_length=1, max_length=100)
     reflection: str = Field(default='', max_length=10000)
     contraindications_checked: bool = False
+    cycle_id: str | None = None
+    participant_count: int | None = Field(default=None, ge=2, le=10000)
+
+class DraftEdit(Draft):
+    revision: int = Field(ge=1)
 
 class Review(Strict):
     decision: Literal['changes_requested', 'reviewed']
@@ -134,9 +146,10 @@ def build_school_router(db, current_user, admin_user):
         scope = {'cohort_id': {'$in': ids}}
         enrollments = await db.school_enrollments.find(scope, {'_id': 0}).to_list(1000)
         practices = await db.school_practices.find({**scope, 'status': {'$ne': 'draft'}}, {'_id': 0}).to_list(1000)
+        cycles = await db.practice_cycles.find({'id': {'$in': [p['cycle_id'] for p in practices if p.get('cycle_id')]}, 'cohort_id': {'$in': ids}}, {'_id': 0}).to_list(500)
         users = await db.users.find({} if user['role'] == 'admin' else {'id': {'$in': [e['user_id'] for e in enrollments]}}, {'_id': 0, 'id': 1, 'name': 1, 'email': 1, 'role': 1}).to_list(1000)
         contents = await db.content_items.find({}, {'_id': 0}).sort('updated_at', -1).to_list(500) if user['role'] == 'admin' else []
-        return {'cohorts': cohorts, 'enrollments': enrollments, 'practices': practices, 'users': users, 'content': contents}
+        return {'cohorts': cohorts, 'enrollments': enrollments, 'practices': practices, 'users': users, 'content': contents, 'cycles': cycles}
 
     @router.post('/admin/content')
     async def create_content(payload: Content, user=Depends(admin_user)):
@@ -216,8 +229,40 @@ def build_school_router(db, current_user, admin_user):
         await audit(user, 'attendance.record', key)
         return {'ok': True}
 
+    @router.get('/school/cycles')
+    async def list_cycles(user=Depends(current_user)):
+        cycles = await db.practice_cycles.find({'user_id': user['id']}, {'_id': 0}).sort('created_at', -1).to_list(500)
+        for cycle in cycles:
+            cycle['recorded_sessions'] = await db.school_practices.count_documents({'user_id': user['id'], 'cycle_id': cycle['id']})
+            cycle['reviewed_sessions'] = await db.school_practices.count_documents({'user_id': user['id'], 'cycle_id': cycle['id'], 'status': 'reviewed'})
+        return cycles
+
+    @router.post('/school/cycles')
+    async def create_cycle(payload: Cycle, user=Depends(current_user)):
+        entry = await db.school_enrollments.find_one({'id': payload.enrollment_id, 'user_id': user['id'], 'status': 'active'})
+        if not entry:
+            raise HTTPException(403, 'Active enrollment required')
+        doc = {'id': str(uuid4()), **payload.model_dump(), 'user_id': user['id'], 'cohort_id': entry['cohort_id'], 'level_id': entry['level_id'], 'created_at': now()}
+        await db.practice_cycles.insert_one(dict(doc))
+        return doc
+
+    async def validate_practice_context(payload, user, require_cycle=False):
+        if payload.mode == 'group':
+            if payload.cycle_id is not None or payload.participant_count is None:
+                raise HTTPException(422, 'Group sessions require a participant count and no individual cycle')
+        else:
+            if payload.participant_count is not None:
+                raise HTTPException(422, 'Individual sessions do not have a group participant count')
+            if require_cycle and not payload.cycle_id:
+                raise HTTPException(422, 'Choose a receiver practice cycle')
+            if payload.cycle_id:
+                cycle = await db.practice_cycles.find_one({'id': payload.cycle_id, 'user_id': user['id'], 'enrollment_id': payload.enrollment_id, 'receiver_code': payload.receiver_code})
+                if not cycle:
+                    raise HTTPException(422, 'Cycle must belong to this receiver and enrollment')
+
     @router.post('/school/practices')
     async def save_draft(payload: Draft, user=Depends(current_user)):
+        await validate_practice_context(payload, user, require_cycle=True)
         entry = await db.school_enrollments.find_one({'id': payload.enrollment_id, 'user_id': user['id'], 'status': 'active'})
         if not entry:
             raise HTTPException(403, 'Active enrollment required')
@@ -225,12 +270,13 @@ def build_school_router(db, current_user, admin_user):
             datetime.strptime(payload.session_date, '%Y-%m-%d')
         except ValueError:
             raise HTTPException(422, 'Invalid date')
-        doc = {'id': str(uuid4()), **payload.model_dump(), 'user_id': user['id'], 'cohort_id': entry['cohort_id'], 'level_id': entry['level_id'], 'status': 'draft', 'created_at': now()}
+        doc = {'id': str(uuid4()), **payload.model_dump(), 'user_id': user['id'], 'cohort_id': entry['cohort_id'], 'level_id': entry['level_id'], 'status': 'draft', 'revision': 1, 'created_at': now()}
         await db.school_practices.insert_one(dict(doc))
         return doc
 
     @router.put('/school/practices/{practice_id}')
-    async def edit_draft(practice_id: str, payload: Draft, user=Depends(current_user)):
+    async def edit_draft(practice_id: str, payload: DraftEdit, user=Depends(current_user)):
+        await validate_practice_context(payload, user, require_cycle=True)
         entry = await db.school_enrollments.find_one({'id': payload.enrollment_id, 'user_id': user['id'], 'status': 'active'})
         if not entry:
             raise HTTPException(403, 'Active enrollment required')
@@ -238,9 +284,9 @@ def build_school_router(db, current_user, admin_user):
             datetime.strptime(payload.session_date, '%Y-%m-%d')
         except ValueError:
             raise HTTPException(422, 'Invalid date')
-        result = await db.school_practices.update_one({'id': practice_id, 'user_id': user['id'], 'status': {'$in': ['draft', 'changes_requested']}}, {'$set': {**payload.model_dump(), 'cohort_id': entry['cohort_id'], 'level_id': entry['level_id'], 'updated_at': now()}})
+        result = await db.school_practices.update_one({'id': practice_id, 'user_id': user['id'], 'status': {'$in': ['draft', 'changes_requested']}, '$or': [{'revision': payload.revision}, {'revision': {'$exists': False}}] if payload.revision == 1 else [{'revision': payload.revision}]}, {'$set': {**payload.model_dump(exclude={'revision'}), 'cohort_id': entry['cohort_id'], 'level_id': entry['level_id'], 'updated_at': now(), 'revision': payload.revision + 1}})
         if not result.matched_count:
-            raise HTTPException(409, 'Only your draft or returned practice can be edited')
+            raise HTTPException(409, 'The draft changed or is no longer editable. Reload before saving.')
         return {'ok': True}
 
     @router.post('/school/practices/{practice_id}/submit')
@@ -248,9 +294,11 @@ def build_school_router(db, current_user, admin_user):
         doc = await db.school_practices.find_one({'id': practice_id, 'user_id': user['id']})
         if not doc:
             raise HTTPException(404, 'Practice not found')
+        if not await db.school_enrollments.find_one({'id': doc['enrollment_id'], 'user_id': user['id'], 'status': 'active'}):
+            raise HTTPException(403, 'Active enrollment required')
         if not doc['contraindications_checked'] or not doc['reflection'].strip():
             raise HTTPException(422, 'Safety confirmation and reflection are required')
-        result = await db.school_practices.update_one({'id': practice_id, 'user_id': user['id'], 'status': {'$in': ['draft', 'changes_requested']}}, {'$set': {'status': 'submitted', 'submitted_at': now()}})
+        result = await db.school_practices.update_one({'id': practice_id, 'user_id': user['id'], 'revision': doc.get('revision'), 'status': {'$in': ['draft', 'changes_requested']}}, {'$set': {'status': 'submitted', 'submitted_at': now()}, '$inc': {'revision': 1}})
         if not result.modified_count:
             raise HTTPException(409, 'Practice already submitted')
         return {'ok': True}
@@ -261,7 +309,7 @@ def build_school_router(db, current_user, admin_user):
         if not doc:
             raise HTTPException(404, 'Practice not found')
         await owns_cohort(doc['cohort_id'], user)
-        result = await db.school_practices.update_one({'id': practice_id, 'status': 'submitted'}, {'$set': {'status': payload.decision, 'review_note': payload.note, 'reviewed_by': user['id'], 'reviewed_at': now()}})
+        result = await db.school_practices.update_one({'id': practice_id, 'status': 'submitted', 'revision': doc.get('revision')}, {'$set': {'status': payload.decision, 'review_note': payload.note, 'reviewed_by': user['id'], 'reviewed_at': now()}, '$push': {'review_history': {'decision': payload.decision, 'note': payload.note, 'reviewed_by': user['id'], 'reviewed_at': now()}}, '$inc': {'revision': 1}})
         if not result.modified_count:
             raise HTTPException(409, 'Practice is not awaiting review')
         await audit(user, 'practice.review', practice_id)

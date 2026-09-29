@@ -23,3 +23,7 @@ When evidence or an owner decision arrives, update the same Master Specification
 - Added CMS, enrollment/cohort/attendance, preliminary practice review and new UI.
 - Official forms, certificates and production migration remain gated; see app/RELEASE_NOTES.md.
 - Synced sources and the live Emergent preview remain unchanged.
+
+- Added receiver cycles, group participant counts, optimistic draft revisions and retained review history.
+- Added admin-only immutable assessment draft versions; official activation remains disabled.
+- Validation now covers 16 isolated API tests plus TypeScript and web export.

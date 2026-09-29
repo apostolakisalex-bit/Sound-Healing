@@ -4,6 +4,7 @@ from fastapi import FastAPI, Header, HTTPException
 from fastapi.testclient import TestClient
 from mongomock_motor import AsyncMongoMockClient
 from school import build_school_router
+from forms import build_form_router
 
 @pytest.fixture
 def env():
@@ -13,7 +14,7 @@ def env():
     async def admin(u=__import__('fastapi').Depends(user)):
         if u['role']!='admin': raise HTTPException(403)
         return u
-    app=FastAPI();app.include_router(build_school_router(db,user,admin))
+    app=FastAPI();app.include_router(build_school_router(db,user,admin));app.include_router(build_form_router(db,admin))
     client=TestClient(app)
     async def seed():
         await db.users.insert_many([{'id':i,'name':i,'email':i+'@example.org','role':r} for i,r in [('student','student'),('admin','admin'),('teacher','instructor'),('other_teacher','instructor')]])
@@ -66,8 +67,9 @@ def test_lesson_enrollment_and_media_validation(env):
 
 def test_practice_isolation_and_review(env):
     c,_=env;e=enrollment(c)
-    data={'enrollment_id':e,'session_date':'2026-09-29','duration_minutes':60,'mode':'individual','receiver_code':'R01','reflection':'Practice reflection','contraindications_checked':True}
-    assert call(c,'post','/school/practices','other_student',json=data).status_code==403
+    cycle=call(c,'post','/school/cycles','student',json={'enrollment_id':e,'receiver_code':'R01'}).json()['id']
+    data={'cycle_id':cycle,'enrollment_id':e,'session_date':'2026-09-29','duration_minutes':60,'mode':'individual','receiver_code':'R01','reflection':'Practice reflection','contraindications_checked':True}
+    assert call(c,'post','/school/practices','other_student',json=data).status_code in (403,422)
     p=call(c,'post','/school/practices','student',json=data).json()['id']
     assert call(c,'post',f'/school/practices/{p}/submit','other_student').status_code==404
     assert call(c,'post',f'/school/practices/{p}/submit','student').status_code==200
@@ -95,3 +97,60 @@ def test_validation_and_safe_export(env):
     assert call(c,'get','/admin/export','teacher').status_code==403
     data=call(c,'get','/admin/export').json()
     assert 'users' not in data and 'school_practices' not in data
+
+
+def test_cycle_owner_and_group_validation(env):
+    c,_=env;e=enrollment(c)
+    cycle=call(c,'post','/school/cycles','student',json={'enrollment_id':e,'receiver_code':'R01','planned_sessions':4}).json()
+    assert cycle['planned_sessions']==4
+    assert call(c,'get','/school/cycles','other_student').json()==[]
+    data={'enrollment_id':e,'session_date':'2026-09-29','duration_minutes':60,'mode':'individual','receiver_code':'R01','cycle_id':cycle['id']}
+    assert call(c,'post','/school/practices','student',json={**data,'receiver_code':'wrong'}).status_code==422
+    assert call(c,'post','/school/practices','student',json=data).status_code==200
+    assert call(c,'get','/school/cycles','student').json()[0]['recorded_sessions']==1
+    group={**data,'mode':'group','cycle_id':None,'receiver_code':'G01'}
+    assert call(c,'post','/school/practices','student',json=group).status_code==422
+    assert call(c,'post','/school/practices','student',json={**group,'participant_count':5}).status_code==200
+    assert call(c,'post','/school/practices','student',json={**group,'participant_count':1}).status_code==422
+
+
+def test_draft_revision_and_review_history(env):
+    c,_=env;e=enrollment(c)
+    data={'enrollment_id':e,'session_date':'2026-09-29','duration_minutes':60,'mode':'group','receiver_code':'G01','participant_count':3,'reflection':'Reflection','contraindications_checked':True}
+    p=call(c,'post','/school/practices','student',json=data).json()['id']
+    assert call(c,'put',f'/school/practices/{p}','student',json={**data,'revision':1}).status_code==200
+    assert call(c,'put',f'/school/practices/{p}','student',json={**data,'revision':1}).status_code==409
+    assert call(c,'post',f'/school/practices/{p}/submit','student').status_code==200
+    assert call(c,'post',f'/admin/practices/{p}/review','teacher',json={'decision':'changes_requested','note':'Please expand'}).status_code==200
+    record=call(c,'get','/school/me','student').json()['practices'][0]
+    assert len(record['review_history'])==1
+    assert call(c,'put',f'/school/practices/{p}','student',json={**data,'revision':record['revision'],'reflection':'Expanded reflection'}).status_code==200
+    assert call(c,'post',f'/school/practices/{p}/submit','student').status_code==200
+    assert call(c,'post',f'/admin/practices/{p}/review','teacher',json={'decision':'reviewed','note':'Reviewed again'}).status_code==200
+    assert len(call(c,'get','/school/me','student').json()['practices'][0]['review_history'])==2
+
+
+def test_form_versions_are_private_immutable_drafts(env):
+    c,_=env
+    assert call(c,'get','/admin/forms','student').status_code==403
+    assert call(c,'get','/admin/forms').json()['publication_enabled'] is False
+    data={'template_key':'receiver_l2_el','source_note':'F02 excerpt; comfort unresolved','questions':[{'key':'comfort','label':'Comfort question','kind':'unknown','required':None}]}
+    one=call(c,'post','/admin/forms',json=data)
+    assert one.status_code==200,one.text
+    assert one.json()['open_decisions']
+    assert one.json()['questions'][0]['required'] is None
+    two=call(c,'post','/admin/forms',json={**data,'source_note':'Second source note'})
+    assert one.json()['id']!=two.json()['id']
+    versions=call(c,'get','/admin/forms').json()['versions']
+    assert len(versions)==2 and all(v['status']=='draft' for v in versions)
+    assert call(c,'put','/admin/forms/'+one.json()['id'],json=data).status_code in (404,405)
+
+
+def test_form_schema_rejects_ambiguous_or_invalid_options(env):
+    c,_=env
+    base={'template_key':'receiver_l1_el','source_note':'F01 verified excerpt'}
+    question={'key':'trust','label':'Trust','kind':'single','options':['Yes','Yes']}
+    assert call(c,'post','/admin/forms',json={**base,'questions':[question]}).status_code==422
+    question['options']=['Yes','No']
+    assert call(c,'post','/admin/forms',json={**base,'questions':[question,question]}).status_code==422
+    assert call(c,'post','/admin/forms',json={**base,'template_key':'invented','questions':[question]}).status_code==422

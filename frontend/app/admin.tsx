@@ -1,3 +1,4 @@
+import { FormWorkspace } from "@/src/components/FormWorkspace";
 import React, { useState } from "react";
 import { Text, View } from "react-native";
 import { ResourcesSection } from "@/src/components/ResourcesSection";
@@ -30,6 +31,11 @@ type Item = {
 };
 type Workspace = {
   content: Item[];
+  cycles: {
+    id: string;
+    intended_focus: string;
+    receiver_expectations: string;
+  }[];
   users: { id: string; name: string; email: string; role: string }[];
   cohorts: { id: string; title: string; level_id: string }[];
   enrollments: {
@@ -43,6 +49,10 @@ type Workspace = {
     level_id: string;
     session_date: string;
     reflection: string;
+    mode: string;
+    participant_count?: number;
+    receiver_code: string;
+    cycle_id?: string;
     status: string;
   }[];
 };
@@ -71,6 +81,7 @@ function WorkspaceScreen() {
   const { user } = useAuth();
   const state = useLoad<Workspace>("/admin/workspace", {
     content: [],
+    cycles: [],
     users: [],
     cohorts: [],
     enrollments: [],
@@ -126,6 +137,7 @@ function WorkspaceScreen() {
           user?.role === "admin"
             ? [
                 "Περιεχόμενο",
+                "Φόρμες",
                 "Τμήματα",
                 "Εγγραφές",
                 "Παρουσίες",
@@ -144,6 +156,7 @@ function WorkspaceScreen() {
           </Text>
         </View>
       )}
+      {section === "Φόρμες" && user?.role === "admin" && <FormWorkspace />}
       {section === "Περιεχόμενο" && (
         <>
           <View style={ui.card}>
@@ -434,6 +447,19 @@ function WorkspaceScreen() {
               <Text style={ui.label}>
                 {p.level_id} · {p.session_date} · {p.status}
               </Text>
+              <Text style={ui.body}>
+                {p.receiver_code} ·{" "}
+                {p.mode === "group"
+                  ? `Ομάδα ${p.participant_count ?? "—"} ατόμων`
+                  : "Ατομική συνεδρία"}
+              </Text>
+              {p.cycle_id && (
+                <Text style={ui.body}>
+                  Εστίαση κύκλου:{" "}
+                  {state.data.cycles.find((c) => c.id === p.cycle_id)
+                    ?.intended_focus || "Δεν έχει καταγραφεί"}
+                </Text>
+              )}
               <Text style={ui.body}>{p.reflection}</Text>
               {p.status === "submitted" && (
                 <>

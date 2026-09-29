@@ -41,8 +41,8 @@ Operators must rotate any previously seeded credentials before a live release.
 ## Release gates — not implemented or certified
 
 Official form activation is blocked by OD-06/07; no substitute questionnaire
-is presented as official. Receiver cycles, per-person group invitations,
-versioned official evaluation templates and end-to-end certificate policy are
+is presented as official. Per-person group invitations and activated
+official evaluation templates and end-to-end certificate policy are
 not delivered by this candidate. Instructor review here is preliminary and
 explicitly does not count for certification. Legacy feedback still uses its
 historical schema. Policy approvals, retention/deletion workflows, token
@@ -76,3 +76,24 @@ Do not Re-publish production until the remaining release gates are resolved.
 Reverting the new UI does not require dropping new collections, but never
 restore old insecure handlers as a rollback. Take and rehearse a database
 backup before any later migration; no destructive migration is included here.
+
+
+## Practice continuation
+
+Individual cycles now bind receiver codes to active enrollments. Planned session
+counts are optional personal planning, not school policy. New individual drafts
+and edits require a matching cycle. Group sessions carry a separate participant
+count (at least two by the meaning of group, not a certification threshold).
+Draft edits use revision checks; submission/review check the read revision;
+review history is retained. Staff only see cycle plans referenced by submitted
+practices in their assigned cohorts.
+
+Admin assessment authoring now saves immutable draft snapshots with typed
+questions, verified-option fields and explicit unknown required states. Source
+catalog blockers cannot be removed by draft input. No activation, recipient
+invitations or answer collection is exposed by this new module.
+
+Validation: 16 isolated API tests and TypeScript pass. Web export passes with
+the same missing local favicon warning. Browser keyboard smoke checks created
+a synthetic cycle and linked draft and opened the forms catalog. No live data
+or Emergent deployment was changed.

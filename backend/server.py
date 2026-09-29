@@ -977,7 +977,9 @@ async def delete_resource(resource_id: str, admin: dict = Depends(get_admin_user
 # ============================================================
 # MOUNT
 # ============================================================
+from forms import build_form_router
 from school import build_school_router
+app.include_router(build_form_router(db, get_admin_user))
 app.include_router(build_school_router(db, get_current_user, get_admin_user))
 app.include_router(api)
 app.add_middleware(
