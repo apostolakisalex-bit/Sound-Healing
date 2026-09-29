@@ -1,4 +1,5 @@
 import { FormWorkspace } from "@/src/components/FormWorkspace";
+import { Progress } from "@/src/components/Progress";
 import React, { useState } from "react";
 import { Text, View } from "react-native";
 import { ResourcesSection } from "@/src/components/ResourcesSection";
@@ -143,14 +144,16 @@ function WorkspaceScreen() {
                 "Τμήματα",
                 "Εγγραφές",
                 "Παρουσίες",
+                "Πρόοδος",
                 "Αξιολογήσεις",
               ]
-            : ["Παρουσίες", "Αξιολογήσεις"]
+            : ["Παρουσίες", "Πρόοδος", "Αξιολογήσεις"]
         }
         value={section}
         onChange={setSection}
       />
       <Status state={state} />
+      {section === "Πρόοδος" && <Progress staff />}
       {!!message && (
         <View style={ui.card}>
           <Text accessibilityLiveRegion="polite" style={ui.body}>

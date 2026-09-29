@@ -103,3 +103,7 @@ or Emergent deployment was changed.
 - Administrators can pause/reactivate enrollments without removing practice or attendance records. Paused enrollment blocks academic entitlement and practice submission.
 - Duplicate enrollment creation returns the existing status instead of falsely reporting active access.
 - Validation: 18 backend tests pass; frontend TypeScript passes. Progress dashboard remains pending, as do official assessment activation and certification rules.
+
+## Progress dashboard — 2026-09-29
+Students now see per-enrollment attendance and practice counts/minutes in School; administrators and assigned instructors have a Progress workspace section. Paginated enrollment lists use full database aggregation for each enrollment, rather than truncated UI lists. Staff totals exclude private drafts and expose no reflection bodies. Present minutes alone count toward attendance hours; no certification percentage or eligibility is inferred.
+Validation: 19 backend tests pass, including 501-record aggregation, ownership, instructor scope, draft privacy and pagination validation. TypeScript and web export pass. Local browser smoke test: synthetic 60-minute attendance appears as one hour in the admin dashboard. Official form activation, receiver invitations, approved certification rules and production privacy/account recovery remain release gates.

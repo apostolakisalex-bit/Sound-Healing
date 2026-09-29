@@ -4,7 +4,7 @@ Legacy collections are never relabelled or counted as academic evidence.
 from datetime import datetime, timezone
 from typing import Literal
 from uuid import uuid4
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, ConfigDict
 
 Level = Literal['L1', 'L2', 'L3', 'L4']
@@ -121,6 +121,33 @@ def build_school_router(db, current_user, admin_user):
         attendance = await db.school_attendance.find({'user_id': user['id']}, {'_id': 0}).to_list(1000)
         practices = await db.school_practices.find({'user_id': user['id']}, {'_id': 0}).sort('created_at', -1).to_list(500)
         return {'enrollments': enrollments, 'attendance': attendance, 'practices': practices, 'certification_status': 'Requirements awaiting approval; no automatic certification.'}
+
+    @router.get('/school/progress')
+    async def progress(offset: int = Query(default=0, ge=0), limit: int = Query(default=20, ge=1, le=50), staff_view: bool = False, user=Depends(current_user)):
+        scope = {'user_id': user['id']}
+        if staff_view:
+            if user.get('role') not in ('admin', 'instructor'):
+                raise HTTPException(403, 'Staff access required')
+            scope = {}
+            if user['role'] == 'instructor':
+                cohort_ids = [c['id'] async for c in db.school_cohorts.find({'instructor_id': user['id']}, {'id': 1})]
+                scope = {'cohort_id': {'$in': cohort_ids}}
+        total = await db.school_enrollments.count_documents(scope)
+        entries = await db.school_enrollments.find(scope, {'_id': 0}).sort('id', 1).skip(offset).limit(limit).to_list(limit)
+        rows = []
+        for entry in entries:
+            match = {'enrollment_id': entry['id'], 'user_id': entry['user_id']}
+            attendance = {s: {'count': 0, 'minutes': 0} for s in ('present', 'absent', 'excused')}
+            async for group in db.school_attendance.aggregate([{'$match': match}, {'$group': {'_id': '$status', 'count': {'$sum': 1}, 'minutes': {'$sum': '$minutes'}}}]):
+                if group['_id'] in attendance:
+                    attendance[group['_id']] = {'count': group['count'], 'minutes': group['minutes'] if group['_id'] == 'present' else 0}
+            practice_scope = {**match, 'status': {'$in': ['submitted', 'changes_requested', 'reviewed'] if staff_view else ['draft', 'submitted', 'changes_requested', 'reviewed']}}
+            practices = {}
+            async for group in db.school_practices.aggregate([{'$match': practice_scope}, {'$group': {'_id': '$status', 'count': {'$sum': 1}, 'minutes': {'$sum': '$duration_minutes'}}}]):
+                practices[group['_id']] = {'count': group['count'], 'minutes': group['minutes']}
+            learner = await db.users.find_one({'id': entry['user_id']}, {'name': 1})
+            rows.append({'enrollment_id': entry['id'], 'cohort_title': entry.get('cohort_title', ''), 'level_id': entry['level_id'], 'status': entry['status'], 'learner_name': (learner or {}).get('name', 'Μαθητής'), 'attendance': attendance, 'practices': practices})
+        return {'items': rows, 'total': total, 'offset': offset, 'limit': limit}
 
     @router.get('/content/public')
     async def public_content():

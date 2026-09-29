@@ -33,3 +33,6 @@ When evidence or an owner decision arrives, update the same Master Specification
 
 ### Admin controls — 2026-09-29
 Implemented publication-history restoration into drafts and pause/reactivate enrollment controls. Existing records are preserved. Verified with 18 backend tests and TypeScript. Aggregate progress dashboard remains pending.
+
+### Progress dashboard — 2026-09-29
+Added per-enrollment attendance and practice metrics to School and staff workspace. Aggregations cover the full record set. Assigned-cohort permissions and private drafts are tested. No inferred completion percentages or certification. 19 backend tests, TypeScript and web export pass; local attendance-to-progress browser flow verified.

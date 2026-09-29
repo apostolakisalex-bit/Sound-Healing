@@ -1,4 +1,5 @@
 import { CyclePicker } from "./CyclePicker";
+import { Progress } from "./Progress";
 import React, { useState } from "react";
 import { Text, View } from "react-native";
 import { useRouter } from "expo-router";
@@ -128,6 +129,7 @@ export function SchoolScreen() {
         </View>
       ))}
       <Text style={ui.heading}>Το εκπαιδευτικό σου υλικό</Text>
+      <Progress />
       <Status state={library} />
       {library.data
         .filter((i) => i.published.kind === "lesson")

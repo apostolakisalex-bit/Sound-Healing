@@ -184,3 +184,29 @@ def test_paused_enrollment_preserves_records_and_blocks_practice(env):
     assert len(call(c,'get','/school/me','student').json()['practices'])==1
     assert call(c,'put',f'/admin/enrollments/{e}/status',json={'expected_status':'paused','status':'active'}).status_code==200
     assert call(c,'post',f'/school/practices/{p}/submit','student').status_code==200
+
+def test_progress_scope_privacy_and_exact_aggregation(env):
+    c,db=env;e=enrollment(c)
+    async def seed():
+        await db.school_attendance.insert_many([
+            {'enrollment_id':e,'user_id':'student','status':'present','minutes':60},
+            {'enrollment_id':e,'user_id':'student','status':'absent','minutes':90},
+            {'enrollment_id':e,'user_id':'student','status':'excused','minutes':90},
+        ])
+        await db.school_practices.insert_many([
+            {'enrollment_id':e,'user_id':'student','status':'reviewed','duration_minutes':45,'reflection':'private'} for _ in range(501)
+        ] + [{'enrollment_id':e,'user_id':'student','status':'draft','duration_minutes':60}])
+    asyncio.run(seed())
+    own=call(c,'get','/school/progress','student').json()['items'][0]
+    assert own['attendance']['present']=={'count':1,'minutes':60}
+    assert own['attendance']['absent']['minutes']==0
+    assert own['practices']['reviewed']=={'count':501,'minutes':22545}
+    assert own['practices']['draft']['count']==1
+    staff=call(c,'get','/school/progress?staff_view=true','teacher').json()['items'][0]
+    assert 'draft' not in staff['practices'] and 'reflection' not in str(staff)
+    assert call(c,'get','/school/progress?staff_view=true','other_teacher').json()['total']==0
+    assert call(c,'get','/school/progress','other_student').json()['total']==0
+    assert call(c,'get','/school/progress?staff_view=true','student').status_code==403
+    assert call(c,'get','/school/progress?offset=1&limit=1','student').json()['items']==[]
+    assert call(c,'get','/school/progress?limit=51','student').status_code==422
+    assert call(c,'get','/school/progress?offset=-1','student').status_code==422
