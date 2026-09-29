@@ -68,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
+    try { await api.post('/auth/logout'); } catch { /* Clear local credentials even when offline. */ }
     await setAuthToken(null);
     setUser(null);
   }, []);
@@ -89,3 +90,4 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be used inside AuthProvider');
   return ctx;
 }
+

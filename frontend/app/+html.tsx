@@ -4,9 +4,11 @@ import type { PropsWithChildren } from "react";
 
 export default function Root({ children }: PropsWithChildren) {
   return (
-    <html lang="en" style={{ height: "100%" }}>
+    <html lang="el" style={{ height: "100%" }}>
       <head>
         <meta charSet="utf-8" />
+        <title>Sound Healing Greece</title>
+        <meta name="description" content="Εκπαίδευση στην ηχοθεραπεία, προσωπική πρακτική και κοινότητα." />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta
           name="viewport"
@@ -42,3 +44,4 @@ export default function Root({ children }: PropsWithChildren) {
     </html>
   );
 }
+

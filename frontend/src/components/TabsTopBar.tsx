@@ -23,7 +23,7 @@ export function TabsTopBar({ testID }: { testID?: string }) {
   const router = useRouter();
   const segments = useSegments();
   // segments[1] is the tab name when inside (tabs) group
-  const current = (segments[1] as string) || 'sanctuary';
+  const current = (Array.from(segments as readonly string[])[1]) || 'sanctuary';
 
   return (
     <View style={styles.wrap} testID={testID || 'tabs-top-bar'}>
@@ -153,3 +153,4 @@ const styles = StyleSheet.create({
     height: 2,
   },
 });
+

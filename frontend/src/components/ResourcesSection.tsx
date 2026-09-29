@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Body, Overline, GlowCard, AuraButton } from '@/src/components/UI';
@@ -14,7 +14,7 @@ import { useAuth } from '@/src/auth/AuthContext';
 import { api } from '@/src/api/client';
 import { colors, spacing, radii } from '@/src/theme';
 
-export type ParentType = 'academy_level' | 'academy_lesson' | 'realm';
+export type ParentType = 'academy_level' | 'academy_lesson' | 'realm' | 'cms_content';
 
 const ICON_FOR_TYPE = (ct: string): keyof typeof Ionicons.glyphMap => {
   if (ct.startsWith('image/')) return 'image-outline';
@@ -269,3 +269,4 @@ const styles = StyleSheet.create({
   },
   delBtn: { padding: 6 },
 });
+

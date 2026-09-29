@@ -10,9 +10,9 @@ from pathlib import Path
 # Load frontend .env (public backend URL is here)
 load_dotenv(Path(__file__).resolve().parents[2] / "frontend" / ".env")
 
-BASE_URL = os.environ["EXPO_PUBLIC_BACKEND_URL"].rstrip("/")
-ADMIN_EMAIL = "admin@soundhealing.gr"
-ADMIN_PASSWORD = "temple2026"
+BASE_URL = os.environ.get("SHG_TEST_BASE_URL", "")
+ADMIN_EMAIL = os.environ.get("SHG_TEST_ADMIN_EMAIL", "")
+ADMIN_PASSWORD = os.environ.get("SHG_TEST_ADMIN_PASSWORD", "")
 
 
 @pytest.fixture(scope="session")
@@ -57,3 +57,11 @@ def fresh_user(api):
         "user": data["user"],
         "auth": {"Authorization": f"Bearer {data['token']}"},
     }
+
+
+
+def pytest_collection_modifyitems(config, items):
+    if os.environ.get("SHG_RUN_LEGACY_INTEGRATION") != "true":
+        for item in items:
+            if "/tests/" in str(item.path).replace("\\", "/"):
+                item.add_marker(pytest.mark.skip(reason="External integration tests require explicit staging configuration"))

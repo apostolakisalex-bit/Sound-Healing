@@ -14,11 +14,11 @@ import jwt
 import bcrypt
 import secrets
 from pathlib import Path
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, field_validator
 from typing import List, Optional, Literal
 from datetime import datetime, timezone, timedelta
 
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -73,9 +73,16 @@ class UserPublic(BaseModel):
 
 class RegisterIn(BaseModel):
     email: EmailStr
-    password: str = Field(min_length=6)
+    password: str = Field(min_length=10, max_length=72)
     name: str = Field(min_length=2)
     location: Optional[str] = ""
+
+    @field_validator("password")
+    @classmethod
+    def password_bytes(cls, value):
+        if len(value.encode("utf-8")) > 72:
+            raise ValueError("Password exceeds 72 UTF-8 bytes")
+        return value
 
 
 class LoginIn(BaseModel):
@@ -97,7 +104,7 @@ class ProfileUpdate(BaseModel):
 
 class PracticeIn(BaseModel):
     session_date: str
-    duration_minutes: int
+    duration_minutes: int = Field(ge=1, le=1440)
     session_type: str  # e.g. "Tibetan Bowls", "Sound Bath", "Gong Bath"
     protocol: str
     instruments: List[str]
@@ -160,7 +167,7 @@ class ChatIn(BaseModel):
 class ResourceIn(BaseModel):
     name: str
     description: Optional[str] = ""
-    parent_type: Literal["academy_level", "academy_lesson", "realm"]
+    parent_type: Literal["academy_level", "academy_lesson", "realm", "cms_content"]
     parent_id: str                      # level_id, lesson_id, or realm_id
     level_id: Optional[str] = None      # for academy_lesson — parent level
     file_data: str                      # base64 encoded
@@ -197,9 +204,10 @@ def verify_password(pw: str, hashed: str) -> bool:
         return False
 
 
-def create_token(user_id: str) -> str:
+def create_token(user_id: str, token_version: int = 0) -> str:
     payload = {
         "sub": user_id,
+        "ver": token_version,
         "iat": datetime.now(timezone.utc),
         "exp": datetime.now(timezone.utc) + timedelta(days=JWT_EXPIRE_DAYS),
     }
@@ -215,8 +223,8 @@ async def get_current_user(creds: Optional[HTTPAuthorizationCredentials] = Depen
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
     user = await db.users.find_one({"id": user_id}, {"_id": 0, "password_hash": 0})
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
+    if not user or payload.get("ver", 0) != user.get("token_version", 0):
+        raise HTTPException(status_code=401, detail="Session expired")
     return user
 
 
@@ -424,32 +432,13 @@ async def seed_db():
     if await db.challenges.count_documents({}) == 0:
         await db.challenges.insert_many([dict(c) for c in CHALLENGES_SEED])
         logger.info("Seeded challenges")
-    # Admin user
-    admin = await db.users.find_one({"email": "admin@soundhealing.gr"})
-    if not admin:
-        admin_user = {
-            "id": str(uuid.uuid4()),
-            "email": "admin@soundhealing.gr",
-            "name": "Temple Keeper",
-            "password_hash": hash_password("temple2026"),
-            "bio": "Guardian of the Sound Healing Greece Academy.",
-            "location": "Athens, Greece",
-            "profile_image": "",
-            "title": LEVEL_TITLES["L4"],
-            "level": "L4",
-            "xp": 9999,
-            "stamps": [s["id"] for s in STAMPS_SEED],
-            "unlocked_realms": [r["id"] for r in REALMS_SEED],
-            "role": "admin",
-            "created_at": datetime.now(timezone.utc),
-        }
-        await db.users.insert_one(admin_user)
-        logger.info("Seeded admin user")
+    # Admin provisioning is an explicit operator action; never seed fixed credentials.
 
 
 @app.on_event("startup")
 async def startup():
-    await seed_db()
+    if os.environ.get("SEED_DEMO_CONTENT") == "true":
+        await seed_db()
 
 
 # ============================================================
@@ -492,8 +481,14 @@ async def login(payload: LoginIn):
     user = await db.users.find_one({"email": payload.email.lower()})
     if not user or not verify_password(payload.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
-    token = create_token(user["id"])
+    token = create_token(user["id"], user.get("token_version", 0))
     return {"token": token, "user": serialize_user(user)}
+
+
+@api.post("/auth/logout")
+async def logout(user: dict = Depends(get_current_user)):
+    await db.users.update_one({"id": user["id"]}, {"$inc": {"token_version": 1}})
+    return {"ok": True}
 
 
 @api.get("/auth/me", response_model=UserPublic)
@@ -549,7 +544,9 @@ async def list_academy(user: dict = Depends(get_current_user)):
     docs = await db.academy.find({}, {"_id": 0}).to_list(100)
     user_xp = user.get("xp", 0)
     for d in docs:
-        d["is_unlocked"] = user_xp >= d["xp_required"]
+        d["is_unlocked"] = user.get("role") == "admin" or bool(await db.school_enrollments.find_one({"user_id": user["id"], "level_id": d["id"], "status": "active"}))
+        if not d["is_unlocked"]:
+            d["lessons"] = []
     return docs
 
 
@@ -558,26 +555,23 @@ async def get_level(level_id: str, user: dict = Depends(get_current_user)):
     doc = await db.academy.find_one({"id": level_id}, {"_id": 0})
     if not doc:
         raise HTTPException(404, "Level not found")
-    doc["is_unlocked"] = user.get("xp", 0) >= doc["xp_required"]
+    doc["is_unlocked"] = user.get("role") == "admin" or bool(await db.school_enrollments.find_one({"user_id": user["id"], "level_id": level_id, "status": "active"}))
+    if not doc["is_unlocked"]:
+        doc["lessons"] = []
     return doc
 
 
 @api.post("/academy/{level_id}/lesson/{lesson_id}/complete")
 async def complete_lesson(level_id: str, lesson_id: str, user: dict = Depends(get_current_user)):
-    completed_key = f"{level_id}:{lesson_id}"
-    completed = user.get("completed_lessons", [])
-    if completed_key in completed:
-        return {"ok": True, "already_completed": True, "xp_gained": 0}
-    xp_gain = 50
-    new_xp = user.get("xp", 0) + xp_gain
-    new_level = compute_level(new_xp)
-    leveled_up = new_level != user.get("level", "L1")
-    update = {
-        "$addToSet": {"completed_lessons": completed_key},
-        "$set": {"xp": new_xp, "level": new_level, "title": LEVEL_TITLES[new_level]},
-    }
-    await db.users.update_one({"id": user["id"]}, update)
-    return {"ok": True, "xp_gained": xp_gain, "new_xp": new_xp, "leveled_up": leveled_up, "new_level": new_level}
+    level = await db.academy.find_one({"id": level_id})
+    if not level or not any(l.get("id") == lesson_id for l in level.get("lessons", [])):
+        raise HTTPException(404, "Lesson not found")
+    if user.get("role") != "admin" and not await db.school_enrollments.find_one({"user_id": user["id"], "level_id": level_id, "status": "active"}):
+        raise HTTPException(403, "School enrollment required")
+    result = await db.users.update_one(
+        {"id": user["id"], "completed_lessons": {"$ne": f"{level_id}:{lesson_id}"}},
+        {"$addToSet": {"completed_lessons": f"{level_id}:{lesson_id}"}})
+    return {"ok": True, "already_completed": not bool(result.modified_count), "xp_gained": 0}
 
 
 @api.get("/stamps")
@@ -596,7 +590,7 @@ async def list_challenges(user: dict = Depends(get_current_user)):
     for d in docs:
         d["joined"] = d["id"] in joined
         # Stub participation counts for cinematic feel
-        d["participants"] = 124 + abs(hash(d["id"])) % 800
+        d["participants"] = await db.users.count_documents({"joined_challenges": d["id"]})
     return docs
 
 
@@ -641,7 +635,13 @@ def practice_doc_to_out(doc: dict) -> dict:
 
 @api.post("/practices", response_model=PracticeOut)
 async def create_practice(payload: PracticeIn, user: dict = Depends(get_current_user)):
-    feedback_token = secrets.token_urlsafe(16)
+    if not payload.contraindications_checked:
+        raise HTTPException(422, "Safety confirmation is required")
+    try:
+        datetime.strptime(payload.session_date, "%Y-%m-%d")
+    except ValueError:
+        raise HTTPException(422, "Invalid session date")
+    feedback_token = secrets.token_urlsafe(32)
     doc = {
         "id": str(uuid.uuid4()),
         "user_id": user["id"],
@@ -700,26 +700,12 @@ async def submit_feedback(token: str, payload: ReceiverFeedbackIn):
         raise HTTPException(400, "Consent required")
     feedback_data = payload.model_dump()
     feedback_data["submitted_at"] = datetime.now(timezone.utc).isoformat()
-    # Auto-approve and award XP (admin override possible)
-    xp_award = 150
-    await db.practices.update_one(
-        {"feedback_token": token},
-        {"$set": {"feedback": feedback_data, "status": "XP Awarded", "xp_awarded": xp_award}}
-    )
-    # Award XP to practitioner
-    user = await db.users.find_one({"id": doc["user_id"]})
-    if user:
-        new_xp = user.get("xp", 0) + xp_award
-        new_level = compute_level(new_xp)
-        # Award first-practice stamp
-        stamps = set(user.get("stamps", []))
-        stamps.add("stamp-first-practice")
-        await db.users.update_one(
-            {"id": user["id"]},
-            {"$set": {"xp": new_xp, "level": new_level, "title": LEVEL_TITLES[new_level],
-                      "stamps": list(stamps)}}
-        )
-    return {"ok": True, "thank_you": "Your reflection is received. Resonance honored."}
+    result = await db.practices.update_one(
+        {"feedback_token": token, "feedback": None},
+        {"$set": {"feedback": feedback_data, "status": "Awaiting Instructor Review", "xp_awarded": 0}})
+    if not result.modified_count:
+        raise HTTPException(409, "Feedback already submitted")
+    return {"ok": True, "thank_you": "Thank you. Your feedback has been received."}
 
 
 # ============================================================
@@ -737,23 +723,8 @@ async def rankings(user: dict = Depends(get_current_user)):
 
 @api.get("/community/feed")
 async def community_feed(user: dict = Depends(get_current_user)):
-    # Recent practices as community feed
-    docs = await db.practices.find({"status": "XP Awarded"}, {"_id": 0}).sort("created_at", -1).limit(20).to_list(20)
-    feed = []
-    for d in docs:
-        u = await db.users.find_one({"id": d["user_id"]}, {"_id": 0, "name": 1, "level": 1, "profile_image": 1})
-        feed.append({
-            "id": d["id"],
-            "practitioner_name": u["name"] if u else "Practitioner",
-            "practitioner_level": u.get("level", "L1") if u else "L1",
-            "practitioner_image": u.get("profile_image", "") if u else "",
-            "session_type": d["session_type"],
-            "intention": d["intention"],
-            "duration_minutes": d["duration_minutes"],
-            "xp_awarded": d.get("xp_awarded", 0),
-            "created_at": d["created_at"],
-        })
-    return feed
+    # Practice records are private; public sharing requires its own consent workflow.
+    return []
 
 
 # ============================================================
@@ -782,7 +753,10 @@ Begin every first reply with a soft greeting acknowledging the user by name if y
 
 @api.post("/ai/chat")
 async def ai_chat(payload: ChatIn, user: dict = Depends(get_current_user)):
-    session_id = payload.session_id or f"shg-{user['id']}"
+    if os.environ.get("AI_ENABLED") != "true":
+        raise HTTPException(503, "The assistant is not enabled")
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    session_id = f"shg-{user['id']}"
     system_msg = SYSTEM_MSG + f"\n\nThe user's name is {user['name']}. Their current level is {user.get('level','L1')} ({user.get('title','')}). XP: {user.get('xp',0)}."
     try:
         chat = LlmChat(
@@ -811,13 +785,13 @@ async def ai_chat(payload: ChatIn, user: dict = Depends(get_current_user)):
         return {"session_id": session_id, "response": response_text}
     except Exception as e:
         logger.exception("AI chat failed")
-        raise HTTPException(500, f"Oracle is silent: {str(e)}")
+        raise HTTPException(503, "Assistant temporarily unavailable")
 
 
 @api.get("/ai/history")
 async def ai_history(user: dict = Depends(get_current_user)):
     session_id = f"shg-{user['id']}"
-    msgs = await db.chat_messages.find({"session_id": session_id}, {"_id": 0}).sort("created_at", 1).to_list(200)
+    msgs = await db.chat_messages.find({"session_id": session_id, "user_id": user["id"]}, {"_id": 0}).sort("created_at", 1).to_list(200)
     return [{"role": m["role"], "content": m["content"], "created_at": m["created_at"]} for m in msgs]
 
 
@@ -835,23 +809,30 @@ MAX_FILE_SIZE = 12 * 1024 * 1024  # 12 MB
 
 async def resolve_required_level(parent_type: str, parent_id: str, level_id: Optional[str]) -> tuple[str, int]:
     """Determine which level / xp is required to access this resource."""
+    if parent_type == "cms_content":
+        item = await db.content_items.find_one({"id": parent_id})
+        if not item:
+            raise HTTPException(404, "Content not found")
+        return (item["draft"].get("level_id") or "public", 0)
     if parent_type == "academy_level":
         lvl = await db.academy.find_one({"id": parent_id}, {"_id": 0, "level": 1, "xp_required": 1})
         if not lvl:
-            return ("L1", 0)
+            raise HTTPException(404, "Resource parent not found")
         return (lvl["level"], lvl["xp_required"])
     if parent_type == "academy_lesson":
-        # Use level_id to find required level
-        lvl = await db.academy.find_one({"id": level_id}, {"_id": 0, "level": 1, "xp_required": 1}) if level_id else None
+        # Validate the parent and the lesson relationship
+        lvl = await db.academy.find_one({"id": level_id}, {"_id": 0, "level": 1, "xp_required": 1, "lessons": 1}) if level_id else None
         if not lvl:
-            return ("L1", 0)
+            raise HTTPException(404, "Resource parent not found")
+        if not any(lesson.get("id") == parent_id for lesson in lvl.get("lessons", [])):
+            raise HTTPException(404, "Lesson not found in this level")
         return (lvl["level"], lvl["xp_required"])
     if parent_type == "realm":
         r = await db.realms.find_one({"id": parent_id}, {"_id": 0, "level_required": 1, "xp_required": 1})
         if not r:
-            return ("L1", 0)
+            raise HTTPException(404, "Resource parent not found")
         return (r["level_required"], r["xp_required"])
-    return ("L1", 0)
+    raise HTTPException(404, "Resource parent not found")
 
 
 def resource_doc_to_public(doc: dict) -> dict:
@@ -877,6 +858,28 @@ async def create_resource(payload: ResourceIn, admin: dict = Depends(get_admin_u
         raise HTTPException(400, f"Unsupported file type: {payload.content_type}")
     if payload.file_size > MAX_FILE_SIZE:
         raise HTTPException(400, f"File too large (max {MAX_FILE_SIZE // (1024*1024)}MB)")
+    import base64, binascii
+    if len(payload.file_data) > (MAX_FILE_SIZE * 4 // 3 + 4):
+        raise HTTPException(413, "File too large")
+    try:
+        decoded = base64.b64decode(payload.file_data, validate=True)
+    except (ValueError, binascii.Error):
+        raise HTTPException(422, "Invalid file encoding")
+    if not decoded or len(decoded) != payload.file_size or len(decoded) > MAX_FILE_SIZE:
+        raise HTTPException(422, "Invalid file size")
+    signatures = {
+        "application/pdf": (b"%PDF-",),
+        "image/png": (b"\x89PNG\r\n\x1a\n",),
+        "image/jpeg": (b"\xff\xd8\xff",),
+        "image/gif": (b"GIF87a", b"GIF89a"),
+        "application/msword": (b"\xd0\xcf\x11\xe0",),
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": (b"PK\x03\x04",),
+        "image/webp": (b"RIFF",),
+    }
+    if not any(decoded.startswith(prefix) for prefix in signatures[payload.content_type]):
+        raise HTTPException(422, "File does not match its declared type")
+    if payload.content_type == "image/webp" and decoded[8:12] != b"WEBP":
+        raise HTTPException(422, "Invalid WebP file")
     if not payload.file_data:
         raise HTTPException(400, "file_data is required")
     required_level, required_xp = await resolve_required_level(
@@ -901,6 +904,22 @@ async def create_resource(payload: ResourceIn, admin: dict = Depends(get_admin_u
     return resource_doc_to_public(doc)
 
 
+async def can_read_resource(doc, user):
+    if user.get("role") == "admin":
+        return True
+    level = doc.get("required_level")
+    if doc.get("parent_type") == "cms_content":
+        item = await db.content_items.find_one({"id": doc["parent_id"], "archived": False})
+        if not item or not item.get("published"):
+            return False
+        if doc["id"] not in item["published"].get("resource_ids", []):
+            return False
+        level = item["published"].get("level_id")
+        if not level:
+            return True
+    return bool(await db.school_enrollments.find_one({"user_id": user["id"], "level_id": level, "status": "active"}))
+
+
 @api.get("/resources")
 async def list_resources(
     parent_type: str,
@@ -915,7 +934,9 @@ async def list_resources(
     is_admin = user.get("role") == "admin"
     out = []
     for d in docs:
-        is_unlocked = is_admin or user_xp >= d.get("required_xp", 0)
+        is_unlocked = await can_read_resource(d, user)
+        if not is_unlocked:
+            continue
         item = resource_doc_to_public(d)
         item["is_unlocked"] = is_unlocked
         out.append(item)
@@ -934,8 +955,8 @@ async def download_resource(resource_id: str, user: dict = Depends(get_current_u
     if not doc:
         raise HTTPException(404, "Resource not found")
     is_admin = user.get("role") == "admin"
-    if not is_admin and user.get("xp", 0) < doc.get("required_xp", 0):
-        raise HTTPException(403, "Locked — earn more Sound XP to unlock this resource")
+    if not await can_read_resource(doc, user):
+        raise HTTPException(403, "School enrollment required")
     return {
         "id": doc["id"],
         "name": doc["name"],
@@ -956,11 +977,13 @@ async def delete_resource(resource_id: str, admin: dict = Depends(get_admin_user
 # ============================================================
 # MOUNT
 # ============================================================
+from school import build_school_router
+app.include_router(build_school_router(db, get_current_user, get_admin_user))
 app.include_router(api)
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=["*"],
+    allow_credentials=False,
+    allow_origins=[x.strip() for x in os.environ.get("CORS_ORIGINS", "http://localhost:8081").split(",") if x.strip()],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -969,3 +992,4 @@ app.add_middleware(
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
