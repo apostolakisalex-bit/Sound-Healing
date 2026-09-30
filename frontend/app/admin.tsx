@@ -1,3 +1,4 @@
+import { PracticeAssessments } from "@/src/components/Assessments";
 import {
   NavigationEditor,
   NavigationItem,
@@ -28,6 +29,9 @@ type Draft = {
   section?: string;
   navigation?: NavigationItem[] | null;
   image_url?: string;
+  event_date?: string;
+  event_time?: string;
+  event_location?: string;
   image_alt?: string;
   action_label?: string;
   action_url?: string;
@@ -222,7 +226,8 @@ function WorkspaceScreen() {
                   {[
                     ["Υπηρεσία", "announcement", "services"],
                     ["Άρθρο", "announcement", "journal"],
-                    ["Εκδήλωση", "announcement", "events"],
+                    ["Event Μανώλη", "announcement", "events"],
+                    ["Εκπαιδευτικό σεμινάριο", "announcement", "training"],
                     ["Press / Media", "announcement", "about"],
                     ["Συχνή ερώτηση", "announcement", "contact"],
                     ["Μάθημα", "lesson", "home"],
@@ -238,6 +243,12 @@ function WorkspaceScreen() {
                           ...draft,
                           kind,
                           section: target,
+                          action_label:
+                            target === "training"
+                              ? "Πληροφορίες & εγγραφή"
+                              : target === "events"
+                                ? "Πληροφορίες & συμμετοχή"
+                                : draft.action_label,
                           level_id: null,
                         })
                       }
@@ -279,10 +290,10 @@ function WorkspaceScreen() {
               onChange={(v) => set("section", v)}
             />
             <Text style={ui.body}>
-              home: Αρχική · services: Εμπειρίες · training: Σχολή · about:
-              Μανώλης · events: Εκδηλώσεις · journal: Άρθρα · contact:
-              Επικοινωνία. Για δημόσια εμφάνιση χρησιμοποίησε τύπο page ή
-              announcement και πρόσβαση Όλοι.
+              home: Αρχική · services: Εμπειρίες · training: Εκπαιδεύσεις /
+              εγγραφές · about: Μανώλης · events: Αυτοτελή events Μανώλη ·
+              journal: Άρθρα · contact: Επικοινωνία. Για δημόσια εμφάνιση
+              χρησιμοποίησε τύπο page ή announcement και πρόσβαση Όλοι.
             </Text>
             <Choices
               label="Εκπαιδευτική πρόσβαση"
@@ -364,6 +375,27 @@ function WorkspaceScreen() {
                     />
                   </>
                 )}
+                {["events", "training"].includes(draft.section || "") &&
+                  draft.kind !== "page" && (
+                    <View style={{ gap: 12 }}>
+                      <Text style={ui.heading}>Ημερομηνία, ώρα και χώρος</Text>
+                      <Field
+                        label="Ημερομηνία ή εύρος ημερομηνιών"
+                        value={draft.event_date || ""}
+                        onChange={(v) => set("event_date", v)}
+                      />
+                      <Field
+                        label="Ώρα (π.χ. 17:30 – 19:00)"
+                        value={draft.event_time || ""}
+                        onChange={(v) => set("event_time", v)}
+                      />
+                      <Field
+                        label="Χώρος / πόλη"
+                        value={draft.event_location || ""}
+                        onChange={(v) => set("event_location", v)}
+                      />
+                    </View>
+                  )}
                 <Field
                   label="Κείμενο συνδέσμου επικοινωνίας ή συμμετοχής"
                   value={draft.action_label || ""}
@@ -772,6 +804,7 @@ function WorkspaceScreen() {
                   ? `Ομάδα ${p.participant_count ?? "—"} ατόμων`
                   : "Ατομική συνεδρία"}
               </Text>
+              <PracticeAssessments practiceId={p.id} staff />
               {p.cycle_id && (
                 <Text style={ui.body}>
                   Εστίαση κύκλου:{" "}

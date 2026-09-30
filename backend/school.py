@@ -35,6 +35,9 @@ class Content(Strict):
     image_alt: str = Field(default='', max_length=200)
     action_label: str = Field(default='', max_length=80)
     action_url: str = Field(default='', max_length=2000)
+    event_date: str = Field(default='', max_length=100)
+    event_time: str = Field(default='', max_length=100)
+    event_location: str = Field(default='', max_length=200)
     navigation: list[NavigationItem] | None = Field(default=None, max_length=6)
     order: int = Field(default=0, ge=0, le=10000)
 
@@ -375,7 +378,7 @@ def build_school_router(db, current_user, admin_user):
             datetime.strptime(payload.session_date, '%Y-%m-%d')
         except ValueError:
             raise HTTPException(422, 'Invalid date')
-        result = await db.school_practices.update_one({'id': practice_id, 'user_id': user['id'], 'status': {'$in': ['draft', 'changes_requested']}, '$or': [{'revision': payload.revision}, {'revision': {'$exists': False}}] if payload.revision == 1 else [{'revision': payload.revision}]}, {'$set': {**payload.model_dump(exclude={'revision'}), 'cohort_id': entry['cohort_id'], 'level_id': entry['level_id'], 'updated_at': now(), 'revision': payload.revision + 1}})
+        result = await db.school_practices.update_one({'$and': [{'$or': [{'assessment_locked': {'$ne': True}}, {k: getattr(payload, k) for k in ('enrollment_id', 'session_date', 'duration_minutes', 'mode', 'receiver_code', 'cycle_id', 'participant_count')}]}], 'id': practice_id, 'user_id': user['id'], 'status': {'$in': ['draft', 'changes_requested']}, '$or': [{'revision': payload.revision}, {'revision': {'$exists': False}}] if payload.revision == 1 else [{'revision': payload.revision}]}, {'$set': {**payload.model_dump(exclude={'revision'}), 'cohort_id': entry['cohort_id'], 'level_id': entry['level_id'], 'updated_at': now(), 'revision': payload.revision + 1}})
         if not result.matched_count:
             raise HTTPException(409, 'The draft changed or is no longer editable. Reload before saving.')
         return {'ok': True}

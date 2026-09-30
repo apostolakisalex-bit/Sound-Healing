@@ -133,7 +133,7 @@ def test_draft_revision_and_review_history(env):
 def test_form_versions_are_private_immutable_drafts(env):
     c,_=env
     assert call(c,'get','/admin/forms','student').status_code==403
-    assert call(c,'get','/admin/forms').json()['publication_enabled'] is False
+    assert call(c,'get','/admin/forms').json()['active_assignments'] == []
     data={'template_key':'receiver_l2_el','source_note':'F02 excerpt; comfort unresolved','questions':[{'key':'comfort','label':'Comfort question','kind':'unknown','required':None}]}
     one=call(c,'post','/admin/forms',json=data)
     assert one.status_code==200,one.text
@@ -300,3 +300,13 @@ def test_navigation_rejects_unknown_and_duplicate_destinations(env):
     call(c,'post',f'/admin/content/{item}/publish?revision=1')
     call(c,'put',f'/admin/content/{item}',json={**data,'navigation':[],'revision':2})
     assert call(c,'get','/content/public').json()[0]['published']['navigation']==data['navigation']
+
+def test_public_training_and_events_keep_distinct_sections(env):
+    c,_=env
+    for section,title in [('training','Level 1 seminar'),('events','Sound Bath')]:
+        payload={'title':title,'kind':'announcement','section':section,'event_date':'31 October 2026','event_time':'10:00 – 18:00','event_location':'Athens','action_url':'https://www.soundhealing.gr/','action_label':'Details'}
+        item=call(c,'post','/admin/content',json=payload).json()
+        assert call(c,'post',f'/admin/content/{item["id"]}/publish?revision=1').status_code==200
+    public=call(c,'get','/content/public').json()
+    assert {(i['published']['section'],i['published']['title']) for i in public}=={('training','Level 1 seminar'),('events','Sound Bath')}
+    assert all(i['published']['event_location']=='Athens' for i in public)

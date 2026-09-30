@@ -155,3 +155,7 @@ Public navigation now collapses below 760px, exposes expanded state, closes afte
 
 ## Admin and student organization — 2026-09-30
 Added content starter choices and catalogue filters/search, rendered image/action fields on published cards, and enabled these fields for announcements. Student dashboard now highlights unfinished/returned practices and guards loading/error counts. Profile enrollment summary no longer flashes empty before loading. Synthetic browser checks covered student dashboard/school/profile and admin editor. Source-required certification/forms and structured event features remain open.
+
+
+## Assessments and public programme separation — 2026-09-30
+Added practitioner draft/final response UI, individual/group receiver invitations and public response screen, scoped staff viewing, immutable activation and source drafts. Official schema ambiguities remain gated. Owner-confirmed L2 comfort scale recorded. Public training marketing and standalone events have distinct CMS destinations and image-led cards with date, time, venue and action. Tests: 32 backend checks, 4 hook lifecycle checks, TypeScript and static web export. Browser synthetic receiver submission succeeded; public event cards and training separation inspected. No production data imported, no main merge/deployment.

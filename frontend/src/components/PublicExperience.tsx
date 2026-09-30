@@ -1,3 +1,4 @@
+import { EventGrid } from "./EventGrid";
 import React from "react";
 import { Text, View } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
@@ -24,7 +25,7 @@ const sections = {
   },
   training: {
     title: "Μάθε. Εξασκήσου. Εξελίξου.",
-    label: "Η σχολή",
+    label: "Εκπαιδεύσεις",
     summary:
       "Τέσσερα προοδευτικά Levels που συνδυάζουν θεωρία, βιωματική μάθηση και πρακτική.",
     body: "Η εκπαιδευτική διαδρομή περνά από τις Himalayan singing bowls και την ατομική πρακτική στον συντονισμό ομάδων και την επαγγελματική ανάπτυξη. Η δημιουργία λογαριασμού είναι ξεχωριστή από την εγγραφή σε εκπαιδευτικό τμήμα.",
@@ -38,7 +39,7 @@ const sections = {
   events: {
     title: "Συναντιόμαστε στον ήχο.",
     label: "Εκδηλώσεις",
-    summary: "Sound Baths, εργαστήρια και εκπαιδευτικές συναντήσεις.",
+    summary: "Sound Baths και αυτοτελείς εμπειρίες ήχου με τον Μανώλη.",
     body: "Ανακάλυψε τις δημοσιευμένες συναντήσεις παρακάτω. Για το τρέχον πρόγραμμα και πληροφορίες συμμετοχής μπορείς επίσης να επισκεφθείς το soundhealing.gr.",
   },
   journal: {
@@ -190,16 +191,37 @@ export function PublicExperience({ section }: { section?: string }) {
           ))}
         </View>
       )}
+      {section === "training" && (
+        <View style={{ gap: 12 }}>
+          <Text style={ui.heading}>Επόμενα εκπαιδευτικά σεμινάρια</Text>
+          <Text style={ui.body}>
+            Βρες το επόμενο σεμινάριο και δήλωσε ενδιαφέρον για συμμετοχή.
+          </Text>
+          <NavLink href="https://www.soundhealing.gr/training-seminars/">
+            Αναλυτικό πρόγραμμα εκπαίδευσης ↗
+          </NavLink>
+          <NavLink href="/academy">Είσαι ήδη μαθητής; Μπες στη Σχολή →</NavLink>
+        </View>
+      )}
       <Status state={state} />
+      {(section === "events" || section === "training") && (
+        <EventGrid
+          training={section === "training"}
+          items={entries.filter((item) => item.id !== intro?.id)}
+        />
+      )}
       {entries
+        .filter((item) => section !== "events" && section !== "training")
         .filter((item) => !page || item.id !== intro?.id)
         .map((item) => (
           <ContentCard key={item.id} item={item} />
         ))}
-      {(section === "events" || section === "journal") &&
+      {(section === "events" ||
+        section === "journal" ||
+        section === "training") &&
         !state.loading &&
         !state.error &&
-        !entries.length && (
+        !entries.filter((item) => item.id !== intro?.id).length && (
           <Text style={ui.body}>
             Δεν υπάρχουν ακόμη δημοσιεύσεις σε αυτή την ενότητα της εφαρμογής.
           </Text>

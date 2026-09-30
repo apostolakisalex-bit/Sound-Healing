@@ -269,7 +269,7 @@ export function Shell({
               .map((item) => [item.label, "/explore/" + item.section])
           : [
               ["Εμπειρίες", "/explore/services"],
-              ["Σχολή", "/explore/training"],
+              ["Εκπαιδεύσεις", "/explore/training"],
               ["Μανώλης", "/explore/about"],
               ["Εκδηλώσεις", "/explore/events"],
               ["Άρθρα", "/explore/journal"],
@@ -383,6 +383,9 @@ export type ContentItem = {
     section?: string;
     navigation?: { section: string; label: string; visible: boolean }[] | null;
     image_url?: string;
+    event_date?: string;
+    event_time?: string;
+    event_location?: string;
     image_alt?: string;
     action_label?: string;
     action_url?: string;

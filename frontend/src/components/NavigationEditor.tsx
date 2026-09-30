@@ -8,7 +8,7 @@ export type NavigationItem = {
 };
 const defaults: NavigationItem[] = [
   "services:Εμπειρίες",
-  "training:Σχολή",
+  "training:Εκπαιδεύσεις",
   "about:Μανώλης",
   "events:Εκδηλώσεις",
   "journal:Άρθρα",

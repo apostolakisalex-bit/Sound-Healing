@@ -1,3 +1,4 @@
+import { PracticeAssessments } from "@/src/components/Assessments";
 import { BrandHero } from "./BrandHero";
 import { CyclePicker } from "./CyclePicker";
 import { Progress } from "./Progress";
@@ -469,6 +470,7 @@ export function PracticeScreen() {
           <Text style={ui.heading}>
             {p.session_date} · {p.duration_minutes} λεπτά
           </Text>
+          <PracticeAssessments practiceId={p.id} />
           {p.review_note && <Text style={ui.body}>{p.review_note}</Text>}
           {["draft", "changes_requested"].includes(p.status) && (
             <Button

@@ -28,7 +28,7 @@ function AuthGate() {
     if (loading) return;
     const onLandingRoot = segments[0] === undefined;
     const onAuthScreen = segments[0] === 'login' || segments[0] === 'register';
-    const isPublicFeedback = segments[0] === 'feedback';
+    const isPublicFeedback = (segments[0] === 'feedback' || segments[0] === 'evaluation');
     if (isPublicFeedback || segments[0] === 'explore') return;
 
     // Unauthenticated: protect non-public routes

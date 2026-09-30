@@ -995,3 +995,6 @@ app.add_middleware(
 async def shutdown_db_client():
     client.close()
 
+
+from assessments import build_assessment_router
+app.include_router(build_assessment_router(db, get_current_user, get_admin_user))

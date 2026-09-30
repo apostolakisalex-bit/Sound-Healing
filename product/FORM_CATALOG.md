@@ -9,7 +9,7 @@ The verbatim available user-pasted forms are retained in `work/evidence/conversa
 | Template key | Source | Coverage | Publication |
 |---|---|---|---|
 | receiver_l1_el | F01, turn bfb9b839-053e-4b91-93a4-2938f732f250 | 15 questions, options and visible required marks | Resolve Option 6 and type ambiguities, OD-07 |
-| receiver_l2_el | F02, turn f1f4d954-1e47-4860-b9cb-424d44302330 | 13 questions, comfort choices missing | Blocked for comfort schema, OD-07 |
+| receiver_l2_el | F02, turn f1f4d954-1e47-4860-b9cb-424d44302330 | 13 questions; comfort choices confirmed by owner 2026-09-30 | Other type ambiguities remain, OD-07 |
 | practitioner_l2_el | F03, turn acfe1b82-9688-4504-8855-d21f0c089295 | 3 first-session + 11 recurring questions | Required-mark conflict and cycle applicability, OD-03/07 |
 | practitioner_group_el | F04, turn 2cc49c15-8fc6-4eea-b9bd-c01027e4c8e5 | 11 questions, 4-option satisfaction | Confirm Level/form-ID mapping, OD-06 |
 | practitioner_l1_el | D05 link | Full questions not returned in accessible conversation | Missing; no L2 clone |
@@ -108,3 +108,7 @@ D04 additionally includes switching phones/smartwatches off or to airplane mode;
 ## Publication and parity checklist
 
 Each draft must retain original prompt/options, source ID/question number, required-state confidence, condition, intended respondent, locale and sensitivity. Compare a rendered draft with its source before publication. Test unanswered vs not-applicable, Other text, multi-select, keyboard/screen-reader behavior, expired/revoked/reused tokens and simultaneous submission. New native copy, translations and validation changes require documented version changes. Published submissions always remain readable with their original schema.
+
+
+## Confirmed decision — 2026-09-30
+The owner explicitly selected the L1 comfort scale for L2: Πολύ άβολα / Λίγο άβολα / Ουδέτερα / Άνετα / Πολύ άνετα. This resolves only the L2 comfort options; other source ambiguities remain open.

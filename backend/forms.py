@@ -1,6 +1,6 @@
-"""Immutable assessment drafts. Deliberately no publication/submission endpoint.
-Source ambiguities remain visible until the school's owner resolves them.
-"""
+import json
+from pathlib import Path
+"""Immutable assessment drafts. Activation and response collection live in assessments.py."""
 from datetime import datetime,timezone
 from uuid import uuid4
 from fastapi import APIRouter,Depends,HTTPException
@@ -19,6 +19,7 @@ class Question(BaseModel):
  model_config=ConfigDict(extra='forbid',str_strip_whitespace=True)
  key:str=Field(pattern=r'^[a-z][a-z0-9_]{0,63}$')
  label:str=Field(min_length=2,max_length=3000)
+ applies_to:Literal['all','first','repeat']='all'
  kind:Literal['unknown','text','single','multi','scale']='unknown'
  required:bool|None=None
  options:list[str]=Field(default_factory=list,max_length=50)
@@ -43,7 +44,7 @@ def build_form_router(db,admin_user):
  @router.get('')
  async def list_forms(admin=Depends(admin_user)):
   versions=await db.form_drafts.find({}, {'_id':0}).sort('created_at',-1).to_list(500)
-  return {'catalog':CATALOG,'versions':versions,'publication_enabled':False}
+  return {'catalog':CATALOG,'versions':versions,'publication_enabled':True,'activation_required':True,'active_assignments':await db.assessment_configuration.find({}, {'_id':1,'form_id':1}).to_list(32),'source_templates':json.loads(Path(__file__).with_name('assessment_sources.json').read_text(encoding='utf-8'))}
  @router.post('')
  async def save_version(payload:FormDraft,admin=Depends(admin_user)):
   source=next((c for c in CATALOG if c['key']==payload.template_key),None)
