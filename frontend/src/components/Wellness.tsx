@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Linking,
   Platform,
   Pressable,
@@ -406,10 +407,33 @@ export function ContentCard({
   const p = item.published;
   return (
     <View style={ui.card}>
+      {!!p.image_url && (
+        <Image
+          source={{ uri: p.image_url }}
+          accessibilityLabel={p.image_alt || p.title}
+          resizeMode="cover"
+          style={{ width: "100%", height: 240, borderRadius: 16 }}
+        />
+      )}
       <Text style={ui.label}>{p.level_id || "WELLNESS"}</Text>
       <Text style={ui.heading}>{p.title}</Text>
       <Text style={ui.body}>{p.summary}</Text>
       {!!p.body && <Text style={ui.body}>{p.body}</Text>}
+      {!!p.action_url && !!p.action_label && (
+        <Link
+          href={p.action_url as any}
+          style={[
+            ui.body,
+            {
+              color: colors.text.primary,
+              textDecorationLine: "underline",
+              paddingVertical: 12,
+            },
+          ]}
+        >
+          {p.action_label} ↗
+        </Link>
+      )}
       {!!p.media_url && (
         <Button
           secondary

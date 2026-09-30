@@ -152,3 +152,6 @@ Added draft menu renaming, ordering, visibility and reset to defaults under site
 
 ## Mobile public menu — 2026-09-30
 Public navigation now collapses below 760px, exposes expanded state, closes after selection and uses real links with current-route styling. Verified at 390px in browser. TypeScript, four lifecycle checks and web export passed. Native Expo and full Emergent comparison remain outstanding.
+
+## Admin and student organization — 2026-09-30
+Added content starter choices and catalogue filters/search, rendered image/action fields on published cards, and enabled these fields for announcements. Student dashboard now highlights unfinished/returned practices and guards loading/error counts. Profile enrollment summary no longer flashes empty before loading. Synthetic browser checks covered student dashboard/school/profile and admin editor. Source-required certification/forms and structured event features remain open.

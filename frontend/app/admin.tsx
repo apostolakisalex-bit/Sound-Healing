@@ -126,6 +126,7 @@ function WorkspaceScreen() {
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
     [search, setSearch] = useState(""),
+    [contentScope, setContentScope] = useState("Όλα"),
     [cohortTitle, setCohortTitle] = useState(""),
     [level, setLevel] = useState("L1"),
     [instructor, setInstructor] = useState(""),
@@ -210,6 +211,46 @@ function WorkspaceScreen() {
             <Text style={ui.heading}>
               {edit ? "Επεξεργασία προχείρου" : "Νέο περιεχόμενο"}
             </Text>
+            {!edit && (
+              <View style={ui.card}>
+                <Text style={ui.heading}>Τι θέλεις να προσθέσεις;</Text>
+                <Text style={ui.body}>
+                  Διάλεξε αφετηρία πριν γράψεις. Αλλάζει μόνο τον τύπο, την
+                  ενότητα και την πρόσβαση· κρατά τα κείμενά σου.
+                </Text>
+                <View style={ui.row}>
+                  {[
+                    ["Υπηρεσία", "announcement", "services"],
+                    ["Άρθρο", "announcement", "journal"],
+                    ["Εκδήλωση", "announcement", "events"],
+                    ["Press / Media", "announcement", "about"],
+                    ["Συχνή ερώτηση", "announcement", "contact"],
+                    ["Μάθημα", "lesson", "home"],
+                    ["Προσωπική πρακτική", "journey", "home"],
+                    ["Ρυθμίσεις ιστοτόπου", "site_settings", "home"],
+                  ].map(([label, kind, target]) => (
+                    <Button
+                      key={label}
+                      secondary
+                      label={label}
+                      onPress={() =>
+                        setDraft({
+                          ...draft,
+                          kind,
+                          section: target,
+                          level_id: null,
+                        })
+                      }
+                    />
+                  ))}
+                </View>
+                <Text style={ui.body}>
+                  Για εκπαιδευτικό υλικό όρισε το Level πριν τη δημοσίευση. Οι
+                  εκδηλώσεις υποστηρίζουν περιγραφή και σύνδεσμο συμμετοχής·
+                  ημερολόγιο, θέσεις και κρατήσεις δεν είναι ακόμη ενεργά.
+                </Text>
+              </View>
+            )}
             <Choices
               label="Τύπος"
               values={[
@@ -306,9 +347,9 @@ function WorkspaceScreen() {
                 onChange={(v) => set("navigation", v)}
               />
             )}
-            {["page", "site_settings"].includes(draft.kind) && (
+            {["page", "announcement", "site_settings"].includes(draft.kind) && (
               <>
-                {draft.kind === "page" && (
+                {["page", "announcement"].includes(draft.kind) && (
                   <>
                     {" "}
                     <Field
@@ -389,92 +430,124 @@ function WorkspaceScreen() {
               )}
             </View>
           </View>
-          {state.data.content.map((item) => (
-            <View key={item.id} style={ui.card}>
-              <Text style={ui.label}>
-                {item.draft.kind} ·{" "}
-                {item.archived
-                  ? "ΑΡΧΕΙΟ"
-                  : item.published
-                    ? "ΔΗΜΟΣΙΕΥΜΕΝΟ"
-                    : "ΠΡΟΧΕΙΡΟ"}{" "}
-                · v{item.revision}
-              </Text>
-              <Text style={ui.heading}>{item.draft.title}</Text>
-              <Text style={ui.body}>{item.draft.summary}</Text>
-              {!!item.history?.length && (
-                <View style={ui.card}>
-                  <Text style={ui.heading}>Ιστορικό δημοσιεύσεων</Text>
-                  <Text style={ui.body}>
-                    Η επαναφορά δημιουργεί πρόχειρο. Τα συνημμένα παραμένουν
-                    όπως είναι και ελέγχονται πριν από τη νέα δημοσίευση.
-                  </Text>
-                  {[...item.history].reverse().map((version) => (
-                    <Button
-                      key={version.revision}
-                      secondary
-                      disabled={busy}
-                      label={`Επαναφορά v${version.revision} · ${version.title}`}
-                      onPress={() =>
-                        void run(async () => {
-                          await api.post(`/admin/content/${item.id}/restore`, {
-                            revision: item.revision,
-                            source_revision: version.revision,
-                          });
-                          setEdit(null);
-                          setDraft({ ...fresh });
-                        }, "Η έκδοση επανήλθε σε πρόχειρο. Έλεγξε το περιεχόμενο πριν τη δημοσίευση.")
-                      }
-                    />
-                  ))}
-                </View>
-              )}
-              <ResourcesSection
-                parentType="cms_content"
-                parentId={item.id}
-                title="Συνημμένο υλικό"
-              />
-              <View style={ui.row}>
-                <Button
-                  secondary
-                  disabled={busy}
-                  label="Επεξεργασία"
-                  onPress={() => {
-                    setEdit(item);
-                    setDraft({ ...item.draft });
-                  }}
+          <Text style={ui.heading}>Κατάλογος περιεχομένου</Text>
+          <Choices
+            label="Περιοχή"
+            values={["Όλα", "Δημόσιο", "Μαθήματα", "Journey", "Ρυθμίσεις"]}
+            value={contentScope}
+            onChange={setContentScope}
+          />
+          <Field
+            label="Αναζήτηση τίτλου ή ενότητας στην τρέχουσα λίστα"
+            value={search}
+            onChange={setSearch}
+          />
+          {state.data.content
+            .filter(
+              (item) =>
+                (contentScope === "Όλα" ||
+                  (contentScope === "Μαθήματα"
+                    ? item.draft.kind === "lesson"
+                    : contentScope === "Journey"
+                      ? item.draft.kind === "journey"
+                      : contentScope === "Ρυθμίσεις"
+                        ? item.draft.kind === "site_settings"
+                        : ["page", "announcement", "hero"].includes(
+                            item.draft.kind,
+                          ))) &&
+                normalize(
+                  item.draft.title + " " + (item.draft.section || "home"),
+                ).includes(normalize(search)),
+            )
+            .map((item) => (
+              <View key={item.id} style={ui.card}>
+                <Text style={ui.label}>
+                  {item.draft.kind} ·{" "}
+                  {item.archived
+                    ? "ΑΡΧΕΙΟ"
+                    : item.published
+                      ? "ΔΗΜΟΣΙΕΥΜΕΝΟ"
+                      : "ΠΡΟΧΕΙΡΟ"}{" "}
+                  · v{item.revision}
+                </Text>
+                <Text style={ui.heading}>{item.draft.title}</Text>
+                <Text style={ui.body}>{item.draft.summary}</Text>
+                {!!item.history?.length && (
+                  <View style={ui.card}>
+                    <Text style={ui.heading}>Ιστορικό δημοσιεύσεων</Text>
+                    <Text style={ui.body}>
+                      Η επαναφορά δημιουργεί πρόχειρο. Τα συνημμένα παραμένουν
+                      όπως είναι και ελέγχονται πριν από τη νέα δημοσίευση.
+                    </Text>
+                    {[...item.history].reverse().map((version) => (
+                      <Button
+                        key={version.revision}
+                        secondary
+                        disabled={busy}
+                        label={`Επαναφορά v${version.revision} · ${version.title}`}
+                        onPress={() =>
+                          void run(async () => {
+                            await api.post(
+                              `/admin/content/${item.id}/restore`,
+                              {
+                                revision: item.revision,
+                                source_revision: version.revision,
+                              },
+                            );
+                            setEdit(null);
+                            setDraft({ ...fresh });
+                          }, "Η έκδοση επανήλθε σε πρόχειρο. Έλεγξε το περιεχόμενο πριν τη δημοσίευση.")
+                        }
+                      />
+                    ))}
+                  </View>
+                )}
+                <ResourcesSection
+                  parentType="cms_content"
+                  parentId={item.id}
+                  title="Συνημμένο υλικό"
                 />
-                <Button
-                  disabled={busy}
-                  label={
-                    item.archived ? "Επαναδημοσίευση" : "Δημοσίευση προχείρου"
-                  }
-                  onPress={() =>
-                    void run(
-                      () =>
-                        api.post(
-                          `/admin/content/${item.id}/publish?revision=${item.revision}`,
-                        ),
-                      "Δημοσιεύτηκε.",
-                    )
-                  }
-                />
-                {!item.archived && (
+                <View style={ui.row}>
                   <Button
                     secondary
                     disabled={busy}
-                    label="Αρχειοθέτηση"
+                    label="Επεξεργασία"
+                    onPress={() => {
+                      setEdit(item);
+                      setDraft({ ...item.draft });
+                    }}
+                  />
+                  <Button
+                    disabled={busy}
+                    label={
+                      item.archived ? "Επαναδημοσίευση" : "Δημοσίευση προχείρου"
+                    }
                     onPress={() =>
                       void run(
-                        () => api.post(`/admin/content/${item.id}/archive`),
-                        "Αρχειοθετήθηκε. Μπορεί να επαναδημοσιευτεί.",
+                        () =>
+                          api.post(
+                            `/admin/content/${item.id}/publish?revision=${item.revision}`,
+                          ),
+                        "Δημοσιεύτηκε.",
                       )
                     }
                   />
-                )}
+                  {!item.archived && (
+                    <Button
+                      secondary
+                      disabled={busy}
+                      label="Αρχειοθέτηση"
+                      onPress={() =>
+                        void run(
+                          () => api.post(`/admin/content/${item.id}/archive`),
+                          "Αρχειοθετήθηκε. Μπορεί να επαναδημοσιευτεί.",
+                        )
+                      }
+                    />
+                  )}
+                </View>
               </View>
-            </View>
-          ))}
+            ))}
         </>
       )}
       {section === "Τμήματα" && (

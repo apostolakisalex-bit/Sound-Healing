@@ -76,21 +76,76 @@ export function Home() {
         </View>
       </View>
       <Status state={state} />
-      <View style={ui.row}>
-        {[
-          ["Εγγραφές", state.data.enrollments.length],
-          ["Πρακτικές", state.data.practices.length],
-          [
-            "Για αξιολόγηση",
-            state.data.practices.filter((p) => p.status === "submitted").length,
-          ],
-        ].map(([label, value]) => (
-          <View key={label} style={[ui.card, { flexGrow: 1, minWidth: 180 }]}>
-            <Text style={ui.title}>{value}</Text>
-            <Text style={ui.body}>{label}</Text>
+      {!state.loading && !state.error && (
+        <>
+          <View style={ui.row}>
+            {[
+              ["Εγγραφές", state.data.enrollments.length],
+              ["Πρακτικές", state.data.practices.length],
+              [
+                "Για αξιολόγηση",
+                state.data.practices.filter((p) => p.status === "submitted")
+                  .length,
+              ],
+            ].map(([label, value]) => (
+              <View
+                key={label}
+                style={[ui.card, { flexGrow: 1, minWidth: 180 }]}
+              >
+                <Text style={ui.title}>{value}</Text>
+                <Text style={ui.body}>{label}</Text>
+              </View>
+            ))}
           </View>
-        ))}
-      </View>
+          <View style={ui.card}>
+            <Text style={ui.heading}>Το επόμενο βήμα σου</Text>
+            {state.data.practices.some(
+              (p) => p.status === "changes_requested",
+            ) && (
+              <Text style={ui.body}>
+                {
+                  state.data.practices.filter(
+                    (p) => p.status === "changes_requested",
+                  ).length
+                }{" "}
+                πρακτικές έχουν σχόλια και χρειάζονται διόρθωση.
+              </Text>
+            )}
+            {state.data.practices.some((p) => p.status === "draft") && (
+              <Text style={ui.body}>
+                {
+                  state.data.practices.filter((p) => p.status === "draft")
+                    .length
+                }{" "}
+                πρόχειρες πρακτικές περιμένουν να τις ολοκληρώσεις.
+              </Text>
+            )}
+            {state.data.practices.some((p) =>
+              ["draft", "changes_requested"].includes(p.status),
+            ) && (
+              <Button
+                label="Άνοιγμα των πρακτικών μου"
+                onPress={() => router.push("/(tabs)/practice")}
+              />
+            )}
+            {!state.data.enrollments.some((e) => e.status === "active") && (
+              <Text style={ui.body}>
+                Δεν υπάρχει ενεργή εκπαιδευτική εγγραφή. Επικοινώνησε με τη
+                σχολή για το τμήμα σου.
+              </Text>
+            )}
+            {state.data.enrollments.some((e) => e.status === "active") &&
+              !state.data.practices.some((p) =>
+                ["draft", "changes_requested"].includes(p.status),
+              ) && (
+                <Text style={ui.body}>
+                  Δεν υπάρχουν πρόχειρες πρακτικές ή διορθώσεις σε αναμονή.
+                  Μπορείς να συνεχίσεις με το υλικό της σχολής.
+                </Text>
+              )}
+          </View>
+        </>
+      )}
       <View style={ui.card}>
         <Text style={ui.heading}>Ένα βήμα τη φορά</Text>
         <Text style={ui.body}>
@@ -506,23 +561,25 @@ export function ProfileScreen() {
         <Text style={ui.body}>{message}</Text>
       </View>
       <Status state={state} />
-      <View style={ui.card}>
-        <Text style={ui.heading}>Εκπαίδευση</Text>
-        {state.data.enrollments.map((e) => (
-          <Text key={e.id} style={ui.body}>
-            {e.level_id} · {e.cohort_title}
-          </Text>
-        ))}
-        {!state.data.enrollments.length && (
+      {!state.loading && !state.error && (
+        <View style={ui.card}>
+          <Text style={ui.heading}>Εκπαίδευση</Text>
+          {state.data.enrollments.map((e) => (
+            <Text key={e.id} style={ui.body}>
+              {e.level_id} · {e.cohort_title}
+            </Text>
+          ))}
+          {!state.data.enrollments.length && (
+            <Text style={ui.body}>
+              Δεν έχει καταχωριστεί εκπαιδευτική εγγραφή.
+            </Text>
+          )}
           <Text style={ui.body}>
-            Δεν έχει καταχωριστεί εκπαιδευτική εγγραφή.
+            Παρουσίες:{" "}
+            {state.data.attendance.filter((a) => a.status === "present").length}
           </Text>
-        )}
-        <Text style={ui.body}>
-          Παρουσίες:{" "}
-          {state.data.attendance.filter((a) => a.status === "present").length}
-        </Text>
-      </View>
+        </View>
+      )}
       <View style={ui.card}>
         <Text style={ui.heading}>Ιστορικό συμμετοχής</Text>
         <Text style={ui.body}>
