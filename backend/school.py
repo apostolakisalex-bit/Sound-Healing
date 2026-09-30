@@ -19,7 +19,7 @@ class Strict(BaseModel):
     model_config = ConfigDict(extra='forbid', str_strip_whitespace=True)
 
 class NavigationItem(Strict):
-    section: Literal['services', 'training', 'about', 'events', 'journal', 'contact']
+    section: Literal['services', 'training', 'about', 'soundhealing', 'events', 'journal', 'contact']
     label: str = Field(min_length=1, max_length=40)
     visible: bool = True
 
@@ -27,19 +27,26 @@ class Content(Strict):
     title: str = Field(min_length=2, max_length=160)
     summary: str = Field(default='', max_length=500)
     body: str = Field(default='', max_length=30000)
-    kind: Literal['page', 'lesson', 'journey', 'announcement', 'hero', 'site_settings']
-    section: Literal['home', 'services', 'training', 'about', 'events', 'journal', 'contact'] = 'home'
+    kind: Literal['page', 'lesson', 'journey', 'announcement', 'hero', 'site_settings', 'testimonial', 'partner', 'social']
+    section: Literal['home', 'services', 'training', 'about', 'soundhealing', 'events', 'journal', 'contact'] = 'home'
     level_id: Level | None = None
     media_url: str = Field(default='', max_length=2000)
     image_url: str = Field(default='', max_length=2000)
     image_alt: str = Field(default='', max_length=200)
     action_label: str = Field(default='', max_length=80)
     action_url: str = Field(default='', max_length=2000)
+    event_end_date: str = Field(default='', pattern=r'^(|\d{4}-\d{2}-\d{2})$')
     event_date: str = Field(default='', max_length=100)
     event_time: str = Field(default='', max_length=100)
     event_location: str = Field(default='', max_length=200)
     navigation: list[NavigationItem] | None = Field(default=None, max_length=6)
     order: int = Field(default=0, ge=0, le=10000)
+
+    @field_validator('event_end_date')
+    @classmethod
+    def valid_event_end(cls, value):
+        if value: datetime.strptime(value, '%Y-%m-%d')
+        return value
 
     @field_validator('navigation')
     @classmethod
@@ -176,7 +183,7 @@ def build_school_router(db, current_user, admin_user):
 
     @router.get('/content/public')
     async def public_content():
-        return await db.content_items.find({'published.kind': {'$in': ['page', 'announcement', 'hero', 'site_settings']}, 'published.level_id': None, 'archived': False}, {'_id': 0, 'id': 1, 'published': 1}).sort([('published.order', 1), ('id', 1)]).to_list(200)
+        return await db.content_items.find({'published.kind': {'$in': ['page', 'announcement', 'hero', 'site_settings', 'testimonial', 'partner', 'social']}, 'published.level_id': None, 'archived': False}, {'_id': 0, 'id': 1, 'published': 1}).sort([('published.order', 1), ('id', 1)]).to_list(200)
 
     @router.get('/content/library')
     async def library(user=Depends(current_user)):

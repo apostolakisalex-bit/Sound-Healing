@@ -1,3 +1,4 @@
+import { PublicHome } from "./PublicHome";
 import { EventGrid } from "./EventGrid";
 import React from "react";
 import { Text, View } from "react-native";
@@ -16,25 +17,31 @@ import {
 import { FOUNDER } from "@/src/content/public";
 
 const sections = {
+  soundhealing: {
+    title: "Γνώρισε την ηχοθεραπεία.",
+    label: "Ηχοθεραπεία",
+    summary: "Ο ήχος ως αφετηρία για ακρόαση, χαλάρωση και προσωπική εμπειρία.",
+    body: "Οι ηχογαβάθες, τα gong και άλλα ακουστικά όργανα συνθέτουν μια εμπειρία ήχου. Στην επίσημη σελίδα μπορείς να διαβάσεις την προσέγγιση του Μανώλη και να γνωρίσεις τα όργανα που χρησιμοποιεί.",
+  },
   services: {
     title: "Βρες τον δικό σου χώρο στον ήχο.",
-    label: "Εμπειρίες",
+    label: "Υπηρεσίες",
     summary:
-      "Ατομικές συνεδρίες, ομαδικά Sound Baths και εμπειρίες για χώρους ευεξίας.",
-    body: "Οι ατομικές συνεδρίες προσαρμόζονται στον δέκτη. Στα ομαδικά Sound Baths, ηχογαβάθες, gong και άλλα ακουστικά όργανα συνθέτουν μια κοινή εμπειρία ακρόασης. Για μια συνεδρία στον χώρο σου ή μια συνεργασία, επικοινώνησε με τον Μανώλη.",
+      "Διαδραστικά εργαστήρια, εταιρικά προγράμματα και συμβουλευτική για ξενοδοχεία και Spa.",
+    body: "Ο Μανώλης σχεδιάζει εργαστήρια και ομιλίες για ομάδες, εκπαιδευτικούς φορείς και διοργανώσεις ευεξίας. Συνεργάζεται με επιχειρήσεις για εταιρικές εκδηλώσεις και προσφέρει συμβουλευτική σε ξενοδοχεία και Spa για τον χώρο, τα όργανα και την εκπαίδευση του προσωπικού.",
   },
   training: {
     title: "Μάθε. Εξασκήσου. Εξελίξου.",
-    label: "Εκπαιδεύσεις",
+    label: "Εκπαιδευτικά",
     summary:
       "Τέσσερα προοδευτικά Levels που συνδυάζουν θεωρία, βιωματική μάθηση και πρακτική.",
     body: "Η εκπαιδευτική διαδρομή περνά από τις Himalayan singing bowls και την ατομική πρακτική στον συντονισμό ομάδων και την επαγγελματική ανάπτυξη. Η δημιουργία λογαριασμού είναι ξεχωριστή από την εγγραφή σε εκπαιδευτικό τμήμα.",
   },
   about: {
     title: "Μανώλης Ζωγραφάκης",
-    label: "Ο άνθρωπος πίσω από τον ήχο",
+    label: "Σχετικά",
     summary: "Ηχοθεραπευτής, μουσικός παραγωγός και συντονιστής Breathwork.",
-    body: "Με αφετηρία τη μουσική και τον διαλογισμό, ο Μανώλης εξερεύνησε την ηχοθεραπεία στο Βερολίνο και συνέχισε την εκπαίδευσή του στο Νεπάλ. Με βάση τα Χανιά, προσφέρει ατομικές και ομαδικές συνεδρίες, εκπαιδευτικά σεμινάρια και συνεργασίες με χώρους ευεξίας.",
+    body: "Ο Μανώλης Ζωγραφάκης είναι πιστοποιημένος ηχοθεραπευτής, μέλος των ISTA και IPHM, συντονιστής Breathwork και μουσικός παραγωγός. Η προσωπική του διαδρομή συνδέει τη μουσική με τον διαλογισμό Vipassana. Ξεκίνησε με κλασική κιθάρα και συνέχισε ως παραγωγός ηλεκτρονικής μουσικής με το όνομα ΜΑΜΑ.\n\nΜετά τις σπουδές του στο Goldsmiths του Λονδίνου, γνώρισε τις ηχογαβάθες και τα gong στο Βερολίνο. Μαθήτευσε δίπλα στην Eléna Sofia Melnishca και συνέχισε την εκπαίδευσή του στο Νεπάλ και στο Sound Healing Academy.\n\nΑπό το 2020 έχει βάση τα Χανιά. Προσφέρει ιδιωτικές και ομαδικές συνεδρίες, εκπαιδευτικά σεμινάρια, εργαστήρια και συνεργασίες με επιχειρήσεις και χώρους ευεξίας. Το 2024 συμμετείχε ως ομιλητής στο TEDxAthens.",
   },
   events: {
     title: "Συναντιόμαστε στον ήχο.",
@@ -81,6 +88,15 @@ function NavLink({
 }
 export function PublicExperience({ section }: { section?: string }) {
   const state = useLoad<ContentItem[]>("/content/public", []);
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Athens",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  const visibleItems = state.data.filter(
+    (i) => !i.published.event_end_date || i.published.event_end_date >= today,
+  );
   const settings = state.data.find(
     (i) => i.published.kind === "site_settings",
   )?.published;
@@ -91,7 +107,7 @@ export function PublicExperience({ section }: { section?: string }) {
   const valid =
     !section || Object.prototype.hasOwnProperty.call(sections, section);
   const page = valid && section ? sections[section as Section] : null;
-  const entries = state.data.filter(
+  const entries = visibleItems.filter(
     (i) =>
       !["hero", "site_settings"].includes(i.published.kind) &&
       (i.published.section || "home") === (section || "home"),
@@ -116,9 +132,6 @@ export function PublicExperience({ section }: { section?: string }) {
           }
         />
       </Head>
-      {!section && (
-        <BrandHero item={state.data.find((i) => i.published.kind === "hero")} />
-      )}
       {!!section && <NavLink href="/">← Αρχική</NavLink>}
       {page && (
         <EditorialIntro
@@ -137,42 +150,7 @@ export function PublicExperience({ section }: { section?: string }) {
           actionUrl={intro?.published.action_url}
         />
       )}
-      {!section && (
-        <>
-          <Text style={ui.title}>Μια στιγμή για να ακούσεις.</Text>
-          <Text style={ui.body}>
-            Εξερεύνησε μια εμπειρία ήχου, γνώρισε τη σχολή ή συνέχισε την
-            προσωπική σου πρακτική.
-          </Text>
-          <View style={[ui.row, { alignItems: "stretch" }]}>
-            {Object.entries(sections).map(([key, value]) => (
-              <View
-                key={key}
-                style={[ui.card, { flexGrow: 1, flexBasis: 300 }]}
-              >
-                <Text style={ui.label}>{value.label}</Text>
-                <Text style={ui.heading}>
-                  {state.data.find(
-                    (i) =>
-                      i.published.kind === "page" &&
-                      i.published.section === key,
-                  )?.published.title || value.title}
-                </Text>
-                <Text style={ui.body}>
-                  {state.data.find(
-                    (i) =>
-                      i.published.kind === "page" &&
-                      i.published.section === key,
-                  )?.published.summary || value.summary}
-                </Text>
-                <NavLink href={"/explore/" + key}>
-                  Ανακάλυψε περισσότερα →
-                </NavLink>
-              </View>
-            ))}
-          </View>
-        </>
-      )}
+      {!section && !state.loading && !state.error && <PublicHome items={visibleItems} />}
       {section === "training" && (
         <View style={ui.row}>
           {[
@@ -203,6 +181,21 @@ export function PublicExperience({ section }: { section?: string }) {
           <NavLink href="/academy">Είσαι ήδη μαθητής; Μπες στη Σχολή →</NavLink>
         </View>
       )}
+      {section === "services" && (
+        <NavLink href="https://www.soundhealing.gr/el/epipleon-yphresies/">
+          Αναλυτικά οι υπηρεσίες και οι συνεργασίες ↗
+        </NavLink>
+      )}
+      {section === "about" && (
+        <NavLink href="https://www.soundhealing.gr/el/about-me/">
+          Η διαδρομή του Μανώλη · αναλυτικό βιογραφικό ↗
+        </NavLink>
+      )}
+      {section === "soundhealing" && (
+        <NavLink href="https://www.soundhealing.gr/el/hxotherapeia/">
+          Περισσότερα για την ηχοθεραπεία ↗
+        </NavLink>
+      )}
       <Status state={state} />
       {(section === "events" || section === "training") && (
         <EventGrid
@@ -211,7 +204,13 @@ export function PublicExperience({ section }: { section?: string }) {
         />
       )}
       {entries
-        .filter((item) => section !== "events" && section !== "training")
+        .filter(
+          (item) =>
+            !!section &&
+            section !== "events" &&
+            section !== "training" &&
+            !["testimonial", "partner", "social"].includes(item.published.kind),
+        )
         .filter((item) => !page || item.id !== intro?.id)
         .map((item) => (
           <ContentCard key={item.id} item={item} />
@@ -236,7 +235,7 @@ export function PublicExperience({ section }: { section?: string }) {
           Επισκέψου τον επίσημο ιστότοπο ↗
         </NavLink>
       )}
-      {valid && (
+      {valid && !!section && (
         <View style={ui.card}>
           <Text style={ui.heading}>
             Το επόμενο βήμα ξεκινά με μια συζήτηση.

@@ -8,9 +8,11 @@ import { ContentItem, Field, ui } from "./Wellness";
 export function EventGrid({
   items,
   training = false,
+  compact = false,
 }: {
   items: ContentItem[];
   training?: boolean;
+  compact?: boolean;
 }) {
   const { width } = useWindowDimensions();
   const [search, setSearch] = useState("");
@@ -25,15 +27,17 @@ export function EventGrid({
   if (!items.length) return null;
   return (
     <View style={{ gap: 24 }}>
-      <Field
-        label={
-          training
-            ? "Αναζήτηση σεμιναρίου, χώρου ή ημερομηνίας"
-            : "Αναζήτηση εκδήλωσης, χώρου ή ημερομηνίας"
-        }
-        value={search}
-        onChange={setSearch}
-      />
+      {!compact && (
+        <Field
+          label={
+            training
+              ? "Αναζήτηση σεμιναρίου, χώρου ή ημερομηνίας"
+              : "Αναζήτηση εκδήλωσης, χώρου ή ημερομηνίας"
+          }
+          value={search}
+          onChange={setSearch}
+        />
+      )}
       {!matches.length && (
         <Text accessibilityLiveRegion="polite" style={ui.body}>
           Δεν βρέθηκαν εκδηλώσεις. Δοκίμασε διαφορετική αναζήτηση.
@@ -141,7 +145,7 @@ export function EventGrid({
                   {p.summary}
                 </Text>
               )}
-              {!!p.body && (
+              {!compact && !!p.body && (
                 <Text style={[ui.body, { fontSize: 14, lineHeight: 21 }]}>
                   {p.body}
                 </Text>

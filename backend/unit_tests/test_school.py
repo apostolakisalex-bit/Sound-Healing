@@ -310,3 +310,13 @@ def test_public_training_and_events_keep_distinct_sections(env):
     public=call(c,'get','/content/public').json()
     assert {(i['published']['section'],i['published']['title']) for i in public}=={('training','Level 1 seminar'),('events','Sound Bath')}
     assert all(i['published']['event_location']=='Athens' for i in public)
+
+def test_public_editorial_blocks_and_expiry_validation(env):
+    c,_=env
+    for kind in ['testimonial','partner','social']:
+        item=call(c,'post','/admin/content',json={'title':'Verified public source','kind':kind,'section':'home'}).json()
+        assert call(c,'post',f'/admin/content/{item["id"]}/publish?revision=1').status_code==200
+    assert len(call(c,'get','/content/public').json())==3
+    assert call(c,'post','/admin/content',json={'title':'Invalid expiry','kind':'announcement','event_end_date':'2026-02-30'}).status_code==422
+    nav=[{'section':s,'label':s,'visible':True} for s in ['about','soundhealing','training','events','services','contact']]
+    assert call(c,'post','/admin/content',json={'title':'Navigation','kind':'site_settings','navigation':nav}).status_code==200

@@ -7,11 +7,11 @@ export type NavigationItem = {
   visible: boolean;
 };
 const defaults: NavigationItem[] = [
-  "services:Εμπειρίες",
-  "training:Εκπαιδεύσεις",
-  "about:Μανώλης",
+  "about:Σχετικά",
+  "soundhealing:Ηχοθεραπεία",
+  "training:Εκπαιδευτικά",
   "events:Εκδηλώσεις",
-  "journal:Άρθρα",
+  "services:Υπηρεσίες",
   "contact:Επικοινωνία",
 ].map((pair) => {
   const [section, label] = pair.split(":");
@@ -24,7 +24,9 @@ export function NavigationEditor({
   value?: NavigationItem[] | null;
   onChange: (value: NavigationItem[] | null) => void;
 }) {
-  const items = value ?? defaults;
+  const items = value?.some((i) => i.section === "soundhealing")
+    ? value
+    : defaults;
   function change(index: number, patch: Partial<NavigationItem>) {
     onChange(
       items.map((item, i) => (i === index ? { ...item, ...patch } : item)),

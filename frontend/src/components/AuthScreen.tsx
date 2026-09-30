@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Text, TextInput, View } from "react-native";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useAuth } from "@/src/auth/AuthContext";
 import { Shell, ui, Button, Field } from "@/src/components/Wellness";
 export function AuthScreen({ registering = false }: { registering?: boolean }) {
@@ -86,6 +86,11 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
           }
           onPress={() => void submit()}
         />
+        <Link href={registering ? "/login" : "/register"} style={ui.body}>
+          {registering
+            ? "Έχεις λογαριασμό; Σύνδεση"
+            : "Νέος χρήστης; Δημιουργία λογαριασμού"}
+        </Link>
         {registering && (
           <Text style={ui.body}>
             Η δημιουργία λογαριασμού δεν αποτελεί εγγραφή σε εκπαιδευτικό Level.

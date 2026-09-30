@@ -159,3 +159,6 @@ Added content starter choices and catalogue filters/search, rendered image/actio
 
 ## Assessments and public programme separation — 2026-09-30
 Added practitioner draft/final response UI, individual/group receiver invitations and public response screen, scoped staff viewing, immutable activation and source drafts. Official schema ambiguities remain gated. Owner-confirmed L2 comfort scale recorded. Public training marketing and standalone events have distinct CMS destinations and image-led cards with date, time, venue and action. Tests: 32 backend checks, 4 hook lifecycle checks, TypeScript and static web export. Browser synthetic receiver submission succeeded; public event cards and training separation inspected. No production data imported, no main merge/deployment.
+
+## Minimal public homepage — 2026-09-30
+Implemented requested navigation order, Sound Healing route, image-card home, separate compact programme listings, raised services, attributed student quote, social links and admin-managed partner logo strip. Added standard login/signup switch and user icon. Optional editorial expiry removes programmes after the specified Athens calendar day. Official partner assets remain to be supplied/published.

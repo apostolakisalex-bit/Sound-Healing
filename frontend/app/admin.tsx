@@ -29,6 +29,7 @@ type Draft = {
   section?: string;
   navigation?: NavigationItem[] | null;
   image_url?: string;
+  event_end_date?: string;
   event_date?: string;
   event_time?: string;
   event_location?: string;
@@ -226,6 +227,9 @@ function WorkspaceScreen() {
                   {[
                     ["Υπηρεσία", "announcement", "services"],
                     ["Άρθρο", "announcement", "journal"],
+                    ["Μαρτυρία μαθητή", "testimonial", "home"],
+                    ["Λογότυπο συνεργάτη", "partner", "home"],
+                    ["Κοινωνικό δίκτυο", "social", "home"],
                     ["Event Μανώλη", "announcement", "events"],
                     ["Εκπαιδευτικό σεμινάριο", "announcement", "training"],
                     ["Press / Media", "announcement", "about"],
@@ -262,6 +266,15 @@ function WorkspaceScreen() {
                 </Text>
               </View>
             )}
+            {["testimonial", "partner", "social"].includes(draft.kind) && (
+              <Text style={ui.body}>
+                {draft.kind === "testimonial"
+                  ? "Τίτλος: όνομα μαθητή. Περιγραφή: σύντομη επαληθευμένη μαρτυρία. Σύνδεσμος: πηγή."
+                  : draft.kind === "partner"
+                    ? "Τίτλος: όνομα συνεργάτη. Εικόνα: επίσημο λογότυπο. Σύνδεσμος: ιστοσελίδα συνεργάτη."
+                    : "Τίτλος: κοινωνικό δίκτυο. Σύνδεσμος: επίσημο προφίλ."}
+              </Text>
+            )}
             <Choices
               label="Τύπος"
               values={[
@@ -271,6 +284,9 @@ function WorkspaceScreen() {
                 "announcement",
                 "hero",
                 "site_settings",
+                "testimonial",
+                "partner",
+                "social",
               ]}
               value={draft.kind}
               onChange={(v) => set("kind", v)}
@@ -282,6 +298,7 @@ function WorkspaceScreen() {
                 "services",
                 "training",
                 "about",
+                "soundhealing",
                 "events",
                 "journal",
                 "contact",
@@ -290,10 +307,11 @@ function WorkspaceScreen() {
               onChange={(v) => set("section", v)}
             />
             <Text style={ui.body}>
-              home: Αρχική · services: Εμπειρίες · training: Εκπαιδεύσεις /
-              εγγραφές · about: Μανώλης · events: Αυτοτελή events Μανώλη ·
-              journal: Άρθρα · contact: Επικοινωνία. Για δημόσια εμφάνιση
-              χρησιμοποίησε τύπο page ή announcement και πρόσβαση Όλοι.
+              home: Αρχική · services: Υπηρεσίες · training: Εκπαιδεύσεις /
+              εγγραφές · about: Σχετικά · soundhealing: Ηχοθεραπεία · events:
+              Αυτοτελή events Μανώλη · journal: Άρθρα · contact: Επικοινωνία.
+              Για δημόσια εμφάνιση χρησιμοποίησε τύπο page ή announcement και
+              πρόσβαση Όλοι.
             </Text>
             <Choices
               label="Εκπαιδευτική πρόσβαση"
@@ -358,9 +376,22 @@ function WorkspaceScreen() {
                 onChange={(v) => set("navigation", v)}
               />
             )}
-            {["page", "announcement", "site_settings"].includes(draft.kind) && (
+            {[
+              "page",
+              "announcement",
+              "site_settings",
+              "testimonial",
+              "partner",
+              "social",
+            ].includes(draft.kind) && (
               <>
-                {["page", "announcement"].includes(draft.kind) && (
+                {[
+                  "page",
+                  "announcement",
+                  "testimonial",
+                  "partner",
+                  "social",
+                ].includes(draft.kind) && (
                   <>
                     {" "}
                     <Field
@@ -379,6 +410,11 @@ function WorkspaceScreen() {
                   draft.kind !== "page" && (
                     <View style={{ gap: 12 }}>
                       <Text style={ui.heading}>Ημερομηνία, ώρα και χώρος</Text>
+                      <Field
+                        label="Τελευταία ημέρα εμφάνισης (YYYY-MM-DD, κενό = έως αρχειοθέτηση)"
+                        value={draft.event_end_date || ""}
+                        onChange={(v) => set("event_end_date", v)}
+                      />
                       <Field
                         label="Ημερομηνία ή εύρος ημερομηνιών"
                         value={draft.event_date || ""}
@@ -484,9 +520,14 @@ function WorkspaceScreen() {
                       ? item.draft.kind === "journey"
                       : contentScope === "Ρυθμίσεις"
                         ? item.draft.kind === "site_settings"
-                        : ["page", "announcement", "hero"].includes(
-                            item.draft.kind,
-                          ))) &&
+                        : [
+                            "page",
+                            "announcement",
+                            "hero",
+                            "testimonial",
+                            "partner",
+                            "social",
+                          ].includes(item.draft.kind))) &&
                 normalize(
                   item.draft.title + " " + (item.draft.section || "home"),
                 ).includes(normalize(search)),
