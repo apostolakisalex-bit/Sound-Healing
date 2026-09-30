@@ -13,15 +13,17 @@ import { useRouter } from "expo-router";
 import { useAuth } from "@/src/auth/AuthContext";
 import { ResourcesSection } from "@/src/components/ResourcesSection";
 import { api } from "@/src/api/client";
+import { colors, fonts } from "@/src/theme";
 
+// Reuse the existing Emergent brand instead of introducing a parallel theme.
 export const palette = {
-  ink: "#193F36",
-  muted: "#586E64",
-  paper: "#F7F8F2",
-  sage: "#E5EDDC",
-  peach: "#F8E6D8",
-  line: "#D8E1D5",
-  white: "#FFFFFF",
+  ink: colors.text.primary,
+  muted: colors.text.secondary,
+  paper: colors.bg.primary,
+  sage: colors.bg.tertiary,
+  peach: colors.bg.tertiary,
+  line: colors.border.default,
+  white: colors.bg.secondary,
 };
 export const ui = StyleSheet.create({
   page: { flex: 1, backgroundColor: palette.paper },
@@ -48,15 +50,27 @@ export const ui = StyleSheet.create({
     gap: 12,
   },
   title: {
+    fontFamily: fonts.heading,
     fontSize: 38,
     lineHeight: 44,
     color: palette.ink,
     fontWeight: "600",
     letterSpacing: -1,
   },
-  heading: { fontSize: 23, color: palette.ink, fontWeight: "600" },
-  body: { fontSize: 16, lineHeight: 25, color: palette.muted },
+  heading: {
+    fontFamily: fonts.heading,
+    fontSize: 23,
+    color: palette.ink,
+    fontWeight: "600",
+  },
+  body: {
+    fontFamily: fonts.body,
+    fontSize: 16,
+    lineHeight: 25,
+    color: palette.muted,
+  },
   label: {
+    fontFamily: fonts.bodySemi,
     fontSize: 12,
     letterSpacing: 1.6,
     fontWeight: "700",
@@ -68,12 +82,15 @@ export const ui = StyleSheet.create({
     borderRadius: 12,
     padding: 14,
     fontSize: 16,
+    fontFamily: fonts.body,
     color: palette.ink,
     backgroundColor: palette.white,
     minHeight: 48,
   },
   button: {
-    backgroundColor: palette.ink,
+    backgroundColor: colors.bg.dark,
+    borderWidth: 1,
+    borderColor: colors.accent.gold,
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderRadius: 24,
@@ -110,6 +127,7 @@ export function Button({
         style={{
           color: secondary ? palette.ink : "white",
           fontWeight: "600",
+          fontFamily: fonts.bodySemi,
           fontSize: 15,
         }}
       >

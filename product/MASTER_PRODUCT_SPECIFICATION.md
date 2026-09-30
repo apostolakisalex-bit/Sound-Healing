@@ -302,7 +302,7 @@ visual redesign παύει να ισχύει. Παραμένει το υπάρχ
 enrollments, cohorts, attendance, private practice drafts και αρχικός review.
 Δεν είναι πλήρης υλοποίηση P0–P9. Η τρέχουσα πρακτική είναι preliminary evidence,
 όχι το επίσημο form workflow. Απαιτείται staging review πριν από ενεργοποίηση.
-Πλήρης κατάσταση και περιορισμοί: ../RELEASE_NOTES.md.
+Πλήρης κατάσταση και περιορισμοί: ../app/RELEASE_NOTES.md.
 
 Οι ανοιχτές αποφάσεις OD-01–14 δεν κλείνουν από την έγκριση του redesign.
 Δεν ενεργοποιούνται αυθαίρετοι κανόνες πιστοποίησης ή μη επαληθευμένες φόρμες.
@@ -321,3 +321,6 @@ records παραμένουν αναγνώσιμα και χρειάζονται 
 Οι έξι καταχωρίσεις πηγών δεν είναι ολοκληρωμένες επίσημες φόρμες. Δεν υπάρχει
 endpoint ενεργοποίησης ή συλλογής απαντήσεων αυτών των drafts. OD-03/06/07 και
 τα ελλείποντα πρωτογενή κείμενα εξακολουθούν να εμποδίζουν την επίσημη δημοσίευση.
+
+## Design constraint update — 2026-09-30
+The original Emergent app is the visual baseline. Preserve its typography, ivory/charcoal/gold theme, imagery and intended visual compositions while integrating functional renewal. Earlier local green wellness styling is superseded. New features must reuse the established theme. Visual parity is a preview acceptance criterion; token alignment alone is insufficient. See EMERGENT_PREVIEW_HANDOFF.md.

@@ -45,3 +45,6 @@ Added admin-only activity history with pagination, actor names and localized tim
 
 ### Student workflow — 2026-09-30
 Student browser flow verified through submission, returned feedback, edit and resubmission. Mobile layout inspected. Greek practice/status and resource copy improved. 21 backend tests plus 4 request lifecycle tests pass. See release notes for test boundaries.
+
+### Visual preservation — 2026-09-30
+The user requires preserving the Emergent aesthetic. New shared screens reuse original brand tokens and fonts; green local theme is superseded. Complete visual parity still requires Emergent preview review, especially hero imagery, navigation and Journey layouts. Added EMERGENT_PREVIEW_HANDOFF.md with import prompt and validation steps.

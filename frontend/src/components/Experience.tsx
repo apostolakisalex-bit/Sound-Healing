@@ -112,23 +112,6 @@ export function SchoolScreen() {
         Τέσσερα εκπαιδευτικά Levels. Το υλικό σου ακολουθεί την εγγραφή σου στη
         σχολή.
       </Text>
-      <Status state={catalog} />
-      {catalog.data.map((l) => (
-        <View
-          key={l.id}
-          style={[
-            ui.card,
-            { backgroundColor: l.is_enrolled ? palette.sage : palette.white },
-          ]}
-        >
-          <Text style={ui.label}>
-            {l.id} · {l.is_enrolled ? "ΕΝΕΡΓΗ ΕΓΓΡΑΦΗ" : "ΓΝΩΡΙΣΕ ΤΟ LEVEL"}
-          </Text>
-          <Text style={ui.heading}>{l.title}</Text>
-          <Text style={ui.body}>{l.description}</Text>
-        </View>
-      ))}
-      <Progress />
       <Text style={ui.heading}>Το εκπαιδευτικό σου υλικό</Text>
       <Status state={library} />
       {library.data
@@ -146,6 +129,24 @@ export function SchoolScreen() {
             </Text>
           </View>
         )}
+      <Progress />
+      <Text style={ui.heading}>Τα Levels της σχολής</Text>
+      <Status state={catalog} />
+      {catalog.data.map((l) => (
+        <View
+          key={l.id}
+          style={[
+            ui.card,
+            { backgroundColor: l.is_enrolled ? palette.sage : palette.white },
+          ]}
+        >
+          <Text style={ui.label}>
+            {l.id} · {l.is_enrolled ? "ΕΝΕΡΓΗ ΕΓΓΡΑΦΗ" : "ΓΝΩΡΙΣΕ ΤΟ LEVEL"}
+          </Text>
+          <Text style={ui.heading}>{l.title}</Text>
+          <Text style={ui.body}>{l.description}</Text>
+        </View>
+      ))}
     </Shell>
   );
 }

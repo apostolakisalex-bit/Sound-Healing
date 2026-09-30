@@ -127,3 +127,6 @@ Library responses now include the authenticated learner's stored completion flag
 
 ## Practice form safeguards — 2026-09-30
 After saving, safety confirmation resets to No and group count is cleared for the next record. Individual receiver codes come from the selected cycle and cannot be accidentally edited independently. Added immediate date/integer validation matching existing API bounds, editing title/close action, and distinct conflict/access/network error messages. Conflict refresh preserves unsaved form input until the learner explicitly reopens the record. TypeScript passes.
+
+## Visual identity and preview handoff — 2026-09-30
+User explicitly requires preserving the original Emergent aesthetic. Shared new screens now reuse the original ivory/charcoal/gold theme and Cormorant Garamond/Raleway tokens, replacing the separate green theme. School places available lessons before progress and the Levels catalogue. This does not assert full visual parity: original imagery, hero/navigation/Journey composition still require side-by-side Emergent review. See product/EMERGENT_PREVIEW_HANDOFF.md for the integration prompt, setup, test matrix and rollback boundary. Added a GitHub Actions candidate workflow; remote execution is not yet verified.
