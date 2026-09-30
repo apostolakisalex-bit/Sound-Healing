@@ -1,3 +1,4 @@
+import { EditorialIntro } from "@/src/components/EditorialIntro";
 import { FormWorkspace } from "@/src/components/FormWorkspace";
 import { Progress } from "@/src/components/Progress";
 import { Activity } from "@/src/components/Activity";
@@ -21,6 +22,10 @@ type Draft = {
   body: string;
   kind: string;
   section?: string;
+  image_url?: string;
+  image_alt?: string;
+  action_label?: string;
+  action_url?: string;
   level_id: string | null;
   media_url: string;
   order: number;
@@ -269,6 +274,46 @@ function WorkspaceScreen() {
               value={draft.media_url}
               onChange={(v) => set("media_url", v)}
             />
+            {draft.kind === "page" && (
+              <>
+                <Field
+                  label="Εικόνα ενότητας (HTTPS)"
+                  value={draft.image_url || ""}
+                  onChange={(v) => set("image_url", v)}
+                />
+                <Field
+                  label="Περιγραφή εικόνας"
+                  value={draft.image_alt || ""}
+                  onChange={(v) => set("image_alt", v)}
+                />
+                <Field
+                  label="Κείμενο συνδέσμου επικοινωνίας ή συμμετοχής"
+                  value={draft.action_label || ""}
+                  onChange={(v) => set("action_label", v)}
+                />
+                <Field
+                  label="Προορισμός συνδέσμου (HTTPS)"
+                  value={draft.action_url || ""}
+                  onChange={(v) => set("action_url", v)}
+                />
+                <Text style={ui.label}>ΠΡΟΕΠΙΣΚΟΠΗΣΗ ΠΡΟΧΕΙΡΟΥ</Text>
+                <Text style={ui.body}>
+                  Οι αλλαγές εμφανίζονται στους επισκέπτες μόνο μετά τη
+                  δημοσίευση. Η πρώτη σελίδα στη σειρά της ενότητας ορίζει την
+                  εισαγωγή της.
+                </Text>
+                <EditorialIntro
+                  title={draft.title || "Τίτλος σελίδας"}
+                  summary={draft.summary}
+                  body={draft.body}
+                  imageUrl={draft.image_url}
+                  imageAlt={draft.image_alt}
+                  actionLabel={draft.action_label}
+                  actionUrl={draft.action_url}
+                  preview
+                />
+              </>
+            )}
             <View style={ui.row}>
               <Button
                 disabled={busy}

@@ -140,3 +140,6 @@ Fixed clean pnpm 11 installation by explicitly declining the unrs-resolver insta
 
 ## Public navigation and editorial sections — 2026-09-30
 Added six guest-accessible public routes, landing discovery cards, four-Level overview, founder image, contact path, page metadata and CMS section selection. Published snapshots remain stable while editors change section drafts. 24 backend tests pass, including section publication isolation. TypeScript and static export pass before final web prerender adjustment. Full Emergent/native acceptance remains pending; events/articles require real editorial publications.
+
+## Section imagery and draft preview — 2026-09-30
+Added editor-managed section imagery, image descriptions and HTTPS action links, plus a shared responsive introduction preview in the admin editor. Published drafts remain isolated; unsafe links and incomplete action pairs return validation errors. Public discovery cards reuse published section titles/summaries. Existing ivory/charcoal/gold identity and founder photo retained. 25 API tests, TypeScript and web export pass locally. Global settings/full-page preview remain outstanding.

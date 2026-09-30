@@ -321,6 +321,10 @@ export type ContentItem = {
     body: string;
     kind: string;
     section?: string;
+    image_url?: string;
+    image_alt?: string;
+    action_label?: string;
+    action_url?: string;
     level_id: string | null;
     media_url: string;
   };

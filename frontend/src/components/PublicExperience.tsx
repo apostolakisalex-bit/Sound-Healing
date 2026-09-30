@@ -1,7 +1,8 @@
 import React from "react";
-import { Image, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
 import Head from "expo-router/head";
+import { EditorialIntro } from "./EditorialIntro";
 import { BrandHero } from "./BrandHero";
 import {
   Shell,
@@ -93,13 +94,14 @@ export function PublicExperience({ section }: { section?: string }) {
     <Shell
       publicPage
       eyebrow={page?.label || ""}
-      title={title || (valid ? "" : "Η σελίδα δεν βρέθηκε")}
+      title={valid ? "" : "Η σελίδα δεν βρέθηκε"}
     >
       <Head>
         <title>{page?.label || "Καλώς ήρθες"} · Sound Healing Greece</title>
         <meta
           name="description"
           content={
+            intro?.published.summary ||
             page?.summary ||
             "Εμπειρίες ήχου, εκπαίδευση και προσωπική πρακτική με το Sound Healing Greece."
           }
@@ -110,19 +112,20 @@ export function PublicExperience({ section }: { section?: string }) {
       )}
       {!!section && <NavLink href="/">← Αρχική</NavLink>}
       {page && (
-        <View style={ui.card}>
-          <Text style={ui.heading}>
-            {intro?.published.summary || page.summary}
-          </Text>
-          <Text style={ui.body}>{intro?.published.body || page.body}</Text>
-        </View>
-      )}
-      {section === "about" && (
-        <Image
-          source={{ uri: FOUNDER.photo }}
-          accessibilityLabel="Μανώλης Ζωγραφάκης"
-          style={{ width: "100%", height: 380, borderRadius: 24 }}
-          resizeMode="cover"
+        <EditorialIntro
+          title={title || page.title}
+          summary={intro ? intro.published.summary : page.summary}
+          body={intro ? intro.published.body : page.body}
+          imageUrl={
+            intro?.published.image_url ||
+            (section === "about" ? FOUNDER.photo : undefined)
+          }
+          imageAlt={
+            intro?.published.image_alt ||
+            (section === "about" ? "Μανώλης Ζωγραφάκης" : title)
+          }
+          actionLabel={intro?.published.action_label}
+          actionUrl={intro?.published.action_url}
         />
       )}
       {!section && (
@@ -139,8 +142,20 @@ export function PublicExperience({ section }: { section?: string }) {
                 style={[ui.card, { flexGrow: 1, flexBasis: 300 }]}
               >
                 <Text style={ui.label}>{value.label}</Text>
-                <Text style={ui.heading}>{value.title}</Text>
-                <Text style={ui.body}>{value.summary}</Text>
+                <Text style={ui.heading}>
+                  {state.data.find(
+                    (i) =>
+                      i.published.kind === "page" &&
+                      i.published.section === key,
+                  )?.published.title || value.title}
+                </Text>
+                <Text style={ui.body}>
+                  {state.data.find(
+                    (i) =>
+                      i.published.kind === "page" &&
+                      i.published.section === key,
+                  )?.published.summary || value.summary}
+                </Text>
                 <NavLink href={"/explore/" + key}>
                   Ανακάλυψε περισσότερα →
                 </NavLink>

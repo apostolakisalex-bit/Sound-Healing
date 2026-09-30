@@ -266,3 +266,16 @@ def test_public_sections_keep_published_snapshot(env):
     call(c,'post',f'/admin/content/{item}/publish?revision=3')
     assert call(c,'get','/content/public').json()[0]['published']['section']=='contact'
     assert call(c,'post','/admin/content',json={**data,'section':'private'}).status_code==422
+
+def test_editorial_images_and_actions_are_validated_and_versioned(env):
+    c,_=env
+    data={'title':'Public page','kind':'page','section':'about','image_url':'https://example.org/photo.jpg','image_alt':'Portrait','action_label':'Contact','action_url':'https://example.org/contact'}
+    for field in ['image_url','action_url']:
+        assert call(c,'post','/admin/content',json={**data,field:'javascript:alert(1)'}).status_code==422
+    assert call(c,'post','/admin/content',json={**data,'action_label':''}).status_code==422
+    item=call(c,'post','/admin/content',json=data).json()['id']
+    call(c,'post',f'/admin/content/{item}/publish?revision=1')
+    call(c,'put',f'/admin/content/{item}',json={**data,'image_url':'https://example.org/new.jpg','revision':2})
+    result=call(c,'get','/content/public').json()[0]['published']
+    assert result['image_url']==data['image_url']
+    assert result['action_url']==data['action_url']

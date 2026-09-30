@@ -26,6 +26,10 @@ class Content(Strict):
     section: Literal['home', 'services', 'training', 'about', 'events', 'journal', 'contact'] = 'home'
     level_id: Level | None = None
     media_url: str = Field(default='', max_length=2000)
+    image_url: str = Field(default='', max_length=2000)
+    image_alt: str = Field(default='', max_length=200)
+    action_label: str = Field(default='', max_length=80)
+    action_url: str = Field(default='', max_length=2000)
     order: int = Field(default=0, ge=0, le=10000)
 
 class ContentEdit(Content):
@@ -197,6 +201,10 @@ def build_school_router(db, current_user, admin_user):
     @router.post('/admin/content')
     async def create_content(payload: Content, user=Depends(admin_user)):
         validate_media(payload.media_url)
+        validate_media(payload.image_url)
+        validate_media(payload.action_url)
+        if bool(payload.action_label) != bool(payload.action_url):
+            raise HTTPException(422, "Action requires both label and HTTPS URL")
         item = {'id': str(uuid4()), 'draft': payload.model_dump(), 'revision': 1, 'published': None, 'archived': False, 'updated_at': now()}
         await db.content_items.insert_one(dict(item))
         await audit(user, 'content.create', item['id'])
@@ -205,6 +213,10 @@ def build_school_router(db, current_user, admin_user):
     @router.put('/admin/content/{item_id}')
     async def edit_content(item_id: str, payload: ContentEdit, user=Depends(admin_user)):
         validate_media(payload.media_url)
+        validate_media(payload.image_url)
+        validate_media(payload.action_url)
+        if bool(payload.action_label) != bool(payload.action_url):
+            raise HTTPException(422, "Action requires both label and HTTPS URL")
         result = await db.content_items.update_one({'id': item_id, 'revision': payload.revision}, {'$set': {'draft': payload.model_dump(exclude={'revision'}), 'updated_at': now()}, '$inc': {'revision': 1}})
         if not result.modified_count:
             raise HTTPException(409, 'Content changed elsewhere. Reload before saving.')
