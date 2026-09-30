@@ -338,3 +338,6 @@ PUB-03 DESIGN, public preview, owner: product implementation. Added site_setting
 
 ## Public navigation editor — 2026-09-30
 PUB-04 DESIGN, owner: product implementation. site_settings.navigation is an optional ordered list of up to six known public sections with label/visibility. Null preserves the original menu; an empty list keeps only login/register. Admin can rename, reorder, hide and restore defaults in the draft with text preview. Hidden links do not revoke route access. Backend rejects duplicate and unknown destinations; current publication remains unchanged during draft editing. No arbitrary routes/URLs or academic permission changes. 27 backend tests and TypeScript pass locally. Previous code revision 14378022 passed GitHub run 36707882205.
+
+## Compact public navigation — 2026-09-30
+PUB-05 DESIGN: Below 760px public navigation is a labeled expandable menu, collapsed by default and after route selection. Public items use actual links and active-route styling; authenticated workspace navigation is unchanged. Confirmed in browser at 390px: open, choose School, route changes, menu closes. TypeScript, four request lifecycle checks and web export pass. GitHub run 36713966094 passed for preceding navigation editor revision. Native device acceptance remains pending.

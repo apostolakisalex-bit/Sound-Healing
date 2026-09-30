@@ -149,3 +149,6 @@ Added site_settings editorial kind and wired published values to public header, 
 
 ## Public menu editing — 2026-09-30
 Added draft menu renaming, ordering, visibility and reset to defaults under site_settings. Public navigation consumes only published settings, retaining login/register. Validates unique known destinations. 27 backend tests and TypeScript pass locally; remote checks for the previous settings revision passed.
+
+## Mobile public menu — 2026-09-30
+Public navigation now collapses below 760px, exposes expanded state, closes after selection and uses real links with current-route styling. Verified at 390px in browser. TypeScript, four lifecycle checks and web export passed. Native Expo and full Emergent comparison remain outstanding.

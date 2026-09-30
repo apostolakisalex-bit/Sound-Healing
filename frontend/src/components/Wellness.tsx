@@ -9,8 +9,9 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { Link, usePathname, useRouter } from "expo-router";
 import { useAuth } from "@/src/auth/AuthContext";
 import { ResourcesSection } from "@/src/components/ResourcesSection";
 import { api } from "@/src/api/client";
@@ -254,6 +255,11 @@ export function Shell({
 }) {
   const router = useRouter();
   const { user } = useAuth();
+  const pathname = usePathname();
+  const { width } = useWindowDimensions();
+  const compact = publicPage && width < 760;
+  const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => setMenuOpen(false), [pathname]);
   const links = publicPage
     ? [
         ...(siteSettings?.navigation != null
@@ -292,6 +298,19 @@ export function Shell({
                 : "learn · practise · feel connected"}
             </Text>
           </Pressable>
+          {compact && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={menuOpen ? "Κλείσιμο μενού" : "Άνοιγμα μενού"}
+              accessibilityState={{ expanded: menuOpen }}
+              onPress={() => setMenuOpen(!menuOpen)}
+              style={[ui.button, ui.secondary]}
+            >
+              <Text style={ui.label}>
+                {menuOpen ? "Κλείσιμο ×" : "Μενού ☰"}
+              </Text>
+            </Pressable>
+          )}
           {user && ["admin", "instructor"].includes(user.role) && (
             <Button
               secondary
@@ -300,16 +319,42 @@ export function Shell({
             />
           )}
         </View>
-        <View style={ui.row}>
-          {links.map(([label, route]) => (
-            <Button
-              secondary
-              key={route}
-              label={label}
-              onPress={() => router.push(route as any)}
-            />
-          ))}
-        </View>
+        {(!compact || menuOpen) && (
+          <View style={ui.row}>
+            {links.map(([label, route]) =>
+              publicPage ? (
+                <Link
+                  key={route}
+                  href={route as any}
+                  onPress={() => setMenuOpen(false)}
+                  style={[
+                    ui.body,
+                    {
+                      paddingHorizontal: 16,
+                      paddingVertical: 12,
+                      borderRadius: 24,
+                      borderWidth: 1,
+                      borderColor:
+                        pathname === route ? colors.accent.gold : palette.line,
+                      backgroundColor:
+                        pathname === route ? palette.sage : palette.white,
+                      color: palette.ink,
+                    },
+                  ]}
+                >
+                  {label}
+                </Link>
+              ) : (
+                <Button
+                  secondary
+                  key={route}
+                  label={label}
+                  onPress={() => router.push(route as any)}
+                />
+              ),
+            )}
+          </View>
+        )}
         {!!title && (
           <View style={{ gap: 10, marginTop: 16 }}>
             <Text style={ui.label}>{eyebrow}</Text>
