@@ -254,6 +254,12 @@ export function Shell({
   const { user } = useAuth();
   const links = publicPage
     ? [
+        ["Εμπειρίες", "/explore/services"],
+        ["Σχολή", "/explore/training"],
+        ["Μανώλης", "/explore/about"],
+        ["Εκδηλώσεις", "/explore/events"],
+        ["Άρθρα", "/explore/journal"],
+        ["Επικοινωνία", "/explore/contact"],
         ["Σύνδεση", "/login"],
         ["Εγγραφή", "/register"],
       ]
@@ -314,6 +320,7 @@ export type ContentItem = {
     summary: string;
     body: string;
     kind: string;
+    section?: string;
     level_id: string | null;
     media_url: string;
   };

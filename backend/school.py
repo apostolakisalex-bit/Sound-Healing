@@ -23,6 +23,7 @@ class Content(Strict):
     summary: str = Field(default='', max_length=500)
     body: str = Field(default='', max_length=30000)
     kind: Literal['page', 'lesson', 'journey', 'announcement', 'hero']
+    section: Literal['home', 'services', 'training', 'about', 'events', 'journal', 'contact'] = 'home'
     level_id: Level | None = None
     media_url: str = Field(default='', max_length=2000)
     order: int = Field(default=0, ge=0, le=10000)

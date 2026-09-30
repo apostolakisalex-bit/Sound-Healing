@@ -1,7 +1,7 @@
 // Root layout: load Raleway + Cormorant, wrap in AuthProvider, route by auth.
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect, useRef } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import {
   useFonts,
@@ -29,7 +29,7 @@ function AuthGate() {
     const onLandingRoot = segments[0] === undefined;
     const onAuthScreen = segments[0] === 'login' || segments[0] === 'register';
     const isPublicFeedback = segments[0] === 'feedback';
-    if (isPublicFeedback) return;
+    if (isPublicFeedback || segments[0] === 'explore') return;
 
     // Unauthenticated: protect non-public routes
     if (!user && !onLandingRoot && !onAuthScreen) {
@@ -53,7 +53,8 @@ function AuthGate() {
     }
   }, [user, loading, segments, router]);
 
-  if (loading) {
+  const publicRoute = segments[0] === undefined || segments[0] === 'explore';
+  if (loading && !publicRoute) {
     return (
       <View style={styles.loader}>
         <ActivityIndicator size="large" color={colors.accent.gold} />
@@ -88,7 +89,7 @@ export default function RootLayout() {
     Raleway_700Bold,
   });
 
-  if (!loaded && !error) {
+  if (!loaded && !error && Platform.OS !== 'web') {
     return (
       <View style={styles.loader}>
         <ActivityIndicator size="large" color={colors.accent.gold} />
@@ -107,3 +108,4 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   loader: { flex: 1, backgroundColor: colors.bg.primary, alignItems: 'center', justifyContent: 'center' },
 });
+

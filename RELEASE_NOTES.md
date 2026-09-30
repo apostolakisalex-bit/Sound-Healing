@@ -137,3 +137,6 @@ Validation: 23 backend tests, TypeScript pass. Draft hero visibility and restric
 
 ## Reproducible GitHub preview checks — 2026-09-30
 Fixed clean pnpm 11 installation by explicitly declining the unrs-resolver install script in frontend/pnpm-workspace.yaml, retaining default protection for unreviewed dependencies. GitHub run 36702934150 validates code revision 65962c7eadc57677aa1c905081937bf11046a55f: backend tests, frozen frontend install, TypeScript, request lifecycle tests and web export. Original hero editorial control is included. Emergent integration and visual/native/real-MongoDB acceptance remain pending.
+
+## Public navigation and editorial sections — 2026-09-30
+Added six guest-accessible public routes, landing discovery cards, four-Level overview, founder image, contact path, page metadata and CMS section selection. Published snapshots remain stable while editors change section drafts. 24 backend tests pass, including section publication isolation. TypeScript and static export pass before final web prerender adjustment. Full Emergent/native acceptance remains pending; events/articles require real editorial publications.

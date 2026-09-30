@@ -255,3 +255,14 @@ def test_public_hero_requires_publication_and_public_access(env):
     call(c,'put',f'/admin/content/{item}',json={**data,'level_id':'L1','revision':2})
     call(c,'post',f'/admin/content/{item}/publish?revision=3')
     assert call(c,'get','/content/public').json()==[]
+
+def test_public_sections_keep_published_snapshot(env):
+    c,_=env
+    data={'title':'Sound experiences','kind':'page','section':'services'}
+    item=call(c,'post','/admin/content',json=data).json()['id']
+    call(c,'post',f'/admin/content/{item}/publish?revision=1')
+    call(c,'put',f'/admin/content/{item}',json={**data,'section':'contact','revision':2})
+    assert call(c,'get','/content/public').json()[0]['published']['section']=='services'
+    call(c,'post',f'/admin/content/{item}/publish?revision=3')
+    assert call(c,'get','/content/public').json()[0]['published']['section']=='contact'
+    assert call(c,'post','/admin/content',json={**data,'section':'private'}).status_code==422

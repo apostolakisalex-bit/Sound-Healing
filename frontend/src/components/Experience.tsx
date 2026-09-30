@@ -533,29 +533,4 @@ export function ProfileScreen() {
     </Shell>
   );
 }
-export function PublicScreen() {
-  const state = useLoad<ContentItem[]>("/content/public", []);
-  const router = useRouter();
-  return (
-    <Shell publicPage eyebrow="" title="">
-      <BrandHero
-        item={state.data.find((item) => item.published.kind === "hero")}
-      />
-      <Status state={state} />
-      {state.data
-        .filter((i) => i.published.kind !== "hero")
-        .map((i) => (
-          <ContentCard key={i.id} item={i} />
-        ))}
-      <View style={ui.card}>
-        <Text style={ui.heading}>
-          Τέσσερα Levels. Μια εξελισσόμενη πρακτική.
-        </Text>
-        <Text style={ui.body}>
-          Από τα θεμέλια της ατομικής πρακτικής έως την ομαδική εμπειρία και την
-          επαγγελματική εκπαίδευση.
-        </Text>
-      </View>
-    </Shell>
-  );
-}
+export { PublicExperience as PublicScreen } from "./PublicExperience";

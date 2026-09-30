@@ -20,6 +20,7 @@ type Draft = {
   summary: string;
   body: string;
   kind: string;
+  section?: string;
   level_id: string | null;
   media_url: string;
   order: number;
@@ -80,6 +81,7 @@ const fresh: Draft = {
   summary: "",
   body: "",
   kind: "page",
+  section: "home",
   level_id: null,
   media_url: "",
   order: 0,
@@ -204,6 +206,26 @@ function WorkspaceScreen() {
               value={draft.kind}
               onChange={(v) => set("kind", v)}
             />
+            <Choices
+              label="Δημόσια ενότητα"
+              values={[
+                "home",
+                "services",
+                "training",
+                "about",
+                "events",
+                "journal",
+                "contact",
+              ]}
+              value={draft.section || "home"}
+              onChange={(v) => set("section", v)}
+            />
+            <Text style={ui.body}>
+              home: Αρχική · services: Εμπειρίες · training: Σχολή · about:
+              Μανώλης · events: Εκδηλώσεις · journal: Άρθρα · contact:
+              Επικοινωνία. Για δημόσια εμφάνιση χρησιμοποίησε τύπο page ή
+              announcement και πρόσβαση Όλοι.
+            </Text>
             <Choices
               label="Εκπαιδευτική πρόσβαση"
               values={["Όλοι", "L1", "L2", "L3", "L4"]}
