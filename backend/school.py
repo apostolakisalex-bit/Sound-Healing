@@ -164,7 +164,10 @@ def build_school_router(db, current_user, admin_user):
         query = {'archived': False, 'published.kind': {'$in': ['lesson', 'journey']}}
         if user.get('role') != 'admin':
             query['$or'] = [{'published.level_id': None}, {'published.level_id': {'$in': levels}}]
-        return await db.content_items.find(query, {'_id': 0, 'id': 1, 'published': 1}).sort('published.order', 1).to_list(500)
+        items = await db.content_items.find(query, {'_id': 0, 'id': 1, 'published': 1}).sort('published.order', 1).to_list(500)
+        learner = await db.users.find_one({'id': user['id']}, {'school_completed_lessons': 1})
+        completed = set((learner or {}).get('school_completed_lessons', []))
+        return [{**item, 'completed': item['published']['kind'] == 'lesson' and item['id'] in completed} for item in items]
 
     @router.post('/school/lessons/{item_id}/complete')
     async def complete(item_id: str, user=Depends(current_user)):

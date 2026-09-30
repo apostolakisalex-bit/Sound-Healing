@@ -233,3 +233,14 @@ def test_activity_admin_only_and_paginated(env):
     assert 'email' not in result['items'][0]
     assert call(c,'get','/admin/activity?offset=1').json()['items']==[]
     assert call(c,'get','/admin/activity?limit=51').status_code==422
+
+def test_lesson_completion_persists_and_is_personal(env):
+    c,db=env;enrollment(c)
+    item=call(c,'post','/admin/content',json={'title':'Shared lesson','kind':'lesson','level_id':None}).json()['id']
+    call(c,'post',f'/admin/content/{item}/publish?revision=1')
+    assert call(c,'get','/content/library','student').json()[0]['completed'] is False
+    for _ in range(2):
+        assert call(c,'post',f'/school/lessons/{item}/complete','student').status_code==200
+    assert call(c,'get','/content/library','student').json()[0]['completed'] is True
+    assert call(c,'get','/content/library','other_student').json()[0]['completed'] is False
+    assert asyncio.run(db.users.find_one({'id':'student'}))['school_completed_lessons']==[item]

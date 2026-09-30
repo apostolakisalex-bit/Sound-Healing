@@ -282,6 +282,7 @@ export function Shell({
 }
 export type ContentItem = {
   id: string;
+  completed?: boolean;
   published: {
     title: string;
     summary: string;
@@ -300,6 +301,11 @@ export function ContentCard({
 }) {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [completed, setCompleted] = useState(!!item.completed);
+  useEffect(() => {
+    setCompleted(!!item.completed);
+    setMessage("");
+  }, [item.id, item.completed]);
   const p = item.published;
   return (
     <View style={ui.card}>
@@ -325,20 +331,32 @@ export function ContentCard({
       )}
       {complete && (
         <Button
-          disabled={busy || !!message}
-          label={message || "Σημείωση ως ολοκληρωμένο"}
+          disabled={busy || completed}
+          label={
+            completed
+              ? "Ολοκληρώθηκε"
+              : busy
+                ? "Αποθήκευση…"
+                : "Σημείωση ως ολοκληρωμένο"
+          }
           onPress={async () => {
             setBusy(true);
+            setMessage("");
             try {
               await api.post(`/school/lessons/${item.id}/complete`);
-              setMessage("Ολοκληρώθηκε");
+              setCompleted(true);
             } catch {
-              setMessage("Αποτυχία αποθήκευσης — άνοιξε ξανά το μάθημα.");
+              setMessage("Δεν αποθηκεύτηκε. Δοκίμασε ξανά.");
             } finally {
               setBusy(false);
             }
           }}
         />
+      )}
+      {!!message && (
+        <Text accessibilityLiveRegion="polite" style={ui.body}>
+          {message}
+        </Text>
       )}
     </View>
   );
