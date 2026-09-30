@@ -192,6 +192,38 @@ export function PracticeScreen() {
     [revision, setRevision] = useState(1);
   const router = useRouter();
   const save = async () => {
+    const parsedDate = new Date(`${date}T12:00:00Z`);
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+      Number.isNaN(parsedDate.getTime()) ||
+      parsedDate.toISOString().slice(0, 10) !== date
+    ) {
+      setMessage("Συμπλήρωσε έγκυρη ημερομηνία με μορφή YYYY-MM-DD.");
+      return;
+    }
+    if (
+      !Number.isInteger(Number(duration)) ||
+      Number(duration) < 1 ||
+      Number(duration) > 1440
+    ) {
+      setMessage(
+        "Η διάρκεια πρέπει να είναι ακέραιος αριθμός από 1 έως 1440 λεπτά.",
+      );
+      return;
+    }
+    if (!code.trim() || (mode === "individual" && !cycleId)) {
+      setMessage("Επίλεξε κύκλο δέκτη ή συμπλήρωσε κωδικό ομάδας.");
+      return;
+    }
+    if (
+      mode === "group" &&
+      (!Number.isInteger(Number(participantCount)) ||
+        Number(participantCount) < 2 ||
+        Number(participantCount) > 10000)
+    ) {
+      setMessage("Συμπλήρωσε ακέραιο αριθμό συμμετεχόντων από 2 έως 10000.");
+      return;
+    }
     setBusy(true);
     setMessage("");
     try {
@@ -218,10 +250,17 @@ export function PracticeScreen() {
       setCode("");
       setCycleId("");
       setReflection("");
+      setSafety("Όχι");
+      setParticipantCount("");
       await state.reload();
-    } catch {
+    } catch (error: any) {
+      if (error?.response?.status === 409) await state.reload();
       setMessage(
-        "Δεν αποθηκεύτηκε. Έλεγξε εγγραφή, ημερομηνία, διάρκεια και κωδικό.",
+        error?.response?.status === 409
+          ? "Η καταγραφή άλλαξε. Άνοιξέ την ξανά για επεξεργασία πριν αποθηκεύσεις."
+          : error?.response?.status === 403
+            ? "Χρειάζεται ενεργή εγγραφή για να αποθηκευτεί η πρακτική."
+            : "Δεν αποθηκεύτηκε. Τα στοιχεία σου παραμένουν στη φόρμα· δοκίμασε ξανά.",
       );
     } finally {
       setBusy(false);
@@ -236,7 +275,9 @@ export function PracticeScreen() {
       <Status state={state} />
       {state.data.enrollments.some((e) => e.status === "active") ? (
         <View style={ui.card}>
-          <Text style={ui.heading}>Νέο πρόχειρο πρακτικής</Text>
+          <Text style={ui.heading}>
+            {editing ? "Επεξεργασία πρακτικής" : "Νέο πρόχειρο πρακτικής"}
+          </Text>
           <Text style={ui.body}>Εκπαιδευτική εγγραφή</Text>
           <View style={ui.row}>
             {state.data.enrollments
@@ -293,11 +334,17 @@ export function PracticeScreen() {
             value={duration}
             onChange={setDuration}
           />
-          <Field
-            label="Κωδικός δέκτη / ομάδας"
-            value={code}
-            onChange={setCode}
-          />
+          {mode === "individual" ? (
+            <Text style={ui.body}>
+              Κωδικός δέκτη: {code || "Επίλεξε κύκλο παραπάνω"}
+            </Text>
+          ) : (
+            <Field
+              label="Κωδικός δέκτη / ομάδας"
+              value={code}
+              onChange={setCode}
+            />
+          )}
           <Field
             label="Αναστοχασμός"
             value={reflection}
@@ -319,6 +366,22 @@ export function PracticeScreen() {
             }
             onPress={() => void save()}
           />
+          {editing && (
+            <Button
+              secondary
+              disabled={busy}
+              label="Κλείσιμο επεξεργασίας"
+              onPress={() => {
+                setEditing("");
+                setCycleId("");
+                setCode("");
+                setReflection("");
+                setSafety("Όχι");
+                setParticipantCount("");
+                setMessage("");
+              }}
+            />
+          )}
         </View>
       ) : !state.loading && !state.error ? (
         <View style={ui.card}>
@@ -382,9 +445,13 @@ export function PracticeScreen() {
                   await api.post(`/school/practices/${p.id}/submit`);
                   await state.reload();
                   setMessage("Η πρακτική υποβλήθηκε.");
-                } catch {
+                } catch (error: any) {
                   setMessage(
-                    "Χρειάζονται αναστοχασμός και επιβεβαίωση ασφάλειας.",
+                    error?.response?.status === 422
+                      ? "Χρειάζονται αναστοχασμός και επιβεβαίωση ασφάλειας."
+                      : error?.response?.status === 403
+                        ? "Η εγγραφή δεν είναι ενεργή. Επικοινώνησε με τη σχολή."
+                        : "Η υποβολή δεν επιβεβαιώθηκε. Ανανέωσε τη σελίδα για να ελέγξεις την κατάστασή της.",
                   );
                 } finally {
                   setBusy(false);

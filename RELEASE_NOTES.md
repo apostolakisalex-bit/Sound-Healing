@@ -124,3 +124,6 @@ Validation: 21 backend tests, 4 controlled request-lifecycle tests, TypeScript a
 
 ## Persistent lesson status — 2026-09-30
 Library responses now include the authenticated learner's stored completion flag. Lesson cards retain completion after reload and allow retry after save failure instead of disabling the button on error. Completion remains a personal reading marker, not certification. Backend validation: 22 tests pass including persistent, idempotent and user-isolated completion.
+
+## Practice form safeguards — 2026-09-30
+After saving, safety confirmation resets to No and group count is cleared for the next record. Individual receiver codes come from the selected cycle and cannot be accidentally edited independently. Added immediate date/integer validation matching existing API bounds, editing title/close action, and distinct conflict/access/network error messages. Conflict refresh preserves unsaved form input until the learner explicitly reopens the record. TypeScript passes.
