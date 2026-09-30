@@ -143,3 +143,6 @@ Added six guest-accessible public routes, landing discovery cards, four-Level ov
 
 ## Section imagery and draft preview — 2026-09-30
 Added editor-managed section imagery, image descriptions and HTTPS action links, plus a shared responsive introduction preview in the admin editor. Published drafts remain isolated; unsafe links and incomplete action pairs return validation errors. Public discovery cards reuse published section titles/summaries. Existing ivory/charcoal/gold identity and founder photo retained. 25 API tests, TypeScript and web export pass locally. Global settings/full-page preview remain outstanding.
+
+## Public identity/footer/contact settings — 2026-09-30
+Added site_settings editorial kind and wired published values to public header, footer and contact CTA. Uses existing CMS publication/history permissions; draft values do not leak into the public feed. Missing settings retain original defaults. Navigation configuration remains future work. 26 backend tests and TypeScript pass locally.

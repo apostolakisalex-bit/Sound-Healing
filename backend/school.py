@@ -22,7 +22,7 @@ class Content(Strict):
     title: str = Field(min_length=2, max_length=160)
     summary: str = Field(default='', max_length=500)
     body: str = Field(default='', max_length=30000)
-    kind: Literal['page', 'lesson', 'journey', 'announcement', 'hero']
+    kind: Literal['page', 'lesson', 'journey', 'announcement', 'hero', 'site_settings']
     section: Literal['home', 'services', 'training', 'about', 'events', 'journal', 'contact'] = 'home'
     level_id: Level | None = None
     media_url: str = Field(default='', max_length=2000)
@@ -160,7 +160,7 @@ def build_school_router(db, current_user, admin_user):
 
     @router.get('/content/public')
     async def public_content():
-        return await db.content_items.find({'published.kind': {'$in': ['page', 'announcement', 'hero']}, 'published.level_id': None, 'archived': False}, {'_id': 0, 'id': 1, 'published': 1}).sort([('published.order', 1), ('id', 1)]).to_list(200)
+        return await db.content_items.find({'published.kind': {'$in': ['page', 'announcement', 'hero', 'site_settings']}, 'published.level_id': None, 'archived': False}, {'_id': 0, 'id': 1, 'published': 1}).sort([('published.order', 1), ('id', 1)]).to_list(200)
 
     @router.get('/content/library')
     async def library(user=Depends(current_user)):

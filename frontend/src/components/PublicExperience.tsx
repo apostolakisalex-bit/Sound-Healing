@@ -80,12 +80,19 @@ function NavLink({
 }
 export function PublicExperience({ section }: { section?: string }) {
   const state = useLoad<ContentItem[]>("/content/public", []);
+  const settings = state.data.find(
+    (i) => i.published.kind === "site_settings",
+  )?.published;
+  const contactUrl =
+    settings?.action_url || "https://www.soundhealing.gr/el/epikoinwnia/";
+  const contactLabel =
+    settings?.action_label || "Επικοινώνησε με το Sound Healing Greece";
   const valid =
     !section || Object.prototype.hasOwnProperty.call(sections, section);
   const page = valid && section ? sections[section as Section] : null;
   const entries = state.data.filter(
     (i) =>
-      i.published.kind !== "hero" &&
+      !["hero", "site_settings"].includes(i.published.kind) &&
       (i.published.section || "home") === (section || "home"),
   );
   const intro = entries.find((i) => i.published.kind === "page");
@@ -93,6 +100,7 @@ export function PublicExperience({ section }: { section?: string }) {
   return (
     <Shell
       publicPage
+      siteSettings={settings}
       eyebrow={page?.label || ""}
       title={valid ? "" : "Η σελίδα δεν βρέθηκε"}
     >
@@ -211,9 +219,7 @@ export function PublicExperience({ section }: { section?: string }) {
           <Text style={ui.heading}>
             Το επόμενο βήμα ξεκινά με μια συζήτηση.
           </Text>
-          <NavLink href="https://www.soundhealing.gr/el/epikoinwnia/">
-            Επικοινώνησε με το Sound Healing Greece ↗
-          </NavLink>
+          <NavLink href={contactUrl}>{contactLabel} ↗</NavLink>
           <NavLink href="/login">Έχεις ήδη λογαριασμό; Σύνδεση →</NavLink>
         </View>
       )}

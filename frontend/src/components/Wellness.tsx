@@ -244,11 +244,13 @@ export function Shell({
   eyebrow,
   children,
   publicPage = false,
+  siteSettings,
 }: {
   title: string;
   eyebrow: string;
   children: React.ReactNode;
   publicPage?: boolean;
+  siteSettings?: ContentItem["published"];
 }) {
   const router = useRouter();
   const { user } = useAuth();
@@ -276,9 +278,13 @@ export function Shell({
         <View style={[ui.row, { justifyContent: "space-between" }]}>
           <Pressable accessibilityRole="link" onPress={() => router.push("/")}>
             <Text style={[ui.label, { letterSpacing: 2 }]}>
-              SOUND HEALING GREECE
+              {siteSettings?.title || "SOUND HEALING GREECE"}
             </Text>
-            <Text style={ui.body}>learn · practise · feel connected</Text>
+            <Text style={ui.body}>
+              {siteSettings
+                ? siteSettings.summary
+                : "learn · practise · feel connected"}
+            </Text>
           </Pressable>
           {user && ["admin", "instructor"].includes(user.role) && (
             <Button
@@ -306,7 +312,9 @@ export function Shell({
         )}
         {children}
         <Text style={ui.body}>
-          Sound Healing Greece · Χανιά · Αθήνα · Online
+          {siteSettings
+            ? siteSettings.body
+            : "Sound Healing Greece · Χανιά · Αθήνα · Online"}
         </Text>
       </View>
     </ScrollView>

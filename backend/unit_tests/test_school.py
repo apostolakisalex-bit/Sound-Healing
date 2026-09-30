@@ -279,3 +279,14 @@ def test_editorial_images_and_actions_are_validated_and_versioned(env):
     result=call(c,'get','/content/public').json()[0]['published']
     assert result['image_url']==data['image_url']
     assert result['action_url']==data['action_url']
+
+def test_site_settings_are_private_until_published_and_can_be_archived(env):
+    c,_=env
+    data={'title':'Sound Healing Greece','kind':'site_settings','body':'Athens and Chania','action_label':'Contact','action_url':'https://example.org/contact'}
+    assert call(c,'post','/admin/content','student',json=data).status_code==403
+    item=call(c,'post','/admin/content',json=data).json()['id']
+    assert call(c,'get','/content/public').json()==[]
+    call(c,'post',f'/admin/content/{item}/publish?revision=1')
+    assert call(c,'get','/content/public').json()[0]['published']['body']==data['body']
+    call(c,'post',f'/admin/content/{item}/archive')
+    assert call(c,'get','/content/public').json()==[]

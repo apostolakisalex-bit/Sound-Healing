@@ -207,7 +207,14 @@ function WorkspaceScreen() {
             </Text>
             <Choices
               label="Τύπος"
-              values={["page", "lesson", "journey", "announcement", "hero"]}
+              values={[
+                "page",
+                "lesson",
+                "journey",
+                "announcement",
+                "hero",
+                "site_settings",
+              ]}
               value={draft.kind}
               onChange={(v) => set("kind", v)}
             />
@@ -237,6 +244,20 @@ function WorkspaceScreen() {
               value={draft.level_id || "Όλοι"}
               onChange={(v) => set("level_id", v === "Όλοι" ? null : v)}
             />
+            {draft.kind === "site_settings" && (
+              <View style={ui.card}>
+                <Text style={ui.heading}>
+                  Ταυτότητα και επικοινωνία δημόσιου χώρου
+                </Text>
+                <Text style={ui.body}>
+                  Τίτλος: όνομα στην κεφαλίδα. Σύντομη περιγραφή: υπότιτλος.
+                  Περιεχόμενο: footer. Ο σύνδεσμος παρακάτω ορίζει την κεντρική
+                  επικοινωνία. Επίλεξε πρόσβαση Όλοι. Ισχύει η πρώτη
+                  δημοσιευμένη ρύθμιση στη σειρά· επεξεργάσου την ίδια εγγραφή
+                  για μελλοντικές αλλαγές.
+                </Text>
+              </View>
+            )}
             <Field
               label="Τίτλος"
               value={draft.title}
@@ -274,18 +295,23 @@ function WorkspaceScreen() {
               value={draft.media_url}
               onChange={(v) => set("media_url", v)}
             />
-            {draft.kind === "page" && (
+            {["page", "site_settings"].includes(draft.kind) && (
               <>
-                <Field
-                  label="Εικόνα ενότητας (HTTPS)"
-                  value={draft.image_url || ""}
-                  onChange={(v) => set("image_url", v)}
-                />
-                <Field
-                  label="Περιγραφή εικόνας"
-                  value={draft.image_alt || ""}
-                  onChange={(v) => set("image_alt", v)}
-                />
+                {draft.kind === "page" && (
+                  <>
+                    {" "}
+                    <Field
+                      label="Εικόνα ενότητας (HTTPS)"
+                      value={draft.image_url || ""}
+                      onChange={(v) => set("image_url", v)}
+                    />
+                    <Field
+                      label="Περιγραφή εικόνας"
+                      value={draft.image_alt || ""}
+                      onChange={(v) => set("image_alt", v)}
+                    />
+                  </>
+                )}
                 <Field
                   label="Κείμενο συνδέσμου επικοινωνίας ή συμμετοχής"
                   value={draft.action_label || ""}
@@ -302,16 +328,25 @@ function WorkspaceScreen() {
                   δημοσίευση. Η πρώτη σελίδα στη σειρά της ενότητας ορίζει την
                   εισαγωγή της.
                 </Text>
-                <EditorialIntro
-                  title={draft.title || "Τίτλος σελίδας"}
-                  summary={draft.summary}
-                  body={draft.body}
-                  imageUrl={draft.image_url}
-                  imageAlt={draft.image_alt}
-                  actionLabel={draft.action_label}
-                  actionUrl={draft.action_url}
-                  preview
-                />
+                {draft.kind === "site_settings" ? (
+                  <View style={ui.card}>
+                    <Text style={ui.label}>{draft.title}</Text>
+                    <Text style={ui.body}>{draft.summary}</Text>
+                    <Text style={ui.body}>{draft.body}</Text>
+                    <Text style={ui.label}>{draft.action_label}</Text>
+                  </View>
+                ) : (
+                  <EditorialIntro
+                    title={draft.title || "Τίτλος σελίδας"}
+                    summary={draft.summary}
+                    body={draft.body}
+                    imageUrl={draft.image_url}
+                    imageAlt={draft.image_alt}
+                    actionLabel={draft.action_label}
+                    actionUrl={draft.action_url}
+                    preview
+                  />
+                )}
               </>
             )}
             <View style={ui.row}>
