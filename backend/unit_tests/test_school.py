@@ -244,3 +244,14 @@ def test_lesson_completion_persists_and_is_personal(env):
     assert call(c,'get','/content/library','student').json()[0]['completed'] is True
     assert call(c,'get','/content/library','other_student').json()[0]['completed'] is False
     assert asyncio.run(db.users.find_one({'id':'student'}))['school_completed_lessons']==[item]
+
+def test_public_hero_requires_publication_and_public_access(env):
+    c,_=env
+    data={'title':'Public introduction','kind':'hero','summary':'Intro','media_url':'https://example.org/hero.jpg'}
+    item=call(c,'post','/admin/content',json=data).json()['id']
+    assert call(c,'get','/content/public').json()==[]
+    call(c,'post',f'/admin/content/{item}/publish?revision=1')
+    assert call(c,'get','/content/public').json()[0]['published']['kind']=='hero'
+    call(c,'put',f'/admin/content/{item}',json={**data,'level_id':'L1','revision':2})
+    call(c,'post',f'/admin/content/{item}/publish?revision=3')
+    assert call(c,'get','/content/public').json()==[]

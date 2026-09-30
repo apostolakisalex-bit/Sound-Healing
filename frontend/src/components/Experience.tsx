@@ -1,3 +1,4 @@
+import { BrandHero } from "./BrandHero";
 import { CyclePicker } from "./CyclePicker";
 import { Progress } from "./Progress";
 import React, { useState } from "react";
@@ -536,35 +537,16 @@ export function PublicScreen() {
   const state = useLoad<ContentItem[]>("/content/public", []);
   const router = useRouter();
   return (
-    <Shell
-      publicPage
-      eyebrow="SOUND · CONNECTION · WELLBEING"
-      title="Κάνε χώρο για τον ήχο."
-    >
-      <View style={[ui.card, { backgroundColor: palette.sage, padding: 32 }]}>
-        <Text style={[ui.title, { fontSize: 48, lineHeight: 54 }]}>
-          Μια νέα σχέση με την ακρόαση.
-        </Text>
-        <Text style={ui.body}>
-          Εκπαίδευση στην ηχοθεραπεία, προσωπική πρακτική και σύνδεση με την
-          κοινότητα της Sound Healing Greece.
-        </Text>
-        <View style={ui.row}>
-          <Button
-            label="Μπες στον χώρο σου"
-            onPress={() => router.push("/login")}
-          />
-          <Button
-            secondary
-            label="Δημιουργία λογαριασμού"
-            onPress={() => router.push("/register")}
-          />
-        </View>
-      </View>
+    <Shell publicPage eyebrow="" title="">
+      <BrandHero
+        item={state.data.find((item) => item.published.kind === "hero")}
+      />
       <Status state={state} />
-      {state.data.map((i) => (
-        <ContentCard key={i.id} item={i} />
-      ))}
+      {state.data
+        .filter((i) => i.published.kind !== "hero")
+        .map((i) => (
+          <ContentCard key={i.id} item={i} />
+        ))}
       <View style={ui.card}>
         <Text style={ui.heading}>
           Τέσσερα Levels. Μια εξελισσόμενη πρακτική.

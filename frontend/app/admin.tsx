@@ -200,7 +200,7 @@ function WorkspaceScreen() {
             </Text>
             <Choices
               label="Τύπος"
-              values={["page", "lesson", "journey", "announcement"]}
+              values={["page", "lesson", "journey", "announcement", "hero"]}
               value={draft.kind}
               onChange={(v) => set("kind", v)}
             />
@@ -215,6 +215,18 @@ function WorkspaceScreen() {
               value={draft.title}
               onChange={(v) => set("title", v)}
             />
+            {draft.kind === "hero" && (
+              <Text style={ui.body}>
+                Δημόσια εισαγωγή: επίλεξε πρόσβαση «Όλοι». Χρησιμοποιούνται ο
+                τίτλος, η σύντομη περιγραφή και η εικόνα. Αν υπάρχουν πολλές
+                δημοσιευμένες εισαγωγές, εμφανίζεται η πρώτη στη σειρά.
+              </Text>
+            )}
+            <Field
+              label="Σειρά εμφάνισης (0–10000)"
+              value={String(draft.order)}
+              onChange={(value) => set("order", Number(value))}
+            />
             <Field
               label="Σύντομη περιγραφή"
               value={draft.summary}
@@ -227,7 +239,11 @@ function WorkspaceScreen() {
               multiline
             />
             <Field
-              label="Σύνδεσμος υλικού HTTPS (προαιρετικό)"
+              label={
+                draft.kind === "hero"
+                  ? "Εικόνα εισαγωγής HTTPS (προαιρετικό)"
+                  : "Σύνδεσμος υλικού HTTPS (προαιρετικό)"
+              }
               value={draft.media_url}
               onChange={(v) => set("media_url", v)}
             />

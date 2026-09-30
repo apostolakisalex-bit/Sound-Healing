@@ -130,3 +130,7 @@ After saving, safety confirmation resets to No and group count is cleared for th
 
 ## Visual identity and preview handoff — 2026-09-30
 User explicitly requires preserving the original Emergent aesthetic. Shared new screens now reuse the original ivory/charcoal/gold theme and Cormorant Garamond/Raleway tokens, replacing the separate green theme. School places available lessons before progress and the Levels catalogue. This does not assert full visual parity: original imagery, hero/navigation/Journey composition still require side-by-side Emergent review. See product/EMERGENT_PREVIEW_HANDOFF.md for the integration prompt, setup, test matrix and rollback boundary. Added a GitHub Actions candidate workflow; remote execution is not yet verified.
+
+## Original public hero and editorial control — 2026-09-30
+Restored the original Emergent HERO_IMAGES.main asset and dark gradient/gold composition as a responsive public hero. CMS hero items allow administrators to draft/publish/archive title, summary and HTTPS image changes, using the original asset when no override is published. Only published, nonarchived, unrestricted heroes enter the public feed; first by editorial order then ID wins. Other public CMS cards remain below the hero. This restores one key composition, not full screen-by-screen parity.
+Validation: 23 backend tests, TypeScript pass. Draft hero visibility and restricted publication are covered. Source-required assessment/certification decisions remain open.

@@ -292,10 +292,12 @@ export function Shell({
             />
           ))}
         </View>
-        <View style={{ gap: 10, marginTop: 16 }}>
-          <Text style={ui.label}>{eyebrow}</Text>
-          <Text style={ui.title}>{title}</Text>
-        </View>
+        {!!title && (
+          <View style={{ gap: 10, marginTop: 16 }}>
+            <Text style={ui.label}>{eyebrow}</Text>
+            <Text style={ui.title}>{title}</Text>
+          </View>
+        )}
         {children}
         <Text style={ui.body}>
           Sound Healing Greece · Χανιά · Αθήνα · Online

@@ -4,13 +4,13 @@ Version 1.0 · 2026-09-29 · Technical baseline: `apostolakisalex-bit/Sound-Heal
 
 This pack is ready for staged use in the existing Emergent/GitHub project. It is not a request to generate a new app. Product authority: [Master Specification](MASTER_PRODUCT_SPECIFICATION.md). Evidence and gaps: [Source Register](SOURCE_REGISTER.md), [Form Catalog](FORM_CATALOG.md), [Technical Baseline](TECHNICAL_BASELINE.md).
 
-Implementation has now started in the renewal candidate; see ../RELEASE_NOTES.md for exact implemented scope and remaining gates. No PR, deployment, email, notification or production migration has been performed. Each prompt is a concrete bounded implementation request, not a promise that its dependencies are resolved.
+Implementation has now started in the renewal candidate; see ../RELEASE_NOTES.md for exact implemented scope and remaining gates. Draft PR #1 contains the candidate implementation. No production deployment, email, notification or production migration has been performed. Each prompt is a concrete bounded implementation request, not a promise that its dependencies are resolved.
 
 ## Operating contract
 
 Use one phase branch and reviewable PR at a time. Suggested branch prefix: `shg/`; confirm actual current repository instructions and head first. If a phase is too large, split by vertical capability while preserving dependency order. Attach the Master Specification and the relevant source excerpts to Emergent; never paste health records, credentials or private receiver responses into prompts.
 
-Keep the current Expo/React Native frontend, FastAPI backend and MongoDB. Preserve user IDs, stored evidence, public navigation and shared visual components. Add focused modules as needed; do not replace the framework, reset collections, reseed real users or reset data. The user subsequently authorized a full visual renewal; that authorization supersedes the original visual restraint.
+Keep the current Expo/React Native frontend, FastAPI backend and MongoDB. Preserve user IDs, stored evidence, public navigation and shared visual components. Add focused modules as needed; do not replace the framework, reset collections, reseed real users or reset data. The latest user instruction requires preserving the existing Emergent aesthetic while renewing functionality. Reuse original brand components and assets; validate visual parity before release.
 
 For each PR deliver changed behavior, files, migration impacts, focused test evidence, screenshots of changed screens where applicable, remaining open decisions, feature flag and rollback instructions. Report tests actually run, including failures. Run API tests only against a disposable test environment. New background jobs must be idempotent. Production migrations and site cutover are separate release actions after review of the concrete artifacts.
 
