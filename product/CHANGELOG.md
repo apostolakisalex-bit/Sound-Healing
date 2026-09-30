@@ -42,3 +42,6 @@ Progress filters by Level and enrollment status; Greek attendance/review labels;
 
 ### Admin activity — 2026-09-29
 Added admin-only activity history with pagination, actor names and localized timestamps. 21 backend tests pass; TypeScript passes. Events cover existing CMS/school audit instrumentation, not every application action.
+
+### Student workflow — 2026-09-30
+Student browser flow verified through submission, returned feedback, edit and resubmission. Mobile layout inspected. Greek practice/status and resource copy improved. 21 backend tests plus 4 request lifecycle tests pass. See release notes for test boundaries.

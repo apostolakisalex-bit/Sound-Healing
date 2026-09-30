@@ -128,8 +128,8 @@ export function SchoolScreen() {
           <Text style={ui.body}>{l.description}</Text>
         </View>
       ))}
-      <Text style={ui.heading}>Το εκπαιδευτικό σου υλικό</Text>
       <Progress />
+      <Text style={ui.heading}>Το εκπαιδευτικό σου υλικό</Text>
       <Status state={library} />
       {library.data
         .filter((i) => i.published.kind === "lesson")
@@ -256,10 +256,10 @@ export function PracticeScreen() {
           </View>
           <Choices
             label="Μορφή"
-            values={["individual", "group"]}
-            value={mode}
+            values={["Ατομική", "Ομαδική"]}
+            value={mode === "individual" ? "Ατομική" : "Ομαδική"}
             onChange={(v) => {
-              setMode(v);
+              setMode(v === "Ατομική" ? "individual" : "group");
               setCycleId("");
               setCode("");
               setParticipantCount("");
@@ -320,14 +320,14 @@ export function PracticeScreen() {
             onPress={() => void save()}
           />
         </View>
-      ) : (
+      ) : !state.loading && !state.error ? (
         <View style={ui.card}>
           <Text style={ui.body}>
             Χρειάζεται ενεργή εγγραφή από τη σχολή για νέα εκπαιδευτική
             πρακτική.
           </Text>
         </View>
-      )}
+      ) : null}
       {!!message && (
         <Text accessibilityLiveRegion="polite" style={ui.body}>
           {message}
@@ -336,7 +336,15 @@ export function PracticeScreen() {
       {state.data.practices.map((p) => (
         <View key={p.id} style={ui.card}>
           <Text style={ui.label}>
-            {p.level_id} · {p.status}
+            {p.level_id} ·{" "}
+            {(
+              {
+                draft: "Πρόχειρη",
+                submitted: "Για έλεγχο",
+                changes_requested: "Για διόρθωση",
+                reviewed: "Ελεγμένη",
+              } as Record<string, string>
+            )[p.status] || p.status}
           </Text>
           <Text style={ui.heading}>
             {p.session_date} · {p.duration_minutes} λεπτά

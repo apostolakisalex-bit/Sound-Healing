@@ -9,10 +9,10 @@ from pydantic import BaseModel, Field, ConfigDict
 
 Level = Literal['L1', 'L2', 'L3', 'L4']
 LEVELS = [
-    {'id': 'L1', 'title': 'Τα θεμέλια της πρακτικής', 'description': 'Himalayan singing bowls and individual practice.'},
-    {'id': 'L2', 'title': 'Εμβάθυνση στην ατομική πρακτική', 'description': 'Advanced bowl techniques and additional instruments.'},
-    {'id': 'L3', 'title': 'Ομαδικά Sound Baths', 'description': 'Facilitating sound experiences for groups.'},
-    {'id': 'L4', 'title': 'Επαγγελματική εκπαίδευση', 'description': 'Continue your professional education.'},
+    {'id': 'L1', 'title': 'Τα θεμέλια της πρακτικής', 'description': 'Θιβετανικές ηχογαβάθες και ατομική πρακτική.'},
+    {'id': 'L2', 'title': 'Εμβάθυνση στην ατομική πρακτική', 'description': 'Εμβάθυνση στις τεχνικές με ηχογαβάθες και πρόσθετα όργανα.'},
+    {'id': 'L3', 'title': 'Ομαδικά Sound Baths', 'description': 'Συντονισμός ομαδικών εμπειριών ήχου.'},
+    {'id': 'L4', 'title': 'Επαγγελματική εκπαίδευση', 'description': 'Συνέχεια της επαγγελματικής σου εκπαίδευσης.'},
 ]
 
 class Strict(BaseModel):

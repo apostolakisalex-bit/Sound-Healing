@@ -116,3 +116,8 @@ Added read-only, admin-only paginated activity history for recorded CMS and scho
 
 ## Request lifecycle — 2026-09-29
 Shared data loading now aborts superseded requests and requests from unmounted views. Cancelled responses cannot overwrite newer data, errors or loading status. Loaded lists are cleared while refreshing, removing stale action targets. TypeScript passes; runtime throttled-network UI testing remains pending.
+
+## Student workflow check — 2026-09-30
+Verified with a student-only synthetic account in the local browser: create receiver cycle, save individual practice, submit, view reviewer feedback, edit and resubmit. Reviewer return-for-correction was issued through the authenticated API; the admin browser hit an incomplete local lesson fixture, corrected in the disposable seed file for future runs. The mobile 390px layout was inspected. This is not a real-device/native Expo test.
+Translated practice types/statuses, school descriptions and empty resource copy. Corrected School section ordering and suppressed the no-enrollment message during loading/errors. Fixed the local preview server's clean-URL handling for /practice (local helper only).
+Validation: 21 backend tests, 4 controlled request-lifecycle tests, TypeScript and web export pass. Request tests simulate delayed/out-of-order promises using the actual hook with a small lifecycle harness; browser network throttling remains untested. No production deployment.
