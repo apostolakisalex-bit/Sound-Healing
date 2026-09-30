@@ -134,3 +134,6 @@ User explicitly requires preserving the original Emergent aesthetic. Shared new 
 ## Original public hero and editorial control — 2026-09-30
 Restored the original Emergent HERO_IMAGES.main asset and dark gradient/gold composition as a responsive public hero. CMS hero items allow administrators to draft/publish/archive title, summary and HTTPS image changes, using the original asset when no override is published. Only published, nonarchived, unrestricted heroes enter the public feed; first by editorial order then ID wins. Other public CMS cards remain below the hero. This restores one key composition, not full screen-by-screen parity.
 Validation: 23 backend tests, TypeScript pass. Draft hero visibility and restricted publication are covered. Source-required assessment/certification decisions remain open.
+
+## Reproducible GitHub preview checks — 2026-09-30
+Fixed clean pnpm 11 installation by explicitly declining the unrs-resolver install script in frontend/pnpm-workspace.yaml, retaining default protection for unreviewed dependencies. GitHub run 36702934150 validates code revision 65962c7eadc57677aa1c905081937bf11046a55f: backend tests, frozen frontend install, TypeScript, request lifecycle tests and web export. Original hero editorial control is included. Emergent integration and visual/native/real-MongoDB acceptance remain pending.
