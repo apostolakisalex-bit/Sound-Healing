@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Linking,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -16,6 +17,11 @@ import { api } from "@/src/api/client";
 import { colors, fonts } from "@/src/theme";
 
 // Reuse the existing Emergent brand instead of introducing a parallel theme.
+const brandFont = (name: string, serif = false) =>
+  Platform.OS === "web"
+    ? `${name}, ${serif ? "Georgia, serif" : "Arial, sans-serif"}`
+    : name;
+
 export const palette = {
   ink: colors.text.primary,
   muted: colors.text.secondary,
@@ -50,7 +56,7 @@ export const ui = StyleSheet.create({
     gap: 12,
   },
   title: {
-    fontFamily: fonts.heading,
+    fontFamily: brandFont(fonts.heading, true),
     fontSize: 38,
     lineHeight: 44,
     color: palette.ink,
@@ -58,19 +64,19 @@ export const ui = StyleSheet.create({
     letterSpacing: -1,
   },
   heading: {
-    fontFamily: fonts.heading,
+    fontFamily: brandFont(fonts.heading, true),
     fontSize: 23,
     color: palette.ink,
     fontWeight: "600",
   },
   body: {
-    fontFamily: fonts.body,
+    fontFamily: brandFont(fonts.body),
     fontSize: 16,
     lineHeight: 25,
     color: palette.muted,
   },
   label: {
-    fontFamily: fonts.bodySemi,
+    fontFamily: brandFont(fonts.bodySemi),
     fontSize: 12,
     letterSpacing: 1.6,
     fontWeight: "700",
@@ -82,7 +88,7 @@ export const ui = StyleSheet.create({
     borderRadius: 12,
     padding: 14,
     fontSize: 16,
-    fontFamily: fonts.body,
+    fontFamily: brandFont(fonts.body),
     color: palette.ink,
     backgroundColor: palette.white,
     minHeight: 48,
@@ -127,7 +133,7 @@ export function Button({
         style={{
           color: secondary ? palette.ink : "white",
           fontWeight: "600",
-          fontFamily: fonts.bodySemi,
+          fontFamily: brandFont(fonts.bodySemi),
           fontSize: 15,
         }}
       >
