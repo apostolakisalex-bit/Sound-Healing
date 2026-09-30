@@ -101,3 +101,195 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: >
+  Sound Healing Greece — premium wellness app (Expo + FastAPI + MongoDB). Post-GitHub-sync
+  regression verification. Synced branch `shg/premium-renewal` via fast-forward merge (no conflicts).
+  Environment adaptation: packageManager set to yarn for Emergent preview (pnpm-lock/pnpm-workspace
+  preserved). Verify the synced app has no regressions across auth, journey realms, academy,
+  practice logging + public receiver feedback, community, AI oracle, admin resources, and the new
+  school/forms/assessments modules.
+
+backend:
+  - task: "Auth (register, login, me, update profile, logout)"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: "Verified admin login via curl returns 200 with JWT. Needs full flow testing."
+  - task: "Realms (list, detail, enter/unlock)"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Synced from GitHub. Needs testing."
+  - task: "Academy (list levels, level detail, complete lesson -> XP)"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Synced from GitHub. Needs testing."
+  - task: "Practice logging + public receiver feedback flow (no-auth feedback link)"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Create practice -> get feedback token -> submit feedback unauthenticated -> practitioner XP awarded."
+  - task: "Stamps, challenges, community rankings/feed"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Synced from GitHub. Needs testing."
+  - task: "AI Oracle chat (/api/ai/chat via EMERGENT_LLM_KEY)"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Requires auth + EMERGENT_LLM_KEY. Needs testing."
+  - task: "Admin resources upload/list/download/delete"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Pre-existing Emergent feature carried into synced branch. Needs testing."
+  - task: "School module (catalog, progress, content CRUD/publish, cohorts, enrollments, attendance, cycles, practices)"
+    implemented: true
+    working: "NA"
+    file: "backend/school.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "NEW module from GitHub sync. Needs testing."
+  - task: "Forms module (list/create)"
+    implemented: true
+    working: "NA"
+    file: "backend/forms.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "NEW module from GitHub sync. Needs testing."
+  - task: "Assessments module (practice assessments, invitations, admin forms activate)"
+    implemented: true
+    working: "NA"
+    file: "backend/assessments.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "NEW module from GitHub sync. Needs testing."
+
+frontend:
+  - task: "Public landing (unauthenticated) renders premium SHG experience"
+    implemented: true
+    working: true
+    file: "frontend/app/index.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: "Smoke screenshot shows full public landing with Greek content rendering correctly."
+  - task: "Auth screens (login/register) + session persistence"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/login.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Synced from GitHub. Needs testing."
+  - task: "Authenticated tabs (sanctuary, journey, academy, practice, profile) + top-bar nav"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(tabs)"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Synced from GitHub. Needs testing."
+  - task: "Admin dashboard (admin.tsx) content/cohort/enrollment management"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/admin.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "NEW 900-line admin UI from GitHub sync. Needs testing."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Auth (register, login, me, update profile, logout)"
+    - "Realms (list, detail, enter/unlock)"
+    - "Academy (list levels, level detail, complete lesson -> XP)"
+    - "Practice logging + public receiver feedback flow (no-auth feedback link)"
+    - "School module (catalog, progress, content CRUD/publish, cohorts, enrollments, attendance, cycles, practices)"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: >
+      GitHub sync (branch shg/premium-renewal) completed via fast-forward merge — no conflicts, no lost work.
+      Backend starts cleanly (200 on /api/), admin login works (admin@soundhealing.gr / temple2026).
+      Frontend bundles and public landing renders. Please run BACKEND regression first across all listed
+      backend tasks (high priority first), then key FRONTEND flows. MongoDB data preserved (existing admin +
+      seed data present). Use admin creds above. EMERGENT_LLM_KEY is set in backend/.env for AI Oracle.

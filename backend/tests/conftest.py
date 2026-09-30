@@ -1,18 +1,24 @@
-"""Shared fixtures for backend tests."""
+"""Shared fixtures for Sound Healing Greece backend regression tests."""
 import os
-import time
 import uuid
 import requests
 import pytest
 from dotenv import load_dotenv
 from pathlib import Path
 
-# Load frontend .env (public backend URL is here)
+# Load frontend .env (EXPO_PUBLIC_BACKEND_URL lives here)
 load_dotenv(Path(__file__).resolve().parents[2] / "frontend" / ".env")
 
-BASE_URL = os.environ.get("SHG_TEST_BASE_URL", "")
-ADMIN_EMAIL = os.environ.get("SHG_TEST_ADMIN_EMAIL", "")
-ADMIN_PASSWORD = os.environ.get("SHG_TEST_ADMIN_PASSWORD", "")
+BASE_URL = (
+    os.environ.get("SHG_TEST_BASE_URL")
+    or os.environ.get("EXPO_PUBLIC_BACKEND_URL")
+    or ""
+).rstrip("/")
+ADMIN_EMAIL = os.environ.get("SHG_TEST_ADMIN_EMAIL", "admin@soundhealing.gr")
+ADMIN_PASSWORD = os.environ.get("SHG_TEST_ADMIN_PASSWORD", "temple2026")
+
+# Expose to test modules
+os.environ["EXPO_PUBLIC_BACKEND_URL"] = BASE_URL
 
 
 @pytest.fixture(scope="session")
@@ -29,7 +35,10 @@ def api():
 
 @pytest.fixture(scope="session")
 def admin_token(api):
-    r = api.post(f"{BASE_URL}/api/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
+    r = api.post(
+        f"{BASE_URL}/api/auth/login",
+        json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD},
+    )
     assert r.status_code == 200, f"Admin login failed: {r.status_code} {r.text}"
     return r.json()["token"]
 
@@ -44,10 +53,15 @@ def fresh_user(api):
     """Register a fresh student user once per session."""
     email = f"TEST_user_{uuid.uuid4().hex[:8]}@example.com"
     password = "passw0rd123"
-    r = api.post(f"{BASE_URL}/api/auth/register", json={
-        "email": email, "password": password, "name": "TEST Student",
-        "location": "Athens"
-    })
+    r = api.post(
+        f"{BASE_URL}/api/auth/register",
+        json={
+            "email": email,
+            "password": password,
+            "name": "TEST Student",
+            "location": "Athens",
+        },
+    )
     assert r.status_code == 200, f"Register failed: {r.status_code} {r.text}"
     data = r.json()
     return {
@@ -57,11 +71,3 @@ def fresh_user(api):
         "user": data["user"],
         "auth": {"Authorization": f"Bearer {data['token']}"},
     }
-
-
-
-def pytest_collection_modifyitems(config, items):
-    if os.environ.get("SHG_RUN_LEGACY_INTEGRATION") != "true":
-        for item in items:
-            if "/tests/" in str(item.path).replace("\\", "/"):
-                item.add_marker(pytest.mark.skip(reason="External integration tests require explicit staging configuration"))
