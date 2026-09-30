@@ -1,16 +1,21 @@
-# Renewal status — 2026-09-30
+# Κατάσταση εφαρμογής — 30/09/2026
 
+Repo: apostolakisalex-bit/Sound-Healing · Branch: shg/premium-renewal
 Draft PR: https://github.com/apostolakisalex-bit/Sound-Healing/pull/1
-Branch: shg/premium-renewal
-Validated code revision: 65962c7eadc57677aa1c905081937bf11046a55f
-GitHub Actions: https://github.com/apostolakisalex-bit/Sound-Healing/actions/runs/36702934150
+Ελεγμένη έκδοση κώδικα: 2e8f507eac1b350db3de518e23d86cddfd05a052
+Επιτυχής έλεγχος GitHub: https://github.com/apostolakisalex-bit/Sound-Healing/actions/runs/36750753215
 
-23 backend tests, 4 controlled request lifecycle tests, TypeScript and web export pass. Clean Linux dependency installation now records an explicit skip for the unrs-resolver install script in frontend/pnpm-workspace.yaml; default dependency build protections remain enabled.
+## Έχει υλοποιηθεί
+- Δημόσια αρχική και έξι ενότητες: Εμπειρίες, Σχολή, Μανώλης, Εκδηλώσεις, Άρθρα, Επικοινωνία.
+- Αρχική εικόνα και ivory/charcoal/gold αισθητική, προσαρμοζόμενο μενού, links και ενεργή επιλογή.
+- CMS με πρόχειρο, δημοσίευση, ιστορικό/επαναφορά και αρχειοθέτηση. Εικόνες, κείμενα, σύνδεσμοι, ταυτότητα/footer/επικοινωνία και δημόσιο μενού από admin.
+- Τέσσερα Levels, εκπαιδευτικές εγγραφές, τμήματα, παρουσίες, πρακτικές/κύκλοι, review, προσωπική ολοκλήρωση μαθημάτων και πρόοδος με περιορισμούς πρόσβασης.
+- Πρόχειρες εκδόσεις αξιολογήσεων και ιστορικό ενεργειών admin.
 
-Implemented: enrollment-based access, four Levels, CMS draft/publication/history restoration, cohorts, attendance, enrollment pause/reactivate, practice cycles/review, immutable assessment drafts, scoped progress, lesson completion and admin activity. The original ivory/charcoal/gold palette, fonts and public hero image are reused. Admin can publish hero title, summary and image changes.
+## Επαλήθευση
+27 backend tests, 4 ελεγχόμενα tests κύκλου φόρτωσης, TypeScript και web export. Η παραπάνω έκδοση πέρασε και τα δύο GitHub jobs. Browser smoke: μαθητική ροή και admin σε προηγούμενες φάσεις, δημόσια πλοήγηση 390px στην τελευταία. Τα API tests χρησιμοποιούν mock MongoDB.
 
-Browser evidence includes synthetic student draft/submission/return/resubmission, admin CMS and attendance-to-progress, and a 390px layout. Full original-screen parity, real MongoDB concurrency and native Expo checks remain preview gates.
+## Ανοιχτά πριν από παραγωγή
+Real MongoDB concurrency/persistence, πραγματική συσκευή Expo, πλήρης οπτική σύγκριση με Emergent, εγκεκριμένες φόρμες/προσκλήσεις και κανόνες πιστοποίησης, privacy/retention/account recovery, πλήρης σελιδοποίηση καταλόγων. Οι εκδηλώσεις/τα άρθρα χρειάζονται πραγματικές δημοσιεύσεις και δεν διαθέτουν ακόμη αυτόνομο σύστημα κρατήσεων ή αναλυτικές διαδρομές ανά δημοσίευση. Το CMS δεν είναι ελεύθερος page builder και οι αρχικές συνθέσεις παραμένουν στον κώδικα.
 
-No merge, production migration or Emergent deployment. Sources remain read-only. Official assessment activation/invitations, confirmed certification policies, production privacy/retention/account recovery and exhaustive directory pagination remain incomplete. See RELEASE_NOTES.md and product/EMERGENT_PREVIEW_HANDOFF.md.
-
-The local app directory has an independent extracted-baseline Git history. Do not push it wholesale. Remote updates use the current GitHub branch parent and preserve existing assets.
+Δεν έχει γίνει merge, production migration ή deployment στο Emergent. Τα sources παραμένουν read-only. Η τοπική εξαγωγή έχει ανεξάρτητο Git ιστορικό· δεν γίνεται wholesale push. Οι αλλαγές ανεβαίνουν πάνω στο τρέχον parent του GitHub branch.
