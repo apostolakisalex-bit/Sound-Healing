@@ -1,3 +1,7 @@
+import {
+  NavigationEditor,
+  NavigationItem,
+} from "@/src/components/NavigationEditor";
 import { EditorialIntro } from "@/src/components/EditorialIntro";
 import { FormWorkspace } from "@/src/components/FormWorkspace";
 import { Progress } from "@/src/components/Progress";
@@ -22,6 +26,7 @@ type Draft = {
   body: string;
   kind: string;
   section?: string;
+  navigation?: NavigationItem[] | null;
   image_url?: string;
   image_alt?: string;
   action_label?: string;
@@ -295,6 +300,12 @@ function WorkspaceScreen() {
               value={draft.media_url}
               onChange={(v) => set("media_url", v)}
             />
+            {draft.kind === "site_settings" && (
+              <NavigationEditor
+                value={draft.navigation}
+                onChange={(v) => set("navigation", v)}
+              />
+            )}
             {["page", "site_settings"].includes(draft.kind) && (
               <>
                 {draft.kind === "page" && (

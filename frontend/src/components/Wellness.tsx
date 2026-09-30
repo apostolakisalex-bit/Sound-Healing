@@ -256,12 +256,18 @@ export function Shell({
   const { user } = useAuth();
   const links = publicPage
     ? [
-        ["Εμπειρίες", "/explore/services"],
-        ["Σχολή", "/explore/training"],
-        ["Μανώλης", "/explore/about"],
-        ["Εκδηλώσεις", "/explore/events"],
-        ["Άρθρα", "/explore/journal"],
-        ["Επικοινωνία", "/explore/contact"],
+        ...(siteSettings?.navigation != null
+          ? siteSettings.navigation
+              .filter((item) => item.visible)
+              .map((item) => [item.label, "/explore/" + item.section])
+          : [
+              ["Εμπειρίες", "/explore/services"],
+              ["Σχολή", "/explore/training"],
+              ["Μανώλης", "/explore/about"],
+              ["Εκδηλώσεις", "/explore/events"],
+              ["Άρθρα", "/explore/journal"],
+              ["Επικοινωνία", "/explore/contact"],
+            ]),
         ["Σύνδεση", "/login"],
         ["Εγγραφή", "/register"],
       ]
@@ -329,6 +335,7 @@ export type ContentItem = {
     body: string;
     kind: string;
     section?: string;
+    navigation?: { section: string; label: string; visible: boolean }[] | null;
     image_url?: string;
     image_alt?: string;
     action_label?: string;

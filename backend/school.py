@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from typing import Literal
 from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 Level = Literal['L1', 'L2', 'L3', 'L4']
 LEVELS = [
@@ -17,6 +17,11 @@ LEVELS = [
 
 class Strict(BaseModel):
     model_config = ConfigDict(extra='forbid', str_strip_whitespace=True)
+
+class NavigationItem(Strict):
+    section: Literal['services', 'training', 'about', 'events', 'journal', 'contact']
+    label: str = Field(min_length=1, max_length=40)
+    visible: bool = True
 
 class Content(Strict):
     title: str = Field(min_length=2, max_length=160)
@@ -30,7 +35,15 @@ class Content(Strict):
     image_alt: str = Field(default='', max_length=200)
     action_label: str = Field(default='', max_length=80)
     action_url: str = Field(default='', max_length=2000)
+    navigation: list[NavigationItem] | None = Field(default=None, max_length=6)
     order: int = Field(default=0, ge=0, le=10000)
+
+    @field_validator('navigation')
+    @classmethod
+    def unique_navigation(cls, value):
+        if value is not None and len({item.section for item in value}) != len(value):
+            raise ValueError('Each navigation section may appear only once')
+        return value
 
 class ContentEdit(Content):
     revision: int = Field(ge=1)

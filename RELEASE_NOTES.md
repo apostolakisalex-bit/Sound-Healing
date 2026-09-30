@@ -146,3 +146,6 @@ Added editor-managed section imagery, image descriptions and HTTPS action links,
 
 ## Public identity/footer/contact settings — 2026-09-30
 Added site_settings editorial kind and wired published values to public header, footer and contact CTA. Uses existing CMS publication/history permissions; draft values do not leak into the public feed. Missing settings retain original defaults. Navigation configuration remains future work. 26 backend tests and TypeScript pass locally.
+
+## Public menu editing — 2026-09-30
+Added draft menu renaming, ordering, visibility and reset to defaults under site_settings. Public navigation consumes only published settings, retaining login/register. Validates unique known destinations. 27 backend tests and TypeScript pass locally; remote checks for the previous settings revision passed.

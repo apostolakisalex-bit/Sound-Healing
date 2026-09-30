@@ -290,3 +290,13 @@ def test_site_settings_are_private_until_published_and_can_be_archived(env):
     assert call(c,'get','/content/public').json()[0]['published']['body']==data['body']
     call(c,'post',f'/admin/content/{item}/archive')
     assert call(c,'get','/content/public').json()==[]
+
+def test_navigation_rejects_unknown_and_duplicate_destinations(env):
+    c,_=env
+    data={'title':'Public settings','kind':'site_settings','navigation':[{'section':'about','label':'Our story','visible':True}]}
+    for navigation in [[{'section':'admin','label':'Admin'}], data['navigation']*2]:
+        assert call(c,'post','/admin/content',json={**data,'navigation':navigation}).status_code==422
+    item=call(c,'post','/admin/content',json=data).json()['id']
+    call(c,'post',f'/admin/content/{item}/publish?revision=1')
+    call(c,'put',f'/admin/content/{item}',json={**data,'navigation':[],'revision':2})
+    assert call(c,'get','/content/public').json()[0]['published']['navigation']==data['navigation']
