@@ -1,3 +1,6 @@
+import { MembersAdmin } from "@/src/components/MemberProfile";
+import { AdminCalendar } from "@/src/components/AdminCalendar";
+import { MediaLibrary } from "@/src/components/MediaLibrary";
 import { PracticeAssessments } from "@/src/components/Assessments";
 import {
   NavigationEditor,
@@ -126,9 +129,8 @@ function WorkspaceScreen() {
     enrollments: [],
     practices: [],
   });
-  const [section, setSection] = useState(
-      "Επισκόπηση",
-    ),
+  const [picker, setPicker] = useState(false);
+  const [section, setSection] = useState("Επισκόπηση"),
     [draft, setDraft] = useState<Draft>({ ...fresh }),
     [edit, setEdit] = useState<Item | null>(null),
     [message, setMessage] = useState(""),
@@ -178,6 +180,9 @@ function WorkspaceScreen() {
           user?.role === "admin"
             ? [
                 "Επισκόπηση",
+                "Μέλη",
+                "Ημερολόγιο",
+                "Φωτογραφίες",
                 "Περιεχόμενο",
                 "Φόρμες",
                 "Τμήματα",
@@ -197,25 +202,79 @@ function WorkspaceScreen() {
         }}
       />
       <Status state={state} />
-      {section === "Επισκόπηση" && <View style={{ gap: 16 }}>
-        <Text style={ui.heading}>Κέντρο διαχείρισης</Text>
-        <View style={ui.row}>
-          {(user?.role === "admin" ? [
-            ["Εγγραφές", "Μαθητές και εγγραφές στα τμήματα."],
-            ["Περιεχόμενο", "Κείμενα, εικόνες, εκπαιδευτικά, εκδηλώσεις, υπηρεσίες και δημόσιο μενού."],
-            ["Τμήματα", "Levels, ημερομηνίες έναρξης και εκπαιδευτές."],
-            ["Φόρμες", "Φόρμες αξιολόγησης μαθητών και δεκτών."],
-            ["Ιστορικό", "Ιστορικό ενεργειών διαχείρισης."],
-          ] : []).concat([
-            ["Αξιολογήσεις", "Έλεγχος πρακτικών, απαντήσεις αξιολογήσεων και διορθώσεις."],
-            ["Πρόοδος", "Ώρες πρακτικής και παρακολούθησης ανά μαθητή και Level."],
-            ["Παρουσίες", "Καταγραφή ημερομηνίας, παρουσίας και λεπτών παρακολούθησης."],
-          ]).map(([target, description]) => <View key={target} style={[ui.card, { flexGrow: 1, flexBasis: 280 }]}>
-            <Text style={ui.heading}>{target === "Εγγραφές" ? "Μαθητές & εγγραφές" : target}</Text><Text style={ui.body}>{description}</Text>
-            <Button secondary label={`Άνοιγμα: ${target}`} onPress={() => setSection(target)} />
-          </View>)}
+      {section === "Μέλη" && user?.role === "admin" && (
+        <MembersAdmin cohorts={state.data.cohorts} />
+      )}
+      {section === "Ημερολόγιο" && user?.role === "admin" && (
+        <AdminCalendar
+          cohorts={state.data.cohorts}
+          content={state.data.content}
+          onOpen={setSection}
+        />
+      )}
+      {section === "Φωτογραφίες" && user?.role === "admin" && <MediaLibrary />}
+      {section === "Επισκόπηση" && (
+        <View style={{ gap: 16 }}>
+          <Text style={ui.heading}>Κέντρο διαχείρισης</Text>
+          <View style={ui.row}>
+            {(user?.role === "admin"
+              ? [
+                  [
+                    "Μέλη",
+                    "Αιτήσεις εγγραφής, προφίλ, όργανα και επιβεβαίωση πορείας ανά Level.",
+                  ],
+                  [
+                    "Ημερολόγιο",
+                    "Πρόγραμμα, ενάρξεις τμημάτων, παρουσίες και πρακτικές.",
+                  ],
+                  [
+                    "Φωτογραφίες",
+                    "Μεταφόρτωση και επιλογή εικόνων για το περιεχόμενο.",
+                  ],
+                  ["Εγγραφές", "Μαθητές και εγγραφές στα τμήματα."],
+                  [
+                    "Περιεχόμενο",
+                    "Κείμενα, εικόνες, εκπαιδευτικά, εκδηλώσεις, υπηρεσίες και δημόσιο μενού.",
+                  ],
+                  ["Τμήματα", "Levels, ημερομηνίες έναρξης και εκπαιδευτές."],
+                  ["Φόρμες", "Φόρμες αξιολόγησης μαθητών και δεκτών."],
+                  ["Ιστορικό", "Ιστορικό ενεργειών διαχείρισης."],
+                ]
+              : []
+            )
+              .concat([
+                [
+                  "Αξιολογήσεις",
+                  "Έλεγχος πρακτικών, απαντήσεις αξιολογήσεων και διορθώσεις.",
+                ],
+                [
+                  "Πρόοδος",
+                  "Ώρες πρακτικής και παρακολούθησης ανά μαθητή και Level.",
+                ],
+                [
+                  "Παρουσίες",
+                  "Καταγραφή ημερομηνίας, παρουσίας και λεπτών παρακολούθησης.",
+                ],
+              ])
+              .map(([target, description]) => (
+                <View
+                  key={target}
+                  style={[ui.card, { flexGrow: 1, flexBasis: 280 }]}
+                >
+                  <Text style={ui.heading}>
+                    {target === "Εγγραφές" ? "Μαθητές & εγγραφές" : target}
+                  </Text>
+                  <Text style={ui.body}>{description}</Text>
+                  <Button
+                    secondary
+                    label={`Άνοιγμα: ${target}`}
+                    onPress={() => setSection(target)}
+                  />
+                </View>
+              ))}
+          </View>
         </View>
-      </View>}
+      )}
       {section === "Ιστορικό" && user?.role === "admin" && <Activity />}
       {["Εγγραφές", "Παρουσίες"].includes(section) && (
         <Field
@@ -442,10 +501,31 @@ function WorkspaceScreen() {
                   <>
                     {" "}
                     <Field
-                      label="Εικόνα ενότητας (HTTPS)"
+                      label="Εικόνα ενότητας (σύνδεσμος ή επιλογή από τη βιβλιοθήκη)"
                       value={draft.image_url || ""}
                       onChange={(v) => set("image_url", v)}
                     />
+                    <Button
+                      secondary
+                      label={
+                        picker
+                          ? "Κλείσιμο βιβλιοθήκης"
+                          : "Επιλογή από βιβλιοθήκη φωτογραφιών"
+                      }
+                      onPress={() => setPicker(!picker)}
+                    />
+                    {picker && (
+                      <MediaLibrary
+                        onSelect={(photo) => {
+                          setDraft((d) => ({
+                            ...d,
+                            image_url: photo.url,
+                            image_alt: photo.alt,
+                          }));
+                          setPicker(false);
+                        }}
+                      />
+                    )}
                     <Field
                       label="Περιγραφή εικόνας"
                       value={draft.image_alt || ""}

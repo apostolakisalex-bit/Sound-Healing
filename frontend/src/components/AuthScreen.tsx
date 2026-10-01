@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Text, TextInput, View } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { useAuth } from "@/src/auth/AuthContext";
-import { Shell, ui, Button, Field } from "@/src/components/Wellness";
+import { Shell, ui, Button, Field, Choices } from "@/src/components/Wellness";
 export function AuthScreen({ registering = false }: { registering?: boolean }) {
   const auth = useAuth(),
     router = useRouter();
@@ -11,6 +11,12 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
     [password, setPassword] = useState(""),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
+  const [lastName, setLastName] = useState("");
+  const [birthMonth, setBirthMonth] = useState("");
+  const [birthYear, setBirthYear] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [declaredLevel, setDeclaredLevel] = useState("L1");
   const submit = async () => {
     setError("");
     if (
@@ -25,10 +31,25 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
     }
     setBusy(true);
     try {
-      if (registering) await auth.register(email.trim(), password, name.trim());
-      else {
+      if (registering) {
+        await auth.register(email.trim(), password, name.trim(), "", {
+          first_name: name.trim(),
+          last_name: lastName.trim(),
+          birth_month: Number(birthMonth),
+          birth_year: Number(birthYear),
+          phone: phone.trim(),
+          address: address.trim(),
+          declared_level: declaredLevel,
+        });
+        router.replace("/(tabs)/profile");
+        return;
+      } else {
         const signedIn = await auth.login(email.trim(), password);
-        router.replace(["admin", "instructor"].includes(signedIn.role) ? "/admin" : "/(tabs)/sanctuary");
+        router.replace(
+          ["admin", "instructor"].includes(signedIn.role)
+            ? "/admin"
+            : "/(tabs)/sanctuary",
+        );
         return;
       }
       router.replace("/(tabs)/sanctuary");
@@ -52,7 +73,32 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
         style={[ui.card, { maxWidth: 560, width: "100%", alignSelf: "center" }]}
       >
         {registering && (
-          <Field label="Ονοματεπώνυμο" value={name} onChange={setName} />
+          <>
+            <Field label="Όνομα" value={name} onChange={setName} />
+            <Field label="Επώνυμο" value={lastName} onChange={setLastName} />
+            <Field
+              label="Μήνας γέννησης (1–12)"
+              value={birthMonth}
+              onChange={setBirthMonth}
+            />
+            <Field
+              label="Έτος γέννησης"
+              value={birthYear}
+              onChange={setBirthYear}
+            />
+            <Field label="Τηλέφωνο" value={phone} onChange={setPhone} />
+            <Field label="Διεύθυνση" value={address} onChange={setAddress} />
+            <Choices
+              label="Δηλωμένο Level — θα επιβεβαιωθεί από τον διαχειριστή"
+              values={["L1", "L2", "L3", "L4"]}
+              value={declaredLevel}
+              onChange={setDeclaredLevel}
+            />
+            <Text style={ui.body}>
+              Τα στοιχεία αίτησης είναι ορατά μόνο σε εσένα και στον
+              διαχειριστή. Η πρόσβαση μέλους ενεργοποιείται μετά την έγκριση.
+            </Text>
+          </>
         )}
         <Text style={ui.body}>Email</Text>
         <TextInput

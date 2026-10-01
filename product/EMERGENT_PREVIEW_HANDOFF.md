@@ -46,3 +46,7 @@ The original hero is restored, section images/actions and identity/menu settings
 
 ## Current public design acceptance — 2026-10-01
 Use the owner's latest card-based homepage, not the superseded full-height hero. Preserve ivory/charcoal/gold styling, portrait and sound imagery. Navigation order is About, Sound Healing, Training, Events, Services, Contact; account icon leads to login/signup. Public training markets seminars; Events lists standalone experiences. Verify admin CMS public blocks, expiry and homepage visibility settings in preview. Official assessment schema gaps remain visible; do not activate guesses. Set EXPO_PUBLIC_WEB_URL to the actual preview web origin for receiver links from native builds.
+
+
+## Latest preview changes (2026-10-01)
+Use the latest shg/premium-renewal commit. Keep the fixed icon bottom bar, compact home cards and Greek-only header; earlier top-menu mockups are superseded. Install backend requirements including Pillow 12.3.0. New registrations are pending and require admin approval, so provision the real owner using the existing operator script rather than registering a new admin in the UI. Do not migrate synthetic preview records. Back up MongoDB including studio_media binary records before importing any real data. Calendar appointments are internal and separate from CMS publication. Verify 42+ backend tests, TypeScript, hook race tests and web export; test image upload/private preview/public publish/archive and member approval in an isolated preview database. No production merge/deploy is authorized by this handoff.

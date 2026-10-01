@@ -1,3 +1,4 @@
+import { MembersChat } from "./MembersChat";
 import { PublicHome } from "./PublicHome";
 import { EventGrid } from "./EventGrid";
 import React from "react";
@@ -150,7 +151,7 @@ export function PublicExperience({ section }: { section?: string }) {
           actionUrl={intro?.published.action_url}
         />
       )}
-      {!section && !state.loading && !state.error && <PublicHome items={visibleItems} />}
+      {!section && !state.loading && !state.error && <PublicHome items={state.data} />}
       {section === "training" && (
         <View style={ui.row}>
           {[
@@ -196,6 +197,7 @@ export function PublicExperience({ section }: { section?: string }) {
           Περισσότερα για την ηχοθεραπεία ↗
         </NavLink>
       )}
+      {section === "contact" && <MembersChat />}
       <Status state={state} />
       {(section === "events" || section === "training") && (
         <EventGrid

@@ -1,3 +1,4 @@
+import { ManagedImage } from "./ManagedImage";
 import React, { useState } from "react";
 import { Image, Text, View, useWindowDimensions } from "react-native";
 import { Link } from "expo-router";
@@ -67,7 +68,7 @@ export function EventGrid({
             }}
           >
             {p.image_url ? (
-              <Image
+              <ManagedImage
                 accessibilityLabel={p.image_alt || p.title}
                 source={{ uri: p.image_url }}
                 style={{ width: "100%", aspectRatio: 1.5 }}

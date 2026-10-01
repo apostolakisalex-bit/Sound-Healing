@@ -1,3 +1,4 @@
+import { ManagedImage } from "./ManagedImage";
 import React, { useState, useEffect } from "react";
 import { Image, Text, View } from "react-native";
 import { Link } from "expo-router";
@@ -24,7 +25,7 @@ export function EditorialIntro({
 }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [imageUrl]);
-  const image = imageUrl?.startsWith("https://") && !failed;
+  const image = (imageUrl?.startsWith("https://") || imageUrl?.startsWith("/api/media/")) && !failed;
   const action = actionLabel && actionUrl?.startsWith("https://");
   return (
     <View style={[ui.card, { padding: 0, overflow: "hidden" }]}>
@@ -37,7 +38,7 @@ export function EditorialIntro({
       >
         {image && (
           <View style={{ flexBasis: 320, flexGrow: 1, minHeight: 260 }}>
-            <Image
+            <ManagedImage
               source={{ uri: imageUrl }}
               accessibilityLabel={imageAlt || title}
               onError={() => setFailed(true)}

@@ -1,5 +1,12 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
-import { api, setAuthToken, getAuthToken } from '@/src/api/client';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+  useCallback,
+} from "react";
+import { api, setAuthToken, getAuthToken } from "@/src/api/client";
 
 export type User = {
   id: string;
@@ -14,6 +21,7 @@ export type User = {
   stamps: string[];
   unlocked_realms: string[];
   role: string;
+  membership_status?: string;
   created_at?: string;
 };
 
@@ -21,7 +29,13 @@ type AuthContextType = {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
-  register: (email: string, password: string, name: string, location?: string) => Promise<User>;
+  register: (
+    email: string,
+    password: string,
+    name: string,
+    location?: string,
+    application?: Record<string, unknown>,
+  ) => Promise<User>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
   updateProfile: (patch: Partial<User>) => Promise<void>;
@@ -40,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         return;
       }
-      const { data } = await api.get('/auth/me');
+      const { data } = await api.get("/auth/me");
       setUser(data);
     } catch {
       setUser(null);
@@ -56,32 +70,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { data } = await api.post('/auth/login', { email, password });
+    const { data } = await api.post("/auth/login", { email, password });
     await setAuthToken(data.token);
     setUser(data.user);
     return data.user as User;
   }, []);
 
-  const register = useCallback(async (email: string, password: string, name: string, location?: string) => {
-    const { data } = await api.post('/auth/register', { email, password, name, location });
-    await setAuthToken(data.token);
-    setUser(data.user);
-    return data.user as User;
-  }, []);
+  const register = useCallback(
+    async (
+      email: string,
+      password: string,
+      name: string,
+      location?: string,
+      application?: Record<string, unknown>,
+    ) => {
+      const { data } = await api.post("/auth/register", {
+        email,
+        password,
+        name,
+        location,
+        application,
+      });
+      await setAuthToken(data.token);
+      setUser(data.user);
+      return data.user as User;
+    },
+    [],
+  );
 
   const logout = useCallback(async () => {
-    try { await api.post('/auth/logout'); } catch { /* Clear local credentials even when offline. */ }
+    try {
+      await api.post("/auth/logout");
+    } catch {
+      /* Clear local credentials even when offline. */
+    }
     await setAuthToken(null);
     setUser(null);
   }, []);
 
   const updateProfile = useCallback(async (patch: Partial<User>) => {
-    const { data } = await api.put('/auth/me', patch);
+    const { data } = await api.put("/auth/me", patch);
     setUser(data);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refresh, updateProfile }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, register, logout, refresh, updateProfile }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -89,7 +124,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used inside AuthProvider');
+  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
   return ctx;
 }
-

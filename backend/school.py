@@ -224,10 +224,18 @@ def build_school_router(db, current_user, admin_user):
         contents = await db.content_items.find({}, {'_id': 0}).sort('updated_at', -1).to_list(500) if user['role'] == 'admin' else []
         return {'cohorts': cohorts, 'enrollments': enrollments, 'practices': practices, 'users': users, 'content': contents, 'cycles': cycles}
 
+    async def validate_image(url):
+        import re
+        if re.fullmatch(r'/api/media/[0-9a-f-]{36}', url):
+            if not await db.studio_media.find_one({'url': url}):
+                raise HTTPException(422, 'Image not found in library')
+        else:
+            validate_media(url)
+
     @router.post('/admin/content')
     async def create_content(payload: Content, user=Depends(admin_user)):
         validate_media(payload.media_url)
-        validate_media(payload.image_url)
+        await validate_image(payload.image_url)
         validate_media(payload.action_url)
         if bool(payload.action_label) != bool(payload.action_url):
             raise HTTPException(422, "Action requires both label and HTTPS URL")
@@ -239,7 +247,7 @@ def build_school_router(db, current_user, admin_user):
     @router.put('/admin/content/{item_id}')
     async def edit_content(item_id: str, payload: ContentEdit, user=Depends(admin_user)):
         validate_media(payload.media_url)
-        validate_media(payload.image_url)
+        await validate_image(payload.image_url)
         validate_media(payload.action_url)
         if bool(payload.action_label) != bool(payload.action_url):
             raise HTTPException(422, "Action requires both label and HTTPS URL")

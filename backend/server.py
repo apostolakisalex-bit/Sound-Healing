@@ -2,7 +2,7 @@
 Sound Healing Greece — Backend API
 A cinematic sound healing ecosystem with ritual progression.
 """
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -67,11 +67,15 @@ class UserPublic(BaseModel):
     xp: int
     stamps: List[str] = []
     unlocked_realms: List[str] = []
+    membership_status: str = "approved"
     role: str = "student"
     created_at: datetime
 
 
+from members import Application
+
 class RegisterIn(BaseModel):
+    application: Application
     email: EmailStr
     password: str = Field(min_length=10, max_length=72)
     name: str = Field(min_length=2)
@@ -214,7 +218,7 @@ def create_token(user_id: str, token_version: int = 0) -> str:
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGO)
 
 
-async def get_current_user(creds: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> dict:
+async def get_current_user(request: Request, creds: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> dict:
     if not creds:
         raise HTTPException(status_code=401, detail="Not authenticated")
     try:
@@ -225,6 +229,8 @@ async def get_current_user(creds: Optional[HTTPAuthorizationCredentials] = Depen
     user = await db.users.find_one({"id": user_id}, {"_id": 0, "password_hash": 0})
     if not user or payload.get("ver", 0) != user.get("token_version", 0):
         raise HTTPException(status_code=401, detail="Session expired")
+    if user.get('membership_status', 'approved') != 'approved' and not (request.url.path.startswith('/api/auth/') or request.url.path == '/api/members/me' or request.url.path.startswith('/api/notifications')):
+        raise HTTPException(403, 'Η εγγραφή σου δεν έχει εγκριθεί ακόμη.')
     return user
 
 
@@ -248,6 +254,7 @@ def serialize_user(user: dict) -> dict:
         "stamps": user.get("stamps", []),
         "unlocked_realms": user.get("unlocked_realms", []),
         "role": user.get("role", "student"),
+        "membership_status": user.get("membership_status", "approved"),
         "created_at": user.get("created_at", datetime.now(timezone.utc)),
     }
 
@@ -458,7 +465,9 @@ async def register(payload: RegisterIn):
     user = {
         "id": user_id,
         "email": payload.email.lower(),
-        "name": payload.name,
+        "name": payload.application.first_name + " " + payload.application.last_name,
+        "application": payload.application.model_dump(),
+        "membership_status": "pending",
         "password_hash": hash_password(payload.password),
         "bio": "",
         "location": payload.location or "",
@@ -472,6 +481,7 @@ async def register(payload: RegisterIn):
         "created_at": datetime.now(timezone.utc),
     }
     await db.users.insert_one(user)
+    await db.member_notifications.insert_one({'id': str(uuid.uuid4()), 'audience': 'admin', 'user_id': None, 'text': 'Νέα αίτηση εγγραφής: ' + user['name'], 'created_at': datetime.now(timezone.utc), 'read_by': []})
     token = create_token(user_id)
     return {"token": token, "user": serialize_user(user)}
 
@@ -998,3 +1008,9 @@ async def shutdown_db_client():
 
 from assessments import build_assessment_router
 app.include_router(build_assessment_router(db, get_current_user, get_admin_user))
+
+from studio import build_studio_router
+app.include_router(build_studio_router(db, get_current_user, get_admin_user))
+
+from members import build_members_router
+app.include_router(build_members_router(db, get_current_user, get_admin_user))

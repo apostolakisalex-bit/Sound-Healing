@@ -372,3 +372,33 @@ Owner requested a return to the lighter Emergent wellness aesthetic. Reduced sha
 - Workspace opens with shortcuts to content, enrollments, cohorts, assessment forms, reviews, attendance and progress. Role restrictions remain enforced by existing backend endpoints.
 - Manolis is the administrator; do not infer or change account roles from a name or email. Production account provisioning must use the existing secured process.
 - Outstanding: integrated calendar management and direct media upload/library. Existing CMS image editing uses HTTPS URLs. Do not present these outstanding capabilities as complete.
+
+
+## Owner update — 2026-10-01: mobile navigation and membership
+This section supersedes earlier top navigation and self-service registration decisions.
+
+- Greek only for now, explicitly confirmed by owner; no active language switch.
+- Persistent bottom bar: Home, Sound Healing, Training, Events, Profile. Public home remains available when signed in. Staff Profile destination is the admin workspace.
+- Header: Sound Healing Greece without tagline; in-app notifications. Notifications are stored in the application, not external push/email.
+- Home: circular founder portrait with text/CTA, wide sound-healing card, up to two compact training cards side-by-side (past published trainings when none active), active events, compact raised service tiles. Never fabricate a second event when only one exists.
+- Member profile: avatar, editable name/bio, instrument list, circular summary metrics, L1–L4 bars and practice stars. Minutes/sessions are submitted non-draft school practices. Unique receiver count uses individual-practice receiver codes, not identifiable people or group totals. Evaluation count is submitted practitioner assessments.
+- New registration collects first/last name, birth month/year (no day), phone, address and declared Level, alongside email/password. It creates a pending account; declaration never grants enrollment. Existing accounts retain current access for compatibility.
+- Administrator receives an in-app notification, reviews each Level through the declared Level, then approves/rejects membership. Private application fields are not included in member lists or chat.
+- Targets are admin-configured per member/Level, not defaulted to 15. Owner's 15/10/5 was an example. Historical credit requires an evidence note. Separately selected reviewed in-app practices are counted once by ID. No automatic certificate. Disabled bars grey, incomplete progress gold, complete practice targets green.
+- Admin may assign an existing cohort for outstanding prior-Level practice during verification. No synthetic cohort is created.
+- Training admission is a separate request and explicit administrator decision for a selected cohort. Incomplete prior practice does not automatically block admission. Existing requests are protected from duplicate submissions.
+- Members-only text chat appears under Contact, with name attribution, pagination, manual refresh, rate limit and admin moderation. Pending/rejected accounts cannot participate. No receiver health details are displayed in the calendar/chat by the application.
+
+## Admin studio — calendar and photographs
+- Monthly admin calendar with date filter and category filter; create/edit/cancel internal class, training, event or other appointments. Europe/Athens wall time, valid start/end dates, optional cohort or corresponding CMS announcement link. Optimistic revisions prevent stale overwrites.
+- Cohort start dates and daily submitted-practice/attendance counts appear automatically, as read-only source entries. Public CMS event dates remain editorial text and are not guessed/parsed into dates. Creating a calendar appointment does not publish or change the associated public announcement.
+- Photograph library: JPG/PNG/WebP <=8 MB and <=25 MP, validated/re-encoded using Pillow, metadata removed, max dimension 2400px, stored WebP <=4 MB in MongoDB. Images travel with database backups; no Emergent filesystem dependency. Indexed metadata and paginated/searchable picker planned for deployment scale.
+- Library references use /api/media/<id>, resolved against configured backend. Raw images are public only while referenced by an active published public CMS item. Authenticated previews follow admin/enrollment access. Soft archive hides picker entries and preserves existing references/history.
+- Admin can select library image+alt text into a CMS draft. Publication is still explicit. Profile avatars are separately normalized to 256px.
+- New collections: studio_media, studio_calendar, member_levels, training_requests, member_notifications, member_chat. No destructive migration or old-data deletion.
+
+### Preview acceptance / open operational decisions
+- Verify membership registration -> admin Level records -> decision -> member instrument/avatar edits -> training request -> explicit cohort admission using synthetic accounts.
+- Confirm official practice targets/evidence requirements from school sources before entering production member credit. Completion of stars is practice-target completion, not certification.
+- No push/email delivery, external calendar sync, recurring appointments or real-time websocket chat has been implemented; current notifications/chat are in-app with refresh.
+- Production moderation/retention policy and outstanding official form ambiguities still need owner/source resolution. Preserve these as open decisions, not invented requirements.

@@ -1,6 +1,15 @@
+import { Ionicons } from "@expo/vector-icons";
+import { iconSurface } from "./AppNavigation";
+import { ManagedImage } from "./ManagedImage";
 import React from "react";
-import { Image, Text, View, useWindowDimensions } from "react-native";
-import { Link } from "expo-router";
+import {
+  Image,
+  Pressable,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
+import { Link, useRouter } from "expo-router";
 import { FOUNDER, HERO_IMAGES, SOCIAL_LINKS } from "@/src/content/public";
 import { ContentItem, ui } from "./Wellness";
 import { EventGrid } from "./EventGrid";
@@ -10,6 +19,7 @@ const serviceTitles = [
   "Εταιρικές εκδηλώσεις & εργαστήρια",
 ];
 export function PublicHome({ items }: { items: ContentItem[] }) {
+  const router = useRouter();
   const { width } = useWindowDimensions();
   const compactScreen = width < 600;
   const settings = items.find(
@@ -19,14 +29,27 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
     items.find(
       (i) => i.published.kind === "page" && i.published.section === section,
     )?.published;
-  const programmes = (section: string) =>
-    items
-      .filter(
-        (i) =>
-          i.published.kind === "announcement" &&
-          i.published.section === section,
-      )
-      .slice(0, 4);
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Athens",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  const allProgrammes = (section: string) =>
+    items.filter(
+      (i) =>
+        i.published.kind === "announcement" && i.published.section === section,
+    );
+  const programmes = (section: string) => {
+    const all = allProgrammes(section);
+    const active = all.filter(
+      (i) => !i.published.event_end_date || i.published.event_end_date >= today,
+    );
+    return (section === "training" && !active.length ? all : active).slice(
+      0,
+      section === "training" ? 2 : 4,
+    );
+  };
   const testimonials = items
     .filter((i) => i.published.kind === "testimonial")
     .slice(0, 3);
@@ -45,7 +68,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
     .slice(0, 6);
   return (
     <View style={{ gap: 32 }}>
-      <View style={[ui.row, { alignItems: "stretch" }]}>
+      <View style={{ gap: 22 }}>
         {[
           {
             section: "about",
@@ -66,16 +89,45 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
               key={card.section}
               style={[
                 ui.card,
-                { flexGrow: 1, flexBasis: 280, padding: 0, overflow: "hidden", borderWidth: 0, backgroundColor: "transparent" },
+                {
+                  padding: 0,
+                  overflow: "hidden",
+                  borderWidth: 0,
+                  backgroundColor: "transparent",
+                  flexDirection: card.section === "about" ? "row" : "column",
+                  alignItems: card.section === "about" ? "center" : "stretch",
+                  gap: 16,
+                },
               ]}
             >
-              <Image
+              <ManagedImage
                 source={{ uri: content?.image_url || card.image }}
                 accessibilityLabel={content?.image_alt || card.title}
-                style={{ width: "100%", height: compactScreen ? 190 : 240, borderRadius: 12, backgroundColor: "#F0EDE7" }}
-                resizeMode={card.section === "about" ? "contain" : "cover"}
+                style={
+                  card.section === "about"
+                    ? {
+                        width: compactScreen ? 92 : 120,
+                        height: compactScreen ? 92 : 120,
+                        borderRadius: 60,
+                        backgroundColor: "#F0EDE7",
+                      }
+                    : {
+                        width: "100%",
+                        height: compactScreen ? 160 : 210,
+                        borderRadius: 16,
+                        backgroundColor: "#F0EDE7",
+                      }
+                }
+                resizeMode="cover"
               />
-              <View style={{ paddingVertical: 16, paddingHorizontal: 2, gap: 7 }}>
+              <View
+                style={{
+                  paddingVertical: 8,
+                  paddingHorizontal: 2,
+                  gap: 7,
+                  flex: 1,
+                }}
+              >
                 <Link
                   href={`/explore/${card.section}` as any}
                   style={ui.heading}
@@ -83,6 +135,14 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                   {card.title} ↗
                 </Link>
                 <Text style={ui.body}>{content?.summary || card.text}</Text>
+                <Link
+                  href={`/explore/${card.section}` as any}
+                  style={[ui.body, { color: "#94712F", fontSize: 12 }]}
+                >
+                  {card.section === "about"
+                    ? "Γνώρισέ τον →"
+                    : "Ανακάλυψε την ηχοθεραπεία →"}
+                </Link>
               </View>
             </View>
           );
@@ -90,7 +150,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       </View>
       {(
         [
-          ["training", "Ενεργά εκπαιδευτικά"],
+          ["training", "Εκπαιδευτικά"],
           ["events", "Ενεργές εκδηλώσεις"],
         ] as const
       ).map(([section, title]) => (
@@ -102,11 +162,58 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
             </Link>
           </View>
           {programmes(section).length ? (
-            <EventGrid
-              items={programmes(section)}
-              training={section === "training"}
-              compact
-            />
+            section === "training" ? (
+              <View style={{ flexDirection: "row", gap: 12 }}>
+                {programmes(section).map((item) => (
+                  <Pressable key={item.id} onPress={() => router.push("/explore/training")}
+                      accessibilityRole="link"
+                      style={[
+                        ui.card,
+                        {
+                          width: "48%",
+                          padding: 0,
+                          overflow: "hidden",
+                          gap: 8,
+                        },
+                      ]}
+                    >
+                      <ManagedImage
+                        source={{ uri: item.published.image_url }}
+                        accessibilityLabel={
+                          item.published.image_alt || item.published.title
+                        }
+                        style={{
+                          width: "100%",
+                          height: compactScreen ? 100 : 170,
+                        }}
+                        resizeMode="cover"
+                      />
+                      <View style={{ padding: 10, gap: 5 }}>
+                        <Text
+                          numberOfLines={2}
+                          style={[ui.body, { fontWeight: "600", fontSize: 13 }]}
+                        >
+                          {item.published.title}
+                        </Text>
+                        <Text style={[ui.body, { fontSize: 11 }]}>
+                          {item.published.event_date}
+                        </Text>
+                        {!!item.published.event_end_date &&
+                          item.published.event_end_date < today && (
+                            <Text style={{ fontSize: 10, color: "#81755F" }}>
+                              Παλαιότερο εκπαιδευτικό
+                            </Text>
+                          )}
+                        <Text style={{ fontSize: 12, color: "#94712F" }}>
+                          Περισσότερα →
+                        </Text>
+                      </View>
+                    </Pressable>
+                ))}
+              </View>
+            ) : (
+              <EventGrid items={programmes(section)} compact />
+            )
           ) : (
             <Text style={ui.body}>Το νέο πρόγραμμα θα ανακοινωθεί εδώ.</Text>
           )}
@@ -118,33 +225,53 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           {(services.length
             ? services.map((i) => i.published.title)
             : serviceTitles
-          ).map((title) => (
-            <Link
-              key={title}
-              href="/explore/services"
-              style={[
-                ui.body,
-                {
-                  flexGrow: 1,
-                  flexBasis: 220,
-                  padding: 18,
-                  borderRadius: 12,
-                  backgroundColor: "#F5F1E8",
-                  borderWidth: 1,
-                  borderColor: "#E8E3DA",
-                  shadowColor: "#625335",
-                  shadowOpacity: 0.05,
-                  shadowRadius: 10,
-                  shadowOffset: { width: 0, height: 3 },
-                  elevation: 1,
-                  color: "#39352D",
-                },
-              ]}
-            >
-              {title} ↗
-            </Link>
+          ).map((title, index) => (
+            <Pressable key={title} onPress={() => router.push("/explore/services")}
+                accessibilityRole="link"
+                style={[
+                  iconSurface,
+                  {
+                    width: compactScreen ? "30%" : 160,
+                    minHeight: compactScreen ? 116 : 140,
+                    padding: 12,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 12,
+                    borderWidth: 1,
+                    borderColor: "#E9E2D5",
+                  },
+                ]}
+              >
+                <Ionicons
+                  name={
+                    (
+                      ["mic-outline", "leaf-outline", "people-outline"] as const
+                    )[index % 3]
+                  }
+                  size={26}
+                  color="#927545"
+                />
+                <Text
+                  style={{
+                    fontSize: 11,
+                    lineHeight: 16,
+                    textAlign: "center",
+                    color: "#39352D",
+                  }}
+                >
+                  {title}
+                </Text>
+              </Pressable>
           ))}
         </View>
+      </View>
+      <View style={ui.row}>
+        <Link href="/explore/about" style={ui.body}>
+          Σχετικά
+        </Link>
+        <Link href="/explore/contact" style={ui.body}>
+          Επικοινωνία & Chat →
+        </Link>
       </View>
       {settings?.show_testimonials !== false && (
         <View style={{ gap: 18 }}>
@@ -188,7 +315,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           <View style={ui.row}>
             {partners.map((i) => (
               <View key={i.id} style={{ padding: 12 }}>
-                <Image
+                <ManagedImage
                   source={{ uri: i.published.image_url }}
                   accessibilityLabel={i.published.title}
                   style={{ width: 130, height: 60 }}

@@ -65,3 +65,19 @@ def test_new_attachment_stays_private_until_publish(secured):
     user={'id':'student','role':'student'}
     assert asyncio.run(server.can_read_resource({'id':'new','parent_type':'cms_content','parent_id':'item'},user)) is False
     assert asyncio.run(server.can_read_resource({'id':'old','parent_type':'cms_content','parent_id':'item'},user)) is True
+
+
+def test_new_registration_stays_pending_without_academic_access(monkeypatch):
+    db = AsyncMongoMockClient()['registration_test']
+    monkeypatch.setattr(server, 'db', db)
+    c = TestClient(server.app)
+    payload = {'email': 'pending@example.org', 'password': 'TestOnlyPassword2026!', 'name': 'Test Member', 'application': {'first_name': 'Test', 'last_name': 'Member', 'birth_month': 5, 'birth_year': 1990, 'phone': '0000000000', 'address': 'Synthetic address', 'declared_level': 'L3'}}
+    r = c.post('/api/auth/register', json=payload)
+    assert r.status_code == 200, r.text
+    assert r.json()['user']['membership_status'] == 'pending'
+    headers = {'Authorization': 'Bearer ' + r.json()['token']}
+    assert c.get('/api/auth/me', headers=headers).status_code == 200
+    assert c.get('/api/school/me', headers=headers).status_code == 403
+    assert c.get('/api/members/chat', headers=headers).status_code == 403
+    assert asyncio.run(db.member_notifications.count_documents({'audience': 'admin'})) == 1
+    assert asyncio.run(db.school_enrollments.count_documents({})) == 0
