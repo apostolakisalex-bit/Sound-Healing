@@ -1,4 +1,3 @@
-import { TrainingLevelCards } from "./TrainingLevels";
 import Svg, { Path } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";
 import { wellness } from "@/src/theme";
@@ -14,7 +13,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { Link, useRouter } from "expo-router";
-import { FOUNDER, HERO_IMAGES, SOCIAL_LINKS } from "@/src/content/public";
+import { FOUNDER, HERO_IMAGES, SOCIAL_LINKS, INSTRUMENTS } from "@/src/content/public";
 import { ContentItem, ui } from "./Wellness";
 import { EventGrid } from "./EventGrid";
 const serviceTitles = [
@@ -89,96 +88,32 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           <Path d="M0 28 C100 0 150 56 250 28 S400 0 500 28 S650 56 750 28 S900 0 1000 28 S1150 56 1200 28 L1200 60 L0 60 Z" fill={wellness.white} />
         </Svg>
       </View>
-      <View style={{ gap: 22 }}>
+      <View style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
         {[
-          {
-            section: "about",
-            title: "Μανώλης Ζωγραφάκης",
-            text: "Γνώρισε τον άνθρωπο πίσω από το Sound Healing Greece.",
-            image: FOUNDER.photo,
-          },
-          {
-            section: "soundhealing",
-            title: "Ηχοθεραπεία",
-            text: "Μια γνωριμία με τον ήχο, τα όργανα και την εμπειρία της ακρόασης.",
-            image: HERO_IMAGES.philosophy,
-          },
-        ].map((card) => {
-          const content = page(card.section);
-          return (
-            <View
-              key={card.section}
-              style={[
-                ui.card,
-                {
-                  padding: card.section === "about" ? 20 : 0,
-                  width: card.section === "about" ? "100%" : "82%",
-                  maxWidth: card.section === "about" ? undefined : 480,
-                  alignSelf: card.section === "about" ? "stretch" : "flex-end",
-                  minHeight: card.section === "about" ? (compactScreen ? 220 : 270) : undefined,
-                  overflow: "hidden",
-                  borderWidth: 1,
-                  borderColor: wellness.line,
-                  borderRadius: 22,
-                  backgroundColor: card.section === "about" ? wellness.ice : wellness.sage,
-                  flexDirection: card.section === "about" ? "row" : "column",
-                  alignItems: card.section === "about" ? "center" : "stretch",
-                  gap: 16,
-                },
-              ]}
-            >
-              <ManagedImage
-                source={{ uri: content?.image_url || card.image }}
-                accessibilityLabel={content?.image_alt || card.title}
-                style={
-                  card.section === "about"
-                    ? {
-                        width: compactScreen ? 118 : 200,
-                        height: compactScreen ? 176 : 226,
-                        borderRadius: 16,
-                        backgroundColor: wellness.sage,
-                      }
-                    : {
-                        width: "100%",
-                        height: compactScreen ? 100 : 140,
-                        alignSelf: "stretch",
-                        borderRadius: 0,
-                        backgroundColor: wellness.sage,
-                      }
-                }
-                resizeMode="cover"
-              />
-              <View
-                style={{
-                  paddingVertical: card.section === "about" ? 8 : 12,
-                  paddingHorizontal: card.section === "about" ? 0 : 16,
-                  gap: 7,
-                  flex: 1,
-                }}
-              >
-                <Link
-                  href={`/explore/${card.section}` as any}
-                  style={[ui.heading, { fontSize: compactScreen ? 18 : 21 }]}
-                >
-                  {card.title} ↗
-                </Link>
-                <Text style={ui.body}>{content?.summary || card.text}</Text>
-                <Link
-                  href={`/explore/${card.section}` as any}
-                  style={[ui.body, { color: wellness.slate, fontSize: 12 }]}
-                >
-                  {card.section === "about"
-                    ? "Γνώρισέ τον →"
-                    : "Ανακάλυψε την ηχοθεραπεία →"}
-                </Link>
-              </View>
-            </View>
-          );
-        })}
-      </View>
-      <View style={{ gap: 16 }}>
-        <Text style={ui.heading}>Η εκπαιδευτική διαδρομή</Text>
-        <TrainingLevelCards />
+          [
+            { title: "Μανώλης Ζωγραφάκης", label: "ΣΧΕΤΙΚΑ", image: page("about")?.image_url || FOUNDER.photo, route: "/explore/about", ratio: .68 },
+            { title: "Τα θεμέλια", label: "LEVEL 1", image: INSTRUMENTS[0].image, route: "/explore/levels?level=1", ratio: 1.35 },
+            { title: "Ομαδικά Sound Baths", label: "LEVEL 3", image: HERO_IMAGES.cta, route: "/explore/levels?level=3", ratio: 1.05 },
+          ],
+          [
+            { title: "Ηχοθεραπεία", label: "Η ΕΜΠΕΙΡΙΑ", image: page("soundhealing")?.image_url || INSTRUMENTS[0].image, route: "/explore/soundhealing", ratio: 1.05 },
+            { title: "Εμβάθυνση", label: "LEVEL 2", image: HERO_IMAGES.philosophy, route: "/explore/levels?level=2", ratio: 1.35 },
+            { title: "Επαγγελματική ανάπτυξη", label: "LEVEL 4", image: HERO_IMAGES.community, route: "/explore/levels?level=4", ratio: .68 },
+          ],
+        ].map((column, index) => (
+          <View key={index} style={{ flex: 1, gap: 12 }}>
+            {column.map(card => (
+              <Pressable key={card.route} accessibilityRole="link" accessibilityLabel={`${card.label}: ${card.title}`} onPress={() => router.push(card.route as any)} style={({ pressed }) => ({ aspectRatio: card.ratio, borderRadius: 12, overflow: "hidden", backgroundColor: wellness.blueMist, opacity: pressed ? .85 : 1 })}>
+                <ManagedImage source={{ uri: card.image }} accessibilityLabel={card.title} resizeMode="cover" style={{ position: "absolute", width: "100%", height: "100%" }} />
+                <LinearGradient colors={["transparent", "rgba(22,30,40,0.82)"]} locations={[.2,1]} style={{ position: "absolute", width: "100%", height: "100%" }} />
+                <View style={{ marginTop: "auto", padding: compactScreen ? 12 : 20, gap: 5 }}>
+                  <Text style={[ui.label, { color: "#FFFFFF", fontSize: 10, letterSpacing: 1.1 }]}>{card.label}</Text>
+                  <Text style={[ui.body, { color: "#FFFFFF", fontSize: compactScreen ? 15 : 22, lineHeight: compactScreen ? 20 : 28, fontWeight: "600" }]}>{card.title} ↗</Text>
+                </View>
+              </Pressable>
+            ))}
+          </View>
+        ))}
       </View>
       {(
         [
