@@ -402,3 +402,7 @@ This section supersedes earlier top navigation and self-service registration dec
 - Confirm official practice targets/evidence requirements from school sources before entering production member credit. Completion of stars is practice-target completion, not certification.
 - No push/email delivery, external calendar sync, recurring appointments or real-time websocket chat has been implemented; current notifications/chat are in-app with refresh.
 - Production moderation/retention policy and outstanding official form ambiguities still need owner/source resolution. Preserve these as open decisions, not invented requirements.
+
+
+### 2026-10-01 — Previous training visibility
+Owner decision: published past trainings remain visible alongside active programmes on the training page, ordered after active programmes and newest past first. Past cards use an informational CTA and a previous-training label. The compact home preview retains two cards, filling remaining slots with past programmes; the full training page exposes all. CMS-archived/unpublished content remains hidden. Past status uses the explicit event_end_date in Europe/Athens, never inferred editorial dates. This supersedes the fallback-only rule.

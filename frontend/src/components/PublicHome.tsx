@@ -45,7 +45,10 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
     const active = all.filter(
       (i) => !i.published.event_end_date || i.published.event_end_date >= today,
     );
-    return (section === "training" && !active.length ? all : active).slice(
+    const past = all.filter(
+      (i) => !!i.published.event_end_date && i.published.event_end_date < today,
+    ).sort((a, b) => b.published.event_end_date!.localeCompare(a.published.event_end_date!));
+    return (section === "training" ? [...active, ...past] : active).slice(
       0,
       section === "training" ? 2 : 4,
     );

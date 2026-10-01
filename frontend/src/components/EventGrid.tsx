@@ -19,7 +19,18 @@ export function EventGrid({
   const [search, setSearch] = useState("");
   const columns = width >= 1100 ? 4 : width >= 760 ? 3 : width >= 540 ? 2 : 1;
   const cardWidth = (Math.min(width - 48, 1072) - (columns - 1) * 20) / columns;
-  const matches = items.filter(({ published: p }) =>
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Athens", year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date());
+  const isPast = (p: ContentItem["published"]) =>
+    training && !!p.event_end_date && p.event_end_date < today;
+  const ordered = [...items].sort((a, b) => {
+    const difference = Number(isPast(a.published)) - Number(isPast(b.published));
+    if (difference) return difference;
+    return isPast(a.published)
+      ? b.published.event_end_date!.localeCompare(a.published.event_end_date!) : 0;
+  });
+  const matches = ordered.filter(({ published: p }) =>
     [p.title, p.event_location, p.event_date]
       .join(" ")
       .toLocaleLowerCase("el")
@@ -41,7 +52,7 @@ export function EventGrid({
       )}
       {!matches.length && (
         <Text accessibilityLiveRegion="polite" style={ui.body}>
-          Δεν βρέθηκαν εκδηλώσεις. Δοκίμασε διαφορετική αναζήτηση.
+          {training ? "Δεν βρέθηκαν εκπαιδευτικά." : "Δεν βρέθηκαν εκδηλώσεις."} Δοκίμασε διαφορετική αναζήτηση.
         </Text>
       )}
       <View
@@ -92,6 +103,11 @@ export function EventGrid({
             )}
             <View style={{ height: 1, backgroundColor: "#B7A56C" }} />
             <View style={{ padding: 14, gap: 12, flex: 1 }}>
+              {isPast(p) && (
+                <Text style={[ui.label, { color: "#82765D", fontSize: 11 }]}>
+                  Παλαιότερο εκπαιδευτικό
+                </Text>
+              )}
               {p.action_url ? (
                 <Link
                   href={p.action_url as any}
@@ -164,7 +180,7 @@ export function EventGrid({
                     },
                   ]}
                 >
-                  {p.action_label ||
+                  {isPast(p) ? "Πληροφορίες εκπαιδευτικού" : p.action_label ||
                     (training
                       ? "Πληροφορίες & εγγραφή"
                       : "Πληροφορίες & συμμετοχή")}{" "}

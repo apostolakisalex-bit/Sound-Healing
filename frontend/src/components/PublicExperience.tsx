@@ -95,9 +95,9 @@ export function PublicExperience({ section }: { section?: string }) {
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
-  const pastTraining = section === "training" && !state.data.some(i => i.published.kind === "announcement" && i.published.section === "training" && (!i.published.event_end_date || i.published.event_end_date >= today));
   const visibleItems = state.data.filter(
-    (i) => !i.published.event_end_date || i.published.event_end_date >= today || (pastTraining && i.published.section === "training"),
+    (i) => !i.published.event_end_date || i.published.event_end_date >= today ||
+      (section === "training" && i.published.section === "training"),
   );
   const settings = state.data.find(
     (i) => i.published.kind === "site_settings",
@@ -173,9 +173,9 @@ export function PublicExperience({ section }: { section?: string }) {
       )}
       {section === "training" && (
         <View style={{ gap: 12 }}>
-          <Text style={ui.heading}>Επόμενα εκπαιδευτικά σεμινάρια</Text>
+          <Text style={ui.heading}>Εκπαιδευτικά σεμινάρια</Text>
           <Text style={ui.body}>
-            Βρες το επόμενο σεμινάριο και δήλωσε ενδιαφέρον για συμμετοχή.
+            Βρες το επόμενο σεμινάριο ή γνώρισε τα προηγούμενα εκπαιδευτικά μας.
           </Text>
           <NavLink href="https://www.soundhealing.gr/training-seminars/">
             Αναλυτικό πρόγραμμα εκπαίδευσης ↗
@@ -200,7 +200,6 @@ export function PublicExperience({ section }: { section?: string }) {
       )}
       {section === "contact" && <MembersChat />}
       <Status state={state} />
-      {pastTraining && <Text style={ui.body}>Δεν υπάρχει ενεργό εκπαιδευτικό αυτή τη στιγμή. Δες παρακάτω προηγούμενα εκπαιδευτικά προγράμματα.</Text>}
       {(section === "events" || section === "training") && (
         <EventGrid
           training={section === "training"}
