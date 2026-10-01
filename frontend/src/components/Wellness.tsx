@@ -311,6 +311,7 @@ export type ContentItem = {
     show_socials?: boolean;
     navigation?: { section: string; label: string; visible: boolean }[] | null;
     image_url?: string;
+  photo_slot?: string;
     event_end_date?: string;
     event_date?: string;
     event_time?: string;

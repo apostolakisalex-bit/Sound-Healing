@@ -35,6 +35,7 @@ type Draft = {
   show_socials?: boolean;
   navigation?: NavigationItem[] | null;
   image_url?: string;
+  photo_slot?: string;
   event_end_date?: string;
   event_date?: string;
   event_time?: string;
@@ -319,6 +320,7 @@ function WorkspaceScreen() {
                     ["Μάθημα", "lesson", "home"],
                     ["Προσωπική πρακτική", "journey", "home"],
                     ["Ρυθμίσεις ιστοτόπου", "site_settings", "home"],
+                    ["Φωτογραφίες εφαρμογής", "app_photo", "home"],
                   ].map(([label, kind, target]) => (
                     <Button
                       key={label}
@@ -369,10 +371,20 @@ function WorkspaceScreen() {
                 "testimonial",
                 "partner",
                 "social",
+                "app_photo",
               ]}
               value={draft.kind}
               onChange={(v) => set("kind", v)}
             />
+            {draft.kind === "app_photo" && <View style={ui.card}>
+              <Text style={ui.heading}>Φωτογραφίες εφαρμογής</Text>
+              <Text style={ui.body}>Επίλεξε θέση, διάλεξε ή ανέβασε φωτογραφία στη βιβλιοθήκη, αποθήκευσε και δημοσίευσε. Για αντικατάσταση, επεξεργάσου την υπάρχουσα καταχώριση της ίδιας θέσης.</Text>
+              {[
+                ["banner", "Banner αρχικής"], ["about", "Μανώλης"], ["soundhealing", "Ηχοθεραπεία"],
+                ["L1", "Level 1"], ["L2", "Level 2"], ["L3", "Level 3"], ["L4", "Level 4"],
+                ["past_L1", "Παλαιότερο εκπαιδευτικό Level 1"], ["past_L2", "Παλαιότερο εκπαιδευτικό Level 2"],
+              ].map(([slot, label]) => <Button key={slot} secondary={draft.photo_slot !== slot} label={label} onPress={() => setDraft(d => ({...d, photo_slot: slot, section: "home", level_id: null, title: label}))} />)}
+            </View>}
             <Choices
               label="Δημόσια ενότητα"
               values={[
@@ -489,6 +501,7 @@ function WorkspaceScreen() {
               "testimonial",
               "partner",
               "social",
+                "app_photo",
             ].includes(draft.kind) && (
               <>
                 {[
@@ -497,6 +510,7 @@ function WorkspaceScreen() {
                   "testimonial",
                   "partner",
                   "social",
+                "app_photo",
                 ].includes(draft.kind) && (
                   <>
                     {" "}
@@ -654,6 +668,7 @@ function WorkspaceScreen() {
                             "testimonial",
                             "partner",
                             "social",
+                "app_photo",
                           ].includes(item.draft.kind))) &&
                 normalize(
                   item.draft.title + " " + (item.draft.section || "home"),

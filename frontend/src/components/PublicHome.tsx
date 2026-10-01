@@ -29,6 +29,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
   const settings = items.find(
     (i) => i.published.kind === "site_settings",
   )?.published;
+  const photo = (slot: string, fallback: string) => items.find(i => i.published.kind === "app_photo" && i.published.photo_slot === slot)?.published.image_url || fallback;
   const hero = items.find((i) => i.published.kind === "hero")?.published;
   const page = (section: string) =>
     items.find(
@@ -47,6 +48,17 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
     );
   const programmes = (section: string) => {
     const all = allProgrammes(section);
+    if (section === "training") {
+      for (const past of PAST_TRAININGS) {
+        if (all.some(item => item.published.action_url === past.url)) continue;
+        const first = past.title.startsWith("Level 1");
+        all.push({ id: first ? "archive-L1" : "archive-L2", published: {
+          title: past.title, summary: "", body: "", kind: "announcement", section: "training", level_id: null, media_url: "",
+          image_url: photo(first ? "past_L1" : "past_L2", past.image), action_url: past.url,
+          event_date: past.date, event_end_date: first ? "2026-08-02" : "2026-08-04",
+        }});
+      }
+    }
     const active = all.filter(
       (i) => !i.published.event_end_date || i.published.event_end_date >= today,
     );
@@ -55,7 +67,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
     ).sort((a, b) => b.published.event_end_date!.localeCompare(a.published.event_end_date!));
     return (section === "training" ? [...active, ...past] : active).slice(
       0,
-      section === "training" ? 2 : 4,
+      section === "training" ? 4 : 4,
     );
   };
   const testimonials = items
@@ -77,7 +89,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
   return (
     <View style={{ gap: 28 }}>
       <View style={{ height: compactScreen ? 260 : 360, marginHorizontal: -24, overflow: "hidden", backgroundColor: wellness.blueMist }}>
-        <ManagedImage source={{ uri: hero?.image_url || hero?.media_url || HERO_IMAGES.main }} accessibilityLabel={hero?.image_alt || "Sound Healing Greece — η εμπειρία του ήχου"} resizeMode="cover" style={{ position: "absolute", width: "100%", height: "100%" }} />
+        <ManagedImage source={{ uri: photo("banner", hero?.image_url || hero?.media_url || HERO_IMAGES.main) }} accessibilityLabel={hero?.image_alt || "Sound Healing Greece — η εμπειρία του ήχου"} resizeMode="cover" style={{ position: "absolute", width: "100%", height: "100%" }} />
         <LinearGradient colors={["rgba(232,241,247,0.55)", "rgba(255,255,255,0.76)", "rgba(233,227,243,0.45)"]} style={{ position: "absolute", width: "100%", height: "100%" }} />
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 24, paddingBottom: 35 }}>
           <Text accessibilityRole="header" style={[ui.title, { textAlign: "center", fontSize: compactScreen ? 29 : 42, lineHeight: compactScreen ? 38 : 52, letterSpacing: 1.2, color: wellness.ink }]}>Sound Healing Greece</Text>
@@ -93,14 +105,14 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       <View style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
         {[
           [
-            { title: "Μανώλης Ζωγραφάκης", label: "ΣΧΕΤΙΚΑ", image: page("about")?.image_url || FOUNDER.photo, route: "/explore/about", ratio: .68 },
-            { title: "Τα θεμέλια", label: "LEVEL 1", image: SCHOOL_PHOTOS[0], route: "/explore/levels?level=1", ratio: 1.35 },
-            { title: "Ομαδικά Sound Baths", label: "LEVEL 3", image: SCHOOL_PHOTOS[3], route: "/explore/levels?level=3", ratio: 1.05 },
+            { title: "Μανώλης Ζωγραφάκης", label: "ΣΧΕΤΙΚΑ", image: photo("about", page("about")?.image_url || FOUNDER.photo), route: "/explore/about", ratio: .68 },
+            { title: "Τα θεμέλια", label: "LEVEL 1", image: photo("L1", SCHOOL_PHOTOS[0]), route: "/explore/levels?level=1", ratio: 1.35 },
+            { title: "Ομαδικά Sound Baths", label: "LEVEL 3", image: photo("L3", SCHOOL_PHOTOS[3]), route: "/explore/levels?level=3", ratio: 1.05 },
           ],
           [
-            { title: "Ηχοθεραπεία", label: "Η ΕΜΠΕΙΡΙΑ", image: page("soundhealing")?.image_url || SCHOOL_PHOTOS[4], route: "/explore/soundhealing", ratio: 1.05 },
-            { title: "Εμβάθυνση", label: "LEVEL 2", image: SCHOOL_PHOTOS[1], route: "/explore/levels?level=2", ratio: 1.35 },
-            { title: "Επαγγελματική ανάπτυξη", label: "LEVEL 4", image: SCHOOL_PHOTOS[2], route: "/explore/levels?level=4", ratio: .68 },
+            { title: "Ηχοθεραπεία", label: "Η ΕΜΠΕΙΡΙΑ", image: photo("soundhealing", page("soundhealing")?.image_url || SCHOOL_PHOTOS[4]), route: "/explore/soundhealing", ratio: 1.05 },
+            { title: "Εμβάθυνση", label: "LEVEL 2", image: photo("L2", SCHOOL_PHOTOS[1]), route: "/explore/levels?level=2", ratio: 1.35 },
+            { title: "Επαγγελματική ανάπτυξη", label: "LEVEL 4", image: photo("L4", SCHOOL_PHOTOS[2]), route: "/explore/levels?level=4", ratio: .68 },
           ],
         ].map((column, index) => (
           <View key={index} style={{ flex: 1, gap: 12 }}>
@@ -133,14 +145,15 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           <Text style={ui.body}>{section === "training" ? "Επόμενες συναντήσεις και στιγμές από προηγούμενα εκπαιδευτικά." : "Αυτοτελείς εμπειρίες ήχου με τον Μανώλη."}</Text>
           {programmes(section).length ? (
             section === "training" ? (
-              <View style={{ flexDirection: "row", gap: 12 }}>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
                 {programmes(section).map((item) => (
-                  <Pressable key={item.id} onPress={() => router.push("/explore/training")}
+                  <Pressable key={item.id} onPress={() => router.push((item.id.startsWith("archive-") ? item.published.action_url : "/explore/training") as any)}
                       accessibilityRole="link"
                       style={[
                         ui.card,
                         {
                           width: "48%",
+                          backgroundColor: item.published.event_end_date && item.published.event_end_date < today ? wellness.ice : wellness.white,
                           padding: 0,
                           overflow: "hidden",
                           gap: 8,
@@ -171,7 +184,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                         {!!item.published.event_end_date &&
                           item.published.event_end_date < today && (
                             <Text style={{ fontSize: 10, color: wellness.muted }}>
-                              Παλαιότερο εκπαιδευτικό
+                              Ολοκληρώθηκε
                             </Text>
                           )}
                         <Text style={{ fontSize: 12, color: wellness.slate }}>
@@ -187,20 +200,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           ) : (
             <Text style={ui.body}>Το νέο πρόγραμμα θα ανακοινωθεί εδώ.</Text>
           )}
-          {section === "training" && <View style={{ gap: 12 }}>
-            <Text style={[ui.label, { color: wellness.muted }]}>ΠΡΟΗΓΟΥΜΕΝΑ ΕΚΠΑΙΔΕΥΤΙΚΑ</Text>
-            <View style={{ flexDirection: "row", gap: 12 }}>
-              {PAST_TRAININGS.filter(past => !programmes("training").some(item => item.published.action_url === past.url)).map(past => <View key={past.url} style={[ui.card, { flex: 1, padding: 0, overflow: "hidden", borderRadius: 12 }]}>
-                <ManagedImage source={{ uri: past.image }} accessibilityLabel={past.title} style={{ width: "100%", aspectRatio: 1.3 }} resizeMode="cover" />
-                <View style={{ padding: 12, gap: 6 }}>
-                  <Text style={[ui.body, { fontWeight: "600" }]}>{past.title}</Text>
-                  <Text style={[ui.body, { fontSize: 12 }]}>{past.date}</Text>
-                  <Text style={[ui.label, { fontSize: 10, color: wellness.slate }]}>ΟΛΟΚΛΗΡΩΘΗΚΕ</Text>
-                  <Link href={past.url as any} style={[ui.body, { fontSize: 12, color: wellness.lavenderInk }]}>Δες το σεμινάριο ↗</Link>
-                </View>
-              </View>)}
-            </View>
-          </View>}
+
         </View>
       ))}
       <View style={{ gap: 18, paddingTop: 24, borderTopWidth: 1, borderColor: wellness.line }}>

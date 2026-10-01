@@ -13,7 +13,7 @@ from PIL import Image, ImageOps
 from starlette.concurrency import run_in_threadpool
 from school import Strict
 
-PUBLIC_KINDS = ['page', 'announcement', 'hero', 'site_settings', 'testimonial', 'partner', 'social']
+PUBLIC_KINDS = ['page', 'announcement', 'hero', 'site_settings', 'testimonial', 'partner', 'social', 'app_photo']
 MEDIA_PREFIX = '/api/media/'
 
 class Photo(Strict):
