@@ -20,8 +20,8 @@ export type User = {
 type AuthContextType = {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string, location?: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
+  register: (email: string, password: string, name: string, location?: string) => Promise<User>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
   updateProfile: (patch: Partial<User>) => Promise<void>;
@@ -59,12 +59,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data } = await api.post('/auth/login', { email, password });
     await setAuthToken(data.token);
     setUser(data.user);
+    return data.user as User;
   }, []);
 
   const register = useCallback(async (email: string, password: string, name: string, location?: string) => {
     const { data } = await api.post('/auth/register', { email, password, name, location });
     await setAuthToken(data.token);
     setUser(data.user);
+    return data.user as User;
   }, []);
 
   const logout = useCallback(async () => {

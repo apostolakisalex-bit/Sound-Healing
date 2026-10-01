@@ -127,7 +127,7 @@ function WorkspaceScreen() {
     practices: [],
   });
   const [section, setSection] = useState(
-      user?.role === "admin" ? "Περιεχόμενο" : "Αξιολογήσεις",
+      "Επισκόπηση",
     ),
     [draft, setDraft] = useState<Draft>({ ...fresh }),
     [edit, setEdit] = useState<Item | null>(null),
@@ -177,6 +177,7 @@ function WorkspaceScreen() {
         values={
           user?.role === "admin"
             ? [
+                "Επισκόπηση",
                 "Περιεχόμενο",
                 "Φόρμες",
                 "Τμήματα",
@@ -186,7 +187,7 @@ function WorkspaceScreen() {
                 "Ιστορικό",
                 "Αξιολογήσεις",
               ]
-            : ["Παρουσίες", "Πρόοδος", "Αξιολογήσεις"]
+            : ["Επισκόπηση", "Παρουσίες", "Πρόοδος", "Αξιολογήσεις"]
         }
         value={section}
         onChange={(value) => {
@@ -196,6 +197,25 @@ function WorkspaceScreen() {
         }}
       />
       <Status state={state} />
+      {section === "Επισκόπηση" && <View style={{ gap: 16 }}>
+        <Text style={ui.heading}>Κέντρο διαχείρισης</Text>
+        <View style={ui.row}>
+          {(user?.role === "admin" ? [
+            ["Εγγραφές", "Μαθητές και εγγραφές στα τμήματα."],
+            ["Περιεχόμενο", "Κείμενα, εικόνες, εκπαιδευτικά, εκδηλώσεις, υπηρεσίες και δημόσιο μενού."],
+            ["Τμήματα", "Levels, ημερομηνίες έναρξης και εκπαιδευτές."],
+            ["Φόρμες", "Φόρμες αξιολόγησης μαθητών και δεκτών."],
+            ["Ιστορικό", "Ιστορικό ενεργειών διαχείρισης."],
+          ] : []).concat([
+            ["Αξιολογήσεις", "Έλεγχος πρακτικών, απαντήσεις αξιολογήσεων και διορθώσεις."],
+            ["Πρόοδος", "Ώρες πρακτικής και παρακολούθησης ανά μαθητή και Level."],
+            ["Παρουσίες", "Καταγραφή ημερομηνίας, παρουσίας και λεπτών παρακολούθησης."],
+          ]).map(([target, description]) => <View key={target} style={[ui.card, { flexGrow: 1, flexBasis: 280 }]}>
+            <Text style={ui.heading}>{target === "Εγγραφές" ? "Μαθητές & εγγραφές" : target}</Text><Text style={ui.body}>{description}</Text>
+            <Button secondary label={`Άνοιγμα: ${target}`} onPress={() => setSection(target)} />
+          </View>)}
+        </View>
+      </View>}
       {section === "Ιστορικό" && user?.role === "admin" && <Activity />}
       {["Εγγραφές", "Παρουσίες"].includes(section) && (
         <Field

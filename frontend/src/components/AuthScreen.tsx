@@ -26,7 +26,11 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
     setBusy(true);
     try {
       if (registering) await auth.register(email.trim(), password, name.trim());
-      else await auth.login(email.trim(), password);
+      else {
+        const signedIn = await auth.login(email.trim(), password);
+        router.replace(["admin", "instructor"].includes(signedIn.role) ? "/admin" : "/(tabs)/sanctuary");
+        return;
+      }
       router.replace("/(tabs)/sanctuary");
     } catch {
       setError(

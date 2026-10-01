@@ -255,7 +255,8 @@ export function Shell({
   siteSettings?: ContentItem["published"];
 }) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const staff = !!user && ["admin", "instructor"].includes(user.role);
   const pathname = usePathname();
   const { width } = useWindowDimensions();
   const compact = publicPage && width < 760;
@@ -276,7 +277,7 @@ export function Shell({
               ["Επικοινωνία", "/explore/contact"],
             ]),
       ]
-    : [
+    : staff ? [["Διαχείριση", "/admin"], ["Δημόσια εφαρμογή", "/"]] : [
         ["Αρχική", "/(tabs)/sanctuary"],
         ["Σχολή", "/(tabs)/academy"],
         ["Πρακτική", "/(tabs)/practice"],
@@ -298,7 +299,7 @@ export function Shell({
             </Text>
           </Pressable>
           {publicPage && (
-            <Link href={user ? "/profile" : "/login"} asChild>
+            <Link href={staff ? "/admin" : user ? "/profile" : "/login"} asChild>
               <Pressable
                 accessibilityRole="link"
                 accessibilityLabel={
@@ -355,7 +356,7 @@ export function Shell({
               </Text>
             </Pressable>
           )}
-          {user && ["admin", "instructor"].includes(user.role) && (
+          {staff && publicPage && (
             <Button
               secondary
               label="Διαχείριση"
@@ -399,6 +400,7 @@ export function Shell({
             )}
           </View>
         )}
+        {staff && !publicPage && <View style={ui.row}><Text style={ui.body}>{user?.name} · {user?.role === "admin" ? "Διαχειριστής" : "Εκπαιδευτής"}</Text><Button secondary label="Αποσύνδεση" onPress={() => { void logout().then(() => router.replace("/")); }} /></View>}
         {!!title && (
           <View style={{ gap: 10, marginTop: 16 }}>
             <Text style={ui.label}>{eyebrow}</Text>

@@ -365,3 +365,10 @@ The published site_settings record now controls show_testimonials, show_partners
 
 ## Visual refinement — 2026-10-01
 Owner requested a return to the lighter Emergent wellness aesthetic. Reduced shared heading weights/sizes and body scale; removed pill navigation chrome and heavy introductory card framing; reduced image heights and event title scale; softened service-card shadows. Content order, published CMS controls and assessment workflows are unchanged. This is a measured visual refinement, not a claim of pixel-identical restoration of the earlier Emergent preview.
+
+
+### Admin workspace separation — 2026-10-01
+- Admin/instructor sign-in opens /admin. Student tab routes redirect staff to their workspace, with a dedicated staff navigation and sign-out.
+- Workspace opens with shortcuts to content, enrollments, cohorts, assessment forms, reviews, attendance and progress. Role restrictions remain enforced by existing backend endpoints.
+- Manolis is the administrator; do not infer or change account roles from a name or email. Production account provisioning must use the existing secured process.
+- Outstanding: integrated calendar management and direct media upload/library. Existing CMS image editing uses HTTPS URLs. Do not present these outstanding capabilities as complete.
