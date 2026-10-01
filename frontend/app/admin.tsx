@@ -27,6 +27,9 @@ type Draft = {
   body: string;
   kind: string;
   section?: string;
+  show_testimonials?: boolean;
+  show_partners?: boolean;
+  show_socials?: boolean;
   navigation?: NavigationItem[] | null;
   image_url?: string;
   event_end_date?: string;
@@ -370,6 +373,30 @@ function WorkspaceScreen() {
               value={draft.media_url}
               onChange={(v) => set("media_url", v)}
             />
+            {draft.kind === "site_settings" && (
+              <View style={ui.card}>
+                <Text style={ui.heading}>Ενότητες δημόσιας αρχικής</Text>
+                {(
+                  [
+                    ["show_testimonials", "Μαρτυρίες μαθητών"],
+                    ["show_partners", "Λογότυπα συνεργατών"],
+                    ["show_socials", "Κοινωνικά δίκτυα"],
+                  ] as const
+                ).map(([key, label]) => (
+                  <Choices
+                    key={key}
+                    label={label}
+                    values={["Εμφάνιση", "Απόκρυψη"]}
+                    value={draft[key] === false ? "Απόκρυψη" : "Εμφάνιση"}
+                    onChange={(v) => set(key, v === "Εμφάνιση")}
+                  />
+                ))}
+                <Text style={ui.body}>
+                  Οι αλλαγές εμφανίζονται δημόσια μετά τη δημοσίευση των
+                  ρυθμίσεων.
+                </Text>
+              </View>
+            )}
             {draft.kind === "site_settings" && (
               <NavigationEditor
                 value={draft.navigation}

@@ -10,6 +10,9 @@ const serviceTitles = [
   "Εταιρικές εκδηλώσεις & εργαστήρια",
 ];
 export function PublicHome({ items }: { items: ContentItem[] }) {
+  const settings = items.find(
+    (i) => i.published.kind === "site_settings",
+  )?.published;
   const page = (section: string) =>
     items.find(
       (i) => i.published.kind === "page" && i.published.section === section,
@@ -141,41 +144,43 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           ))}
         </View>
       </View>
-      <View style={{ gap: 18 }}>
-        <Text style={ui.heading}>What students say</Text>
-        <View style={[ui.row, { alignItems: "stretch" }]}>
-          {testimonials.length ? (
-            testimonials.map((i) => (
-              <View
-                key={i.id}
-                style={[ui.card, { flexBasis: 260, flexGrow: 1 }]}
-              >
-                <Text style={ui.body}>“{i.published.summary}”</Text>
-                <Text style={ui.label}>{i.published.title}</Text>
-                {!!i.published.action_url && (
-                  <Link href={i.published.action_url as any} style={ui.body}>
-                    Πηγή ↗
-                  </Link>
-                )}
+      {settings?.show_testimonials !== false && (
+        <View style={{ gap: 18 }}>
+          <Text style={ui.heading}>What students say</Text>
+          <View style={[ui.row, { alignItems: "stretch" }]}>
+            {testimonials.length ? (
+              testimonials.map((i) => (
+                <View
+                  key={i.id}
+                  style={[ui.card, { flexBasis: 260, flexGrow: 1 }]}
+                >
+                  <Text style={ui.body}>“{i.published.summary}”</Text>
+                  <Text style={ui.label}>{i.published.title}</Text>
+                  {!!i.published.action_url && (
+                    <Link href={i.published.action_url as any} style={ui.body}>
+                      Πηγή ↗
+                    </Link>
+                  )}
+                </View>
+              ))
+            ) : (
+              <View style={[ui.card, { maxWidth: 620 }]}>
+                <Text style={ui.body}>
+                  “It was so much more than a training!”
+                </Text>
+                <Text style={ui.label}>Eleni Z.</Text>
+                <Link
+                  href="https://www.soundhealing.gr/training-seminars/"
+                  style={ui.body}
+                >
+                  Διάβασε την εμπειρία της ↗
+                </Link>
               </View>
-            ))
-          ) : (
-            <View style={[ui.card, { maxWidth: 620 }]}>
-              <Text style={ui.body}>
-                “It was so much more than a training!”
-              </Text>
-              <Text style={ui.label}>Eleni Z.</Text>
-              <Link
-                href="https://www.soundhealing.gr/training-seminars/"
-                style={ui.body}
-              >
-                Διάβασε την εμπειρία της ↗
-              </Link>
-            </View>
-          )}
+            )}
+          </View>
         </View>
-      </View>
-      {!!partners.length && (
+      )}
+      {settings?.show_partners !== false && !!partners.length && (
         <View style={{ gap: 18 }}>
           <Text style={ui.label}>ΣΥΝΕΡΓΑΣΙΕΣ</Text>
           <View style={ui.row}>
@@ -204,34 +209,35 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           </View>
         </View>
       )}
-      <View
-        style={{
-          gap: 16,
-          paddingVertical: 24,
-          borderTopWidth: 1,
-          borderColor: "#E7E0D3",
-        }}
-      >
-        <Text style={ui.heading}>Ας μείνουμε σε επαφή.</Text>
-        <View style={ui.row}>
-          {(socials.length
-            ? socials.map((i) => ({
-                label: i.published.title,
-                url: i.published.action_url!,
-              }))
-            : SOCIAL_LINKS
-          ).map((s) => (
-            <Link
-              key={s.url}
-              href={s.url as any}
-              style={[ui.body, { paddingVertical: 10, paddingRight: 20 }]}
-            >
-              {s.label} ↗
-            </Link>
-          ))}
+      {settings?.show_socials !== false && (
+        <View
+          style={{
+            gap: 16,
+            paddingVertical: 24,
+            borderTopWidth: 1,
+            borderColor: "#E7E0D3",
+          }}
+        >
+          <Text style={ui.heading}>Ας μείνουμε σε επαφή.</Text>
+          <View style={ui.row}>
+            {(socials.length
+              ? socials.map((i) => ({
+                  label: i.published.title,
+                  url: i.published.action_url!,
+                }))
+              : SOCIAL_LINKS
+            ).map((s) => (
+              <Link
+                key={s.url}
+                href={s.url as any}
+                style={[ui.body, { paddingVertical: 10, paddingRight: 20 }]}
+              >
+                {s.label} ↗
+              </Link>
+            ))}
+          </View>
         </View>
-      </View>
+      )}
     </View>
   );
 }
-

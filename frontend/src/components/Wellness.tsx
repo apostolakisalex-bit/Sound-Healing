@@ -297,7 +297,51 @@ export function Shell({
                 : "learn · practise · feel connected"}
             </Text>
           </Pressable>
-          {publicPage && <Link href={user ? "/profile" : "/login"} asChild><Pressable accessibilityRole="link" accessibilityLabel={user ? "Ο λογαριασμός μου" : "Σύνδεση ή εγγραφή"} style={{ padding: 12, borderRadius: 24, borderWidth: 1, borderColor: palette.line }}><View style={{ width: 24, height: 24, alignItems: "center", gap: 3 }}><View style={{ width: 9, height: 9, borderWidth: 1.5, borderColor: palette.ink, borderRadius: 9 }} /><View style={{ width: 19, height: 10, borderWidth: 1.5, borderColor: palette.ink, borderTopLeftRadius: 12, borderTopRightRadius: 12 }} /></View></Pressable></Link>}
+          {publicPage && (
+            <Link href={user ? "/profile" : "/login"} asChild>
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel={
+                  user ? "Ο λογαριασμός μου" : "Σύνδεση ή εγγραφή"
+                }
+                style={{
+                  padding: 12,
+                  borderRadius: 24,
+                  borderWidth: 1,
+                  borderColor: palette.line,
+                }}
+              >
+                <View
+                  style={{
+                    width: 24,
+                    height: 24,
+                    alignItems: "center",
+                    gap: 3,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 9,
+                      height: 9,
+                      borderWidth: 1.5,
+                      borderColor: palette.ink,
+                      borderRadius: 9,
+                    }}
+                  />
+                  <View
+                    style={{
+                      width: 19,
+                      height: 10,
+                      borderWidth: 1.5,
+                      borderColor: palette.ink,
+                      borderTopLeftRadius: 12,
+                      borderTopRightRadius: 12,
+                    }}
+                  />
+                </View>
+              </Pressable>
+            </Link>
+          )}
           {compact && (
             <Pressable
               accessibilityRole="button"
@@ -380,6 +424,9 @@ export type ContentItem = {
     body: string;
     kind: string;
     section?: string;
+    show_testimonials?: boolean;
+    show_partners?: boolean;
+    show_socials?: boolean;
     navigation?: { section: string; label: string; visible: boolean }[] | null;
     image_url?: string;
     event_end_date?: string;

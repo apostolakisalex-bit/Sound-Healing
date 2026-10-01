@@ -39,6 +39,9 @@ class Content(Strict):
     event_date: str = Field(default='', max_length=100)
     event_time: str = Field(default='', max_length=100)
     event_location: str = Field(default='', max_length=200)
+    show_testimonials: bool = True
+    show_partners: bool = True
+    show_socials: bool = True
     navigation: list[NavigationItem] | None = Field(default=None, max_length=6)
     order: int = Field(default=0, ge=0, le=10000)
 

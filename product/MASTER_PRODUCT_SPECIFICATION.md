@@ -357,3 +357,7 @@ Available pasted sources F01–F04 are editable source drafts, not automatically
 
 ## Minimal public homepage — owner decision 2026-09-30
 Public navigation: About, Sound Healing, Training, Events, Services, Contact, in this order; legacy menus without soundhealing use the new defaults. Journal route stays accessible but leaves default navigation. User icon opens standard login with signup switch. Homepage replaces the large hero/category catalogue with two image cards, up to four published active training items, up to four standalone events, compact raised service cards, up to three student testimonials, up to eight verified partner logos and social CTAs. CMS supports testimonial/partner/social types, with source links and optional event_end_date (last visible Athens calendar day). Empty partner strips stay hidden until official assets are published. Default student quote is a short attributed excerpt from the official training page; no private assessment answer becomes marketing content automatically. Verified public source pages: /el/about-me/, /el/hxotherapeia/, /el/epipleon-yphresies/. No unverified medical efficacy claims are copied into the introduction.
+
+
+## Homepage visibility controls — 2026-10-01
+The published site_settings record now controls show_testimonials, show_partners and show_socials (default true for backward compatibility). Admins can hide the entire section, including default content. Draft edits remain private until publication. The public logo strip still requires real, published image assets.
