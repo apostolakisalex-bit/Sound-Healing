@@ -69,6 +69,8 @@ export function EventGrid({
             key={id}
             style={{
               width: cardWidth,
+              borderRadius: 12,
+              overflow: "hidden",
               backgroundColor: "#fff",
               borderWidth: 1,
               borderColor: wellness.line,

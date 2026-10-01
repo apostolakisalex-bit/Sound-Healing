@@ -1,3 +1,4 @@
+import { SCHOOL_PHOTOS, PAST_TRAININGS } from "@/src/content/schoolGallery";
 import Svg, { Path } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";
 import { wellness } from "@/src/theme";
@@ -88,17 +89,18 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           <Path d="M0 28 C100 0 150 56 250 28 S400 0 500 28 S650 56 750 28 S900 0 1000 28 S1150 56 1200 28 L1200 60 L0 60 Z" fill={wellness.white} />
         </Svg>
       </View>
+      <Text style={[ui.heading, { fontWeight: "600" }]}>Γνώρισε τη σχολή και τα 4 Levels</Text>
       <View style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
         {[
           [
             { title: "Μανώλης Ζωγραφάκης", label: "ΣΧΕΤΙΚΑ", image: page("about")?.image_url || FOUNDER.photo, route: "/explore/about", ratio: .68 },
-            { title: "Τα θεμέλια", label: "LEVEL 1", image: INSTRUMENTS[0].image, route: "/explore/levels?level=1", ratio: 1.35 },
-            { title: "Ομαδικά Sound Baths", label: "LEVEL 3", image: HERO_IMAGES.cta, route: "/explore/levels?level=3", ratio: 1.05 },
+            { title: "Τα θεμέλια", label: "LEVEL 1", image: SCHOOL_PHOTOS[0], route: "/explore/levels?level=1", ratio: 1.35 },
+            { title: "Ομαδικά Sound Baths", label: "LEVEL 3", image: SCHOOL_PHOTOS[3], route: "/explore/levels?level=3", ratio: 1.05 },
           ],
           [
-            { title: "Ηχοθεραπεία", label: "Η ΕΜΠΕΙΡΙΑ", image: page("soundhealing")?.image_url || INSTRUMENTS[0].image, route: "/explore/soundhealing", ratio: 1.05 },
-            { title: "Εμβάθυνση", label: "LEVEL 2", image: HERO_IMAGES.philosophy, route: "/explore/levels?level=2", ratio: 1.35 },
-            { title: "Επαγγελματική ανάπτυξη", label: "LEVEL 4", image: HERO_IMAGES.community, route: "/explore/levels?level=4", ratio: .68 },
+            { title: "Ηχοθεραπεία", label: "Η ΕΜΠΕΙΡΙΑ", image: page("soundhealing")?.image_url || SCHOOL_PHOTOS[4], route: "/explore/soundhealing", ratio: 1.05 },
+            { title: "Εμβάθυνση", label: "LEVEL 2", image: SCHOOL_PHOTOS[1], route: "/explore/levels?level=2", ratio: 1.35 },
+            { title: "Επαγγελματική ανάπτυξη", label: "LEVEL 4", image: SCHOOL_PHOTOS[2], route: "/explore/levels?level=4", ratio: .68 },
           ],
         ].map((column, index) => (
           <View key={index} style={{ flex: 1, gap: 12 }}>
@@ -106,7 +108,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
               <Pressable key={card.route} accessibilityRole="link" accessibilityLabel={`${card.label}: ${card.title}`} onPress={() => router.push(card.route as any)} style={({ pressed }) => ({ aspectRatio: card.ratio, borderRadius: 12, overflow: "hidden", backgroundColor: wellness.blueMist, opacity: pressed ? .85 : 1 })}>
                 <ManagedImage source={{ uri: card.image }} accessibilityLabel={card.title} resizeMode="cover" style={{ position: "absolute", width: "100%", height: "100%" }} />
                 <LinearGradient colors={["transparent", "rgba(22,30,40,0.82)"]} locations={[.2,1]} style={{ position: "absolute", width: "100%", height: "100%" }} />
-                <View style={{ marginTop: "auto", padding: compactScreen ? 12 : 20, gap: 5 }}>
+                <View style={{ marginTop: "auto", padding: compactScreen ? 12 : 20, gap: 5, backgroundColor: "rgba(22,30,40,0.46)" }}>
                   <Text style={[ui.label, { color: "#FFFFFF", fontSize: 10, letterSpacing: 1.1 }]}>{card.label}</Text>
                   <Text style={[ui.body, { color: "#FFFFFF", fontSize: compactScreen ? 15 : 22, lineHeight: compactScreen ? 20 : 28, fontWeight: "600" }]}>{card.title} ↗</Text>
                 </View>
@@ -121,13 +123,14 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           ["events", "Ενεργές εκδηλώσεις"],
         ] as const
       ).map(([section, title]) => (
-        <View key={section} style={{ gap: 18 }}>
+        <View key={section} style={{ gap: 18, paddingTop: 24, borderTopWidth: 1, borderColor: wellness.line }}>
           <View style={[ui.row, { justifyContent: "space-between" }]}>
-            <Text style={ui.heading}>{title}</Text>
+            <Text style={[ui.heading, { fontWeight: "600" }]}>{title}</Text>
             <Link href={`/explore/${section}` as any} style={ui.body}>
               Δες όλα →
             </Link>
           </View>
+          <Text style={ui.body}>{section === "training" ? "Επόμενες συναντήσεις και στιγμές από προηγούμενα εκπαιδευτικά." : "Αυτοτελείς εμπειρίες ήχου με τον Μανώλη."}</Text>
           {programmes(section).length ? (
             section === "training" ? (
               <View style={{ flexDirection: "row", gap: 12 }}>
@@ -184,9 +187,23 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           ) : (
             <Text style={ui.body}>Το νέο πρόγραμμα θα ανακοινωθεί εδώ.</Text>
           )}
+          {section === "training" && <View style={{ gap: 12 }}>
+            <Text style={[ui.label, { color: wellness.muted }]}>ΠΡΟΗΓΟΥΜΕΝΑ ΕΚΠΑΙΔΕΥΤΙΚΑ</Text>
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              {PAST_TRAININGS.filter(past => !programmes("training").some(item => item.published.action_url === past.url)).map(past => <View key={past.url} style={[ui.card, { flex: 1, padding: 0, overflow: "hidden", borderRadius: 12 }]}>
+                <ManagedImage source={{ uri: past.image }} accessibilityLabel={past.title} style={{ width: "100%", aspectRatio: 1.3 }} resizeMode="cover" />
+                <View style={{ padding: 12, gap: 6 }}>
+                  <Text style={[ui.body, { fontWeight: "600" }]}>{past.title}</Text>
+                  <Text style={[ui.body, { fontSize: 12 }]}>{past.date}</Text>
+                  <Text style={[ui.label, { fontSize: 10, color: wellness.slate }]}>ΟΛΟΚΛΗΡΩΘΗΚΕ</Text>
+                  <Link href={past.url as any} style={[ui.body, { fontSize: 12, color: wellness.lavenderInk }]}>Δες το σεμινάριο ↗</Link>
+                </View>
+              </View>)}
+            </View>
+          </View>}
         </View>
       ))}
-      <View style={{ gap: 18 }}>
+      <View style={{ gap: 18, paddingTop: 24, borderTopWidth: 1, borderColor: wellness.line }}>
         <Text style={ui.heading}>Υπηρεσίες</Text>
         <View style={[ui.row, { alignItems: "stretch" }]}>
           {(services.length
@@ -242,7 +259,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       </View>
       {settings?.show_testimonials !== false && (
         <View style={{ gap: 18 }}>
-          <Text style={ui.heading}>What students say</Text>
+          <Text style={ui.heading}>Οι εμπειρίες των μαθητών</Text>
           <View style={[ui.row, { alignItems: "stretch" }]}>
             {testimonials.length ? (
               testimonials.map((i) => (
@@ -262,7 +279,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
             ) : (
               <View style={[ui.card, { maxWidth: 620 }]}>
                 <Text style={ui.body}>
-                  “It was so much more than a training!”
+                  «Ήταν πολλά παραπάνω από ένα εκπαιδευτικό!»
                 </Text>
                 <Text style={ui.label}>Eleni Z.</Text>
                 <Link
