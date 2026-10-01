@@ -1,3 +1,5 @@
+import Svg, { Path } from "react-native-svg";
+import { LinearGradient } from "expo-linear-gradient";
 import { wellness } from "@/src/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { iconSurface } from "./AppNavigation";
@@ -26,6 +28,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
   const settings = items.find(
     (i) => i.published.kind === "site_settings",
   )?.published;
+  const hero = items.find((i) => i.published.kind === "hero")?.published;
   const page = (section: string) =>
     items.find(
       (i) => i.published.kind === "page" && i.published.section === section,
@@ -71,7 +74,20 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
     )
     .slice(0, 6);
   return (
-    <View style={{ gap: 32 }}>
+    <View style={{ gap: 28 }}>
+      <View style={{ height: compactScreen ? 260 : 360, marginHorizontal: -24, overflow: "hidden", backgroundColor: wellness.blueMist }}>
+        <ManagedImage source={{ uri: hero?.image_url || hero?.media_url || HERO_IMAGES.main }} accessibilityLabel={hero?.image_alt || "Sound Healing Greece — η εμπειρία του ήχου"} resizeMode="cover" style={{ position: "absolute", width: "100%", height: "100%" }} />
+        <LinearGradient colors={["rgba(232,241,247,0.55)", "rgba(255,255,255,0.76)", "rgba(233,227,243,0.45)"]} style={{ position: "absolute", width: "100%", height: "100%" }} />
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 24, paddingBottom: 35 }}>
+          <Text accessibilityRole="header" style={[ui.title, { textAlign: "center", fontSize: compactScreen ? 29 : 42, lineHeight: compactScreen ? 38 : 52, letterSpacing: 1.2, color: wellness.ink }]}>Sound Healing Greece</Text>
+          <Svg width={116} height={30} viewBox="0 0 116 30" accessible={false}>
+            <Path d="M1 15 Q8 15 12 15 Q17 15 21 9 Q25 2 29 15 Q33 29 37 15 Q41 -4 45 15 Q49 34 53 15 Q57 -4 61 15 Q65 29 69 15 Q73 2 77 15 Q81 21 85 15 Q91 15 115 15" fill="none" stroke={wellness.slate} strokeWidth={1.4} />
+          </Svg>
+        </View>
+        <Svg width="100%" height={60} viewBox="0 0 1200 60" preserveAspectRatio="none" style={{ position: "absolute", bottom: -1 }} accessible={false}>
+          <Path d="M0 28 C100 0 150 56 250 28 S400 0 500 28 S650 56 750 28 S900 0 1000 28 S1150 56 1200 28 L1200 60 L0 60 Z" fill={wellness.white} />
+        </Svg>
+      </View>
       <View style={{ gap: 22 }}>
         {[
           {
@@ -94,11 +110,13 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
               style={[
                 ui.card,
                 {
-                  padding: 0,
+                  padding: card.section === "about" ? 16 : 0,
                   overflow: "hidden",
-                  borderWidth: 0,
-                  backgroundColor: "transparent",
-                  flexDirection: card.section === "about" ? "row" : "column",
+                  borderWidth: 1,
+                  borderColor: wellness.line,
+                  borderRadius: 22,
+                  backgroundColor: card.section === "about" ? wellness.ice : wellness.sage,
+                  flexDirection: "row",
                   alignItems: card.section === "about" ? "center" : "stretch",
                   gap: 16,
                 },
@@ -110,15 +128,16 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                 style={
                   card.section === "about"
                     ? {
-                        width: compactScreen ? 92 : 120,
-                        height: compactScreen ? 92 : 120,
-                        borderRadius: 60,
+                        width: compactScreen ? 96 : 148,
+                        height: compactScreen ? 116 : 148,
+                        borderRadius: 16,
                         backgroundColor: wellness.sage,
                       }
                     : {
-                        width: "100%",
-                        height: compactScreen ? 160 : 210,
-                        borderRadius: 16,
+                        width: compactScreen ? 112 : 240,
+                        minHeight: compactScreen ? 190 : 220,
+                        alignSelf: "stretch",
+                        borderRadius: 0,
                         backgroundColor: wellness.sage,
                       }
                 }
@@ -127,14 +146,14 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
               <View
                 style={{
                   paddingVertical: 8,
-                  paddingHorizontal: 2,
+                  paddingHorizontal: card.section === "about" ? 0 : 12,
                   gap: 7,
                   flex: 1,
                 }}
               >
                 <Link
                   href={`/explore/${card.section}` as any}
-                  style={ui.heading}
+                  style={[ui.heading, { fontSize: compactScreen ? 18 : 21 }]}
                 >
                   {card.title} ↗
                 </Link>
