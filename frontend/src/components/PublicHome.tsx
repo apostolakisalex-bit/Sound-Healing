@@ -1,3 +1,4 @@
+import { TrainingLevelCards } from "./TrainingLevels";
 import Svg, { Path } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";
 import { wellness } from "@/src/theme";
@@ -110,13 +111,17 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
               style={[
                 ui.card,
                 {
-                  padding: card.section === "about" ? 16 : 0,
+                  padding: card.section === "about" ? 20 : 0,
+                  width: card.section === "about" ? "100%" : "82%",
+                  maxWidth: card.section === "about" ? undefined : 480,
+                  alignSelf: card.section === "about" ? "stretch" : "flex-end",
+                  minHeight: card.section === "about" ? (compactScreen ? 220 : 270) : undefined,
                   overflow: "hidden",
                   borderWidth: 1,
                   borderColor: wellness.line,
                   borderRadius: 22,
                   backgroundColor: card.section === "about" ? wellness.ice : wellness.sage,
-                  flexDirection: "row",
+                  flexDirection: card.section === "about" ? "row" : "column",
                   alignItems: card.section === "about" ? "center" : "stretch",
                   gap: 16,
                 },
@@ -128,14 +133,14 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                 style={
                   card.section === "about"
                     ? {
-                        width: compactScreen ? 96 : 148,
-                        height: compactScreen ? 116 : 148,
+                        width: compactScreen ? 118 : 200,
+                        height: compactScreen ? 176 : 226,
                         borderRadius: 16,
                         backgroundColor: wellness.sage,
                       }
                     : {
-                        width: compactScreen ? 112 : 240,
-                        minHeight: compactScreen ? 190 : 220,
+                        width: "100%",
+                        height: compactScreen ? 100 : 140,
                         alignSelf: "stretch",
                         borderRadius: 0,
                         backgroundColor: wellness.sage,
@@ -145,8 +150,8 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
               />
               <View
                 style={{
-                  paddingVertical: 8,
-                  paddingHorizontal: card.section === "about" ? 0 : 12,
+                  paddingVertical: card.section === "about" ? 8 : 12,
+                  paddingHorizontal: card.section === "about" ? 0 : 16,
                   gap: 7,
                   flex: 1,
                 }}
@@ -170,6 +175,10 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
             </View>
           );
         })}
+      </View>
+      <View style={{ gap: 16 }}>
+        <Text style={ui.heading}>Η εκπαιδευτική διαδρομή</Text>
+        <TrainingLevelCards />
       </View>
       {(
         [
