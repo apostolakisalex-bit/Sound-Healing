@@ -1,5 +1,5 @@
 import React from "react";
-import { Image, Text, View } from "react-native";
+import { Image, Text, View, useWindowDimensions } from "react-native";
 import { Link } from "expo-router";
 import { FOUNDER, HERO_IMAGES, SOCIAL_LINKS } from "@/src/content/public";
 import { ContentItem, ui } from "./Wellness";
@@ -10,6 +10,8 @@ const serviceTitles = [
   "Εταιρικές εκδηλώσεις & εργαστήρια",
 ];
 export function PublicHome({ items }: { items: ContentItem[] }) {
+  const { width } = useWindowDimensions();
+  const compactScreen = width < 600;
   const settings = items.find(
     (i) => i.published.kind === "site_settings",
   )?.published;
@@ -42,7 +44,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
     )
     .slice(0, 6);
   return (
-    <View style={{ gap: 44 }}>
+    <View style={{ gap: 32 }}>
       <View style={[ui.row, { alignItems: "stretch" }]}>
         {[
           {
@@ -64,16 +66,16 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
               key={card.section}
               style={[
                 ui.card,
-                { flexGrow: 1, flexBasis: 300, padding: 0, overflow: "hidden" },
+                { flexGrow: 1, flexBasis: 280, padding: 0, overflow: "hidden", borderWidth: 0, backgroundColor: "transparent" },
               ]}
             >
               <Image
                 source={{ uri: content?.image_url || card.image }}
                 accessibilityLabel={content?.image_alt || card.title}
-                style={{ width: "100%", height: 300 }}
+                style={{ width: "100%", height: compactScreen ? 190 : 240, borderRadius: 12, backgroundColor: "#F0EDE7" }}
                 resizeMode={card.section === "about" ? "contain" : "cover"}
               />
-              <View style={{ padding: 24, gap: 12 }}>
+              <View style={{ paddingVertical: 16, paddingHorizontal: 2, gap: 7 }}>
                 <Link
                   href={`/explore/${card.section}` as any}
                   style={ui.heading}
@@ -125,16 +127,16 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                 {
                   flexGrow: 1,
                   flexBasis: 220,
-                  padding: 24,
-                  borderRadius: 18,
+                  padding: 18,
+                  borderRadius: 12,
                   backgroundColor: "#F5F1E8",
                   borderWidth: 1,
-                  borderColor: "#E1D8C6",
+                  borderColor: "#E8E3DA",
                   shadowColor: "#625335",
-                  shadowOpacity: 0.13,
+                  shadowOpacity: 0.05,
                   shadowRadius: 10,
-                  shadowOffset: { width: 0, height: 6 },
-                  elevation: 4,
+                  shadowOffset: { width: 0, height: 3 },
+                  elevation: 1,
                   color: "#39352D",
                 },
               ]}

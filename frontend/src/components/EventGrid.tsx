@@ -61,7 +61,7 @@ export function EventGrid({
               borderColor: "#ECE9E2",
               shadowColor: "#24211B",
               shadowOffset: { width: 0, height: 5 },
-              shadowOpacity: 0.09,
+              shadowOpacity: 0.035,
               shadowRadius: 12,
               elevation: 3,
             }}
@@ -89,14 +89,14 @@ export function EventGrid({
                 />
               </View>
             )}
-            <View style={{ height: 3, backgroundColor: "#B7A56C" }} />
-            <View style={{ padding: 16, gap: 12, flex: 1 }}>
+            <View style={{ height: 1, backgroundColor: "#B7A56C" }} />
+            <View style={{ padding: 14, gap: 12, flex: 1 }}>
               {p.action_url ? (
                 <Link
                   href={p.action_url as any}
                   style={[
                     ui.body,
-                    { fontSize: 20, lineHeight: 27, color: "#4B4944" },
+                    { fontSize: 16, lineHeight: 23, color: "#4B4944" },
                   ]}
                 >
                   {p.title}
@@ -106,7 +106,7 @@ export function EventGrid({
                   accessibilityRole="header"
                   style={[
                     ui.body,
-                    { fontSize: 20, lineHeight: 27, color: "#4B4944" },
+                    { fontSize: 16, lineHeight: 23, color: "#4B4944" },
                   ]}
                 >
                   {p.title}

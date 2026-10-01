@@ -40,7 +40,7 @@ export const ui = StyleSheet.create({
     maxWidth: 1120,
     alignSelf: "center",
     padding: 24,
-    gap: 24,
+    gap: 20,
     paddingBottom: 64,
   },
   row: {
@@ -51,30 +51,30 @@ export const ui = StyleSheet.create({
   },
   card: {
     backgroundColor: palette.white,
-    borderRadius: 24,
-    padding: 24,
+    borderRadius: 14,
+    padding: 20,
     borderWidth: 1,
     borderColor: palette.line,
     gap: 12,
   },
   title: {
-    fontFamily: brandFont(fonts.heading, true),
-    fontSize: 38,
-    lineHeight: 44,
+    fontFamily: brandFont(fonts.title, true),
+    fontSize: 30,
+    lineHeight: 38,
     color: palette.ink,
-    fontWeight: "600",
-    letterSpacing: -1,
+    fontWeight: "400",
+    letterSpacing: -0.3,
   },
   heading: {
-    fontFamily: brandFont(fonts.heading, true),
-    fontSize: 23,
+    fontFamily: brandFont(fonts.title, true),
+    fontSize: 21,
     color: palette.ink,
-    fontWeight: "600",
+    fontWeight: "400",
   },
   body: {
     fontFamily: brandFont(fonts.body),
-    fontSize: 16,
-    lineHeight: 25,
+    fontSize: 14,
+    lineHeight: 23,
     color: palette.muted,
   },
   label: {
@@ -374,14 +374,14 @@ export function Shell({
                   style={[
                     ui.body,
                     {
-                      paddingHorizontal: 16,
-                      paddingVertical: 12,
-                      borderRadius: 24,
-                      borderWidth: 1,
+                      paddingHorizontal: 10,
+                      paddingVertical: 10,
+                      borderRadius: 0,
+                      borderBottomWidth: 1,
                       borderColor:
-                        pathname === route ? colors.accent.gold : palette.line,
+                        pathname === route ? colors.accent.gold : "transparent",
                       backgroundColor:
-                        pathname === route ? palette.sage : palette.white,
+                        "transparent",
                       color: palette.ink,
                     },
                   ]}

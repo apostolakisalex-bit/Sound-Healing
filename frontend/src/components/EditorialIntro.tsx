@@ -36,13 +36,13 @@ export function EditorialIntro({
         }}
       >
         {image && (
-          <View style={{ flexBasis: 320, flexGrow: 1, minHeight: 360 }}>
+          <View style={{ flexBasis: 320, flexGrow: 1, minHeight: 260 }}>
             <Image
               source={{ uri: imageUrl }}
               accessibilityLabel={imageAlt || title}
               onError={() => setFailed(true)}
               resizeMode="cover"
-              style={{ width: "100%", height: 360 }}
+              style={{ width: "100%", height: 260 }}
             />
           </View>
         )}
@@ -50,15 +50,15 @@ export function EditorialIntro({
           style={{
             flexBasis: 320,
             flexGrow: 1,
-            padding: 28,
-            gap: 20,
+            padding: 22,
+            gap: 14,
             justifyContent: "center",
           }}
         >
           <Text accessibilityRole="header" style={ui.title}>
             {title}
           </Text>
-          {!!summary && <Text style={ui.heading}>{summary}</Text>}
+          {!!summary && <Text style={ui.body}>{summary}</Text>}
           {!!body && <Text style={ui.body}>{body}</Text>}
           {action &&
             (preview ? (

@@ -361,3 +361,7 @@ Public navigation: About, Sound Healing, Training, Events, Services, Contact, in
 
 ## Homepage visibility controls — 2026-10-01
 The published site_settings record now controls show_testimonials, show_partners and show_socials (default true for backward compatibility). Admins can hide the entire section, including default content. Draft edits remain private until publication. The public logo strip still requires real, published image assets.
+
+
+## Visual refinement — 2026-10-01
+Owner requested a return to the lighter Emergent wellness aesthetic. Reduced shared heading weights/sizes and body scale; removed pill navigation chrome and heavy introductory card framing; reduced image heights and event title scale; softened service-card shadows. Content order, published CMS controls and assessment workflows are unchanged. This is a measured visual refinement, not a claim of pixel-identical restoration of the earlier Emergent preview.
