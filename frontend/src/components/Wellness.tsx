@@ -18,7 +18,7 @@ import { Link, usePathname, useRouter } from "expo-router";
 import { useAuth } from "@/src/auth/AuthContext";
 import { ResourcesSection } from "@/src/components/ResourcesSection";
 import { api } from "@/src/api/client";
-import { colors, fonts } from "@/src/theme";
+import { colors, fonts, wellness } from "@/src/theme";
 
 // Reuse the existing Emergent brand instead of introducing a parallel theme.
 const brandFont = (name: string, serif = false) =>
@@ -60,16 +60,16 @@ export const ui = StyleSheet.create({
     gap: 12,
   },
   title: {
-    fontFamily: brandFont(fonts.title, true),
-    fontSize: 30,
-    lineHeight: 38,
+    fontFamily: brandFont(fonts.title),
+    fontSize: 26,
+    lineHeight: 34,
     color: palette.ink,
     fontWeight: "400",
     letterSpacing: -0.3,
   },
   heading: {
-    fontFamily: brandFont(fonts.title, true),
-    fontSize: 21,
+    fontFamily: brandFont(fonts.title),
+    fontSize: 20,
     color: palette.ink,
     fontWeight: "400",
   },
@@ -98,9 +98,9 @@ export const ui = StyleSheet.create({
     minHeight: 48,
   },
   button: {
-    backgroundColor: colors.bg.dark,
+    backgroundColor: wellness.lavenderInk,
     borderWidth: 1,
-    borderColor: colors.accent.gold,
+    borderColor: wellness.lavenderInk,
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderRadius: 24,

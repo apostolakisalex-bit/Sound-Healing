@@ -1,3 +1,4 @@
+import { wellness } from "@/src/theme";
 import { ManagedImage } from "./ManagedImage";
 import React, { useState } from "react";
 import { Image, Text, View, useWindowDimensions } from "react-native";
@@ -70,7 +71,7 @@ export function EventGrid({
               width: cardWidth,
               backgroundColor: "#fff",
               borderWidth: 1,
-              borderColor: "#ECE9E2",
+              borderColor: wellness.line,
               shadowColor: "#24211B",
               shadowOffset: { width: 0, height: 5 },
               shadowOpacity: 0.035,
@@ -89,7 +90,7 @@ export function EventGrid({
               <View
                 style={{
                   aspectRatio: 1.5,
-                  backgroundColor: "#EDE8DD",
+                  backgroundColor: wellness.blueMist,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
@@ -97,14 +98,14 @@ export function EventGrid({
                 <Ionicons
                   name="musical-notes-outline"
                   size={40}
-                  color="#9B8757"
+                  color={wellness.slate}
                 />
               </View>
             )}
-            <View style={{ height: 1, backgroundColor: "#B7A56C" }} />
+            <View style={{ height: 1, backgroundColor: wellness.sand }} />
             <View style={{ padding: 14, gap: 12, flex: 1 }}>
               {isPast(p) && (
-                <Text style={[ui.label, { color: "#82765D", fontSize: 11 }]}>
+                <Text style={[ui.label, { color: wellness.muted, fontSize: 11 }]}>
                   Παλαιότερο εκπαιδευτικό
                 </Text>
               )}
@@ -113,7 +114,7 @@ export function EventGrid({
                   href={p.action_url as any}
                   style={[
                     ui.body,
-                    { fontSize: 16, lineHeight: 23, color: "#4B4944" },
+                    { fontSize: 16, lineHeight: 23, color: wellness.ink },
                   ]}
                 >
                   {p.title}
@@ -123,7 +124,7 @@ export function EventGrid({
                   accessibilityRole="header"
                   style={[
                     ui.body,
-                    { fontSize: 16, lineHeight: 23, color: "#4B4944" },
+                    { fontSize: 16, lineHeight: 23, color: wellness.ink },
                   ]}
                 >
                   {p.title}
@@ -145,7 +146,7 @@ export function EventGrid({
                       alignItems: "flex-start",
                     }}
                   >
-                    <Ionicons name={icon} size={17} color="#8C897F" />
+                    <Ionicons name={icon} size={17} color={wellness.muted} />
                     <Text
                       style={[
                         ui.body,
@@ -175,7 +176,7 @@ export function EventGrid({
                     {
                       marginTop: "auto",
                       paddingTop: 10,
-                      color: "#80651D",
+                      color: wellness.slate,
                       fontSize: 14,
                     },
                   ]}

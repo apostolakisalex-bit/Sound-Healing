@@ -1,3 +1,4 @@
+import { wellness } from "@/src/theme";
 import { ManagedImage } from "./ManagedImage";
 import React, { useState, useEffect } from "react";
 import { Image, Text, View } from "react-native";
@@ -70,7 +71,7 @@ export function EditorialIntro({
                 style={[
                   ui.body,
                   {
-                    color: "#80651D",
+                    color: wellness.slate,
                     textDecorationLine: "underline",
                     paddingVertical: 12,
                   },

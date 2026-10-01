@@ -406,3 +406,9 @@ This section supersedes earlier top navigation and self-service registration dec
 
 ### 2026-10-01 — Previous training visibility
 Owner decision: published past trainings remain visible alongside active programmes on the training page, ordered after active programmes and newest past first. Past cards use an informational CTA and a previous-training label. The compact home preview retains two cards, filling remaining slots with past programmes; the full training page exposes all. CMS-archived/unpublished content remains hidden. Past status uses the explicit event_end_date in Europe/Athens, never inferred editorial dates. This supersedes the fallback-only rule.
+
+
+### 2026-10-01 — Public level cards and modern wellness palette
+Four compact illustrated level cards open /explore/levels with the selected explanation expanded. Symbols: bowl; bowl with tingsha/chimes; bowl with gong/group; lotus. Editorial summaries reference the public curriculum without introducing practice targets. The owner replaces the ivory/gold styling with white, ice grey and pale blue, slate #545F7A primary accents and restrained reference earth tones. Shared tokens govern navigation, public cards, profiles and common admin surfaces. Yellow practice stars and green completion retain their status meanings.
+
+Owner refinement: clean sans-serif logo and headings (Raleway), lavender selected navigation and primary buttons, sage wellness surfaces, champagne reserved premium accent tokens. Do not introduce subscription features solely to demonstrate the palette.

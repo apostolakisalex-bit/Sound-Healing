@@ -1,43 +1,47 @@
-// Sound Healing Greece — design tokens
-// Palette extracted directly from soundhealing.gr:
-//   warm ivory backgrounds, deep charcoal text, classic gold accents (#D4AF37).
-//   Font: Raleway (sans) paired with Cormorant Garamond (editorial serif headings).
+// Modern wellness: white, ice grey and pale blue, with the owner's reference palette.
+export const wellness = {
+  lavender: '#E9E3F3', lavenderInk: '#69577F', sage: '#E8F0E9', sageInk: '#4F6D59', champagne: '#D9CDB5', champagneInk: '#78613D',
+  white: '#FFFFFF', ice: '#F3F6F8', blueMist: '#E8F1F7', blueSelected: '#DCEAF4',
+  slate: '#545F7A', ink: '#293344', muted: '#617083', line: '#DCE3E9',
+  rust: '#8F3D20', clay: '#CB865E', earth: '#522113', taupe: '#C2A9A5',
+  sand: '#9A7F59', oat: '#D9CDB5', stone: '#E5E5E5', cream: '#E7DDD1',
+};
 
 export const colors = {
   bg: {
-    primary: '#FCFBF9',     // warm ivory — main background
+    primary: wellness.white,     // clean white — main background
     secondary: '#FFFFFF',   // pure white — cards
-    tertiary: '#F4F2EE',    // subtle warm grey — input chrome
+    tertiary: wellness.ice,    // ice grey — input chrome
     elevated: '#FFFFFF',
     overlay: 'rgba(20, 22, 24, 0.55)',
     dark: '#141618',        // dark sections / hero overlays
     darkSoft: '#1F2124',    // softer dark
   },
   text: {
-    primary: '#151515',     // headings, deep charcoal
-    secondary: '#333333',   // body — warm dark grey
-    muted: '#888888',       // captions
-    accent: '#D4AF37',      // classic gold
-    inverse: '#FCFBF9',     // text on dark surfaces
+    primary: wellness.ink,     // headings, deep charcoal
+    secondary: wellness.ink,   // body — warm dark grey
+    muted: wellness.muted,       // captions
+    accent: wellness.slate,      // slate blue
+    inverse: wellness.white,     // text on dark surfaces
     inverseSecondary: 'rgba(252,251,249,0.78)',
   },
   accent: {
-    gold: '#D4AF37',        // primary brand accent
-    goldDeep: '#B8941F',
-    goldSoft: '#E5C76B',
-    bronze: '#8B6F2C',
+    gold: wellness.slate,        // legacy key; primary slate accent
+    goldDeep: wellness.slate,
+    goldSoft: wellness.blueSelected,
+    bronze: wellness.sand,
     cyan: '#3D8B9C',        // muted teal — refined complement
-    purple: '#6E5C8B',      // soft heather
-    coral: '#C8704D',       // earthy clay
+    purple: wellness.lavenderInk,      // soft heather
+    coral: wellness.clay,       // earthy clay
     turquoise: '#4A9CA8',
-    lavender: '#A89BB8',
+    lavender: wellness.lavender,
     indigo: '#2C2A4A',
   },
   border: {
-    default: 'rgba(212, 175, 55, 0.35)',
+    default: wellness.line,
     subtle: 'rgba(21, 21, 21, 0.08)',
     strong: 'rgba(21, 21, 21, 0.18)',
-    glow: 'rgba(212, 175, 55, 0.5)',
+    glow: 'rgba(84, 95, 122, 0.25)',
   },
   status: {
     success: '#5A8A5C',
@@ -65,10 +69,10 @@ export const radii = {
 };
 
 export const fonts = {
-  // Editorial serif — large cinematic headings
-  heading: 'CormorantGaramond_600SemiBold',
-  title: 'CormorantGaramond_500Medium',
-  italic: 'CormorantGaramond_400Regular_Italic',
+  // Clean sans-serif throughout the active experience
+  heading: 'Raleway_600SemiBold',
+  title: 'Raleway_500Medium',
+  italic: 'Raleway_400Regular',
   // Raleway — matches soundhealing.gr exactly
   body: 'Raleway_400Regular',
   bodyMed: 'Raleway_500Medium',
@@ -87,3 +91,4 @@ export const fontSizes = {
   caption: 11,
   overline: 10,
 };
+

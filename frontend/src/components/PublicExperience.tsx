@@ -1,3 +1,4 @@
+import { TrainingLevelCards } from "./TrainingLevels";
 import { MembersChat } from "./MembersChat";
 import { PublicHome } from "./PublicHome";
 import { EventGrid } from "./EventGrid";
@@ -96,7 +97,9 @@ export function PublicExperience({ section }: { section?: string }) {
     day: "2-digit",
   }).format(new Date());
   const visibleItems = state.data.filter(
-    (i) => !i.published.event_end_date || i.published.event_end_date >= today ||
+    (i) =>
+      !i.published.event_end_date ||
+      i.published.event_end_date >= today ||
       (section === "training" && i.published.section === "training"),
   );
   const settings = state.data.find(
@@ -152,25 +155,10 @@ export function PublicExperience({ section }: { section?: string }) {
           actionUrl={intro?.published.action_url}
         />
       )}
-      {!section && !state.loading && !state.error && <PublicHome items={state.data} />}
-      {section === "training" && (
-        <View style={ui.row}>
-          {[
-            "Himalayan singing bowls · Τα θεμέλια",
-            "Εμβάθυνση στην ατομική πρακτική",
-            "Συντονισμός ομαδικών Sound Baths",
-            "Εμβάθυνση και επαγγελματική ανάπτυξη",
-          ].map((title, index) => (
-            <View
-              key={title}
-              style={[ui.card, { flexGrow: 1, flexBasis: 280 }]}
-            >
-              <Text style={ui.label}>LEVEL {index + 1}</Text>
-              <Text style={ui.heading}>{title}</Text>
-            </View>
-          ))}
-        </View>
+      {!section && !state.loading && !state.error && (
+        <PublicHome items={state.data} />
       )}
+      {section === "training" && <TrainingLevelCards />}
       {section === "training" && (
         <View style={{ gap: 12 }}>
           <Text style={ui.heading}>Εκπαιδευτικά σεμινάρια</Text>

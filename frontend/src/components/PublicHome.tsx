@@ -1,3 +1,4 @@
+import { wellness } from "@/src/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { iconSurface } from "./AppNavigation";
 import { ManagedImage } from "./ManagedImage";
@@ -112,13 +113,13 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                         width: compactScreen ? 92 : 120,
                         height: compactScreen ? 92 : 120,
                         borderRadius: 60,
-                        backgroundColor: "#F0EDE7",
+                        backgroundColor: wellness.sage,
                       }
                     : {
                         width: "100%",
                         height: compactScreen ? 160 : 210,
                         borderRadius: 16,
-                        backgroundColor: "#F0EDE7",
+                        backgroundColor: wellness.sage,
                       }
                 }
                 resizeMode="cover"
@@ -140,7 +141,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                 <Text style={ui.body}>{content?.summary || card.text}</Text>
                 <Link
                   href={`/explore/${card.section}` as any}
-                  style={[ui.body, { color: "#94712F", fontSize: 12 }]}
+                  style={[ui.body, { color: wellness.slate, fontSize: 12 }]}
                 >
                   {card.section === "about"
                     ? "Γνώρισέ τον →"
@@ -203,11 +204,11 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                         </Text>
                         {!!item.published.event_end_date &&
                           item.published.event_end_date < today && (
-                            <Text style={{ fontSize: 10, color: "#81755F" }}>
+                            <Text style={{ fontSize: 10, color: wellness.muted }}>
                               Παλαιότερο εκπαιδευτικό
                             </Text>
                           )}
-                        <Text style={{ fontSize: 12, color: "#94712F" }}>
+                        <Text style={{ fontSize: 12, color: wellness.slate }}>
                           Περισσότερα →
                         </Text>
                       </View>
@@ -241,7 +242,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                     justifyContent: "center",
                     gap: 12,
                     borderWidth: 1,
-                    borderColor: "#E9E2D5",
+                    borderColor: wellness.line,
                   },
                 ]}
               >
@@ -252,14 +253,14 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                     )[index % 3]
                   }
                   size={26}
-                  color="#927545"
+                  color={wellness.slate}
                 />
                 <Text
                   style={{
                     fontSize: 11,
                     lineHeight: 16,
                     textAlign: "center",
-                    color: "#39352D",
+                    color: wellness.ink,
                   }}
                 >
                   {title}
@@ -347,7 +348,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
             gap: 16,
             paddingVertical: 24,
             borderTopWidth: 1,
-            borderColor: "#E7E0D3",
+            borderColor: wellness.line,
           }}
         >
           <Text style={ui.heading}>Ας μείνουμε σε επαφή.</Text>

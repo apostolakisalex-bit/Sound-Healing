@@ -1,3 +1,4 @@
+import { wellness, fonts } from "@/src/theme";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,7 +23,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 }
 export const useLanguage = () => useContext(Language);
 export const iconSurface = {
-  backgroundColor: "#FAF8F2",
+  backgroundColor: wellness.ice,
   borderRadius: 15,
   shadowColor: "#655A42",
   shadowOpacity: 0.12,
@@ -81,8 +82,9 @@ export function AppHeader() {
           <Text
             style={{
               fontSize: 18,
+              fontFamily: fonts.bodySemi,
               fontWeight: "600",
-              color: "#2D2A24",
+              color: wellness.ink,
               letterSpacing: 0.1,
             }}
           >
@@ -98,7 +100,7 @@ export function AppHeader() {
           onPress={() => void notifications()}
           style={{ padding: 10 }}
         >
-          <Ionicons name="notifications-outline" size={23} color="#39352D" />
+          <Ionicons name="notifications-outline" size={23} color={wellness.ink} />
           {rows.some((r) => !r.read) && (
             <View
               style={{
@@ -108,7 +110,7 @@ export function AppHeader() {
                 width: 7,
                 height: 7,
                 borderRadius: 4,
-                backgroundColor: "#BC9741",
+                backgroundColor: wellness.slate,
               }}
             />
           )}
@@ -118,7 +120,7 @@ export function AppHeader() {
         <View
           style={{
             padding: 14,
-            backgroundColor: "#F2EEE5",
+            backgroundColor: wellness.ice,
             borderRadius: 12,
             gap: 10,
           }}
@@ -150,7 +152,7 @@ export function AppHeader() {
               }}
             >
               <Text
-                style={{ color: "#39352D", fontWeight: r.read ? "400" : "600" }}
+                style={{ color: wellness.ink, fontWeight: r.read ? "400" : "600" }}
               >
                 {r.text}
               </Text>
@@ -213,9 +215,9 @@ export function BottomNavigation() {
         right: 0,
         paddingBottom: Math.max(insets.bottom, 8),
         paddingTop: 8,
-        backgroundColor: "#FCFBF8",
+        backgroundColor: wellness.white,
         borderTopWidth: 1,
-        borderColor: "#EAE5DB",
+        borderColor: wellness.line,
         shadowColor: "#4B4030",
         shadowOpacity: 0.08,
         shadowRadius: 12,
@@ -234,6 +236,7 @@ export function BottomNavigation() {
         {routes.map((item, index) => {
           const active =
             pathname === item.route ||
+            (index === 2 && pathname === "/explore/levels") ||
             (index === 4 && ["/profile", "/admin"].includes(pathname));
           return (
             <Pressable
@@ -252,7 +255,7 @@ export function BottomNavigation() {
                     height: 32,
                     alignItems: "center",
                     justifyContent: "center",
-                    backgroundColor: active ? "#EDE4CE" : "#FCFBF8",
+                    backgroundColor: active ? wellness.lavender : wellness.white,
                   },
                 ]}
               >
@@ -265,13 +268,13 @@ export function BottomNavigation() {
                   <Ionicons
                     name={item.icon}
                     size={23}
-                    color={active ? "#93712C" : "#39352D"}
+                    color={active ? wellness.lavenderInk : wellness.ink}
                   />
                 )}
               </View>
               <Text
                 numberOfLines={1}
-                style={{ fontSize: 10, color: active ? "#80601E" : "#60594D" }}
+                style={{ fontSize: 10, color: active ? wellness.lavenderInk : wellness.muted }}
               >
                 {language === "el" ? item.label : item.en}
               </Text>

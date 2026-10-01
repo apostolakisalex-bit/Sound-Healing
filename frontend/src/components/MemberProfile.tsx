@@ -1,3 +1,4 @@
+import { wellness } from "@/src/theme";
 import { pickPhoto } from "@/src/utils/pickPhoto";
 import React, { useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
@@ -128,14 +129,14 @@ export function MemberProfile({
               style={{ width: 80, height: 80, borderRadius: 40 }}
             />
           ) : (
-            <Ionicons name="person-outline" size={36} color="#776B53" />
+            <Ionicons name="person-outline" size={36} color={wellness.muted} />
           )}
         </View>
         <View style={{ flex: 1, gap: 8 }}>
           <Text
             style={[
               ui.body,
-              { fontWeight: "600", color: "#302B23", fontSize: 17 },
+              { fontWeight: "600", color: wellness.ink, fontSize: 17 },
             ]}
           >
             {p.name}
@@ -239,11 +240,11 @@ export function MemberProfile({
                   alignItems: "center",
                   justifyContent: "center",
                   borderWidth: 1,
-                  borderColor: "#E4D4AE",
+                  borderColor: wellness.line,
                 },
               ]}
             >
-              <Text style={{ fontSize: 20, color: "#63502A" }}>{value}</Text>
+              <Text style={{ fontSize: 20, color: wellness.slate }}>{value}</Text>
             </View>
             <Text style={{ fontSize: 11 }}>{label}</Text>
           </View>
@@ -266,7 +267,7 @@ export function MemberProfile({
               },
             ]}
           >
-            <Ionicons name="musical-notes-outline" size={25} color="#63502A" />
+            <Ionicons name="musical-notes-outline" size={25} color={wellness.slate} />
           </View>
           <Text style={{ fontSize: 11 }}>Όργανα · {p.instruments.length}</Text>
         </Pressable>
@@ -341,7 +342,7 @@ export function MemberProfile({
                   key={i}
                   name={i < l.completed ? "star" : "star-outline"}
                   size={22}
-                  color={i < l.completed ? "#D6AB35" : "#39352D"}
+                  color={i < l.completed ? "#D6AB35" : wellness.ink}
                   style={{
                     textShadowColor: "#BAA271",
                     textShadowOffset: { width: 0, height: 2 },
@@ -628,7 +629,7 @@ function LevelEditor({
               <Ionicons
                 name={i < Number(count) ? "star" : "star-outline"}
                 size={24}
-                color={i < Number(count) ? "#D6AB35" : "#39352D"}
+                color={i < Number(count) ? "#D6AB35" : wellness.ink}
               />
             </Pressable>
           ))}
