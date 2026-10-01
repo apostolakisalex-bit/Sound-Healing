@@ -95,8 +95,9 @@ export function PublicExperience({ section }: { section?: string }) {
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
+  const pastTraining = section === "training" && !state.data.some(i => i.published.kind === "announcement" && i.published.section === "training" && (!i.published.event_end_date || i.published.event_end_date >= today));
   const visibleItems = state.data.filter(
-    (i) => !i.published.event_end_date || i.published.event_end_date >= today,
+    (i) => !i.published.event_end_date || i.published.event_end_date >= today || (pastTraining && i.published.section === "training"),
   );
   const settings = state.data.find(
     (i) => i.published.kind === "site_settings",
@@ -199,6 +200,7 @@ export function PublicExperience({ section }: { section?: string }) {
       )}
       {section === "contact" && <MembersChat />}
       <Status state={state} />
+      {pastTraining && <Text style={ui.body}>Δεν υπάρχει ενεργό εκπαιδευτικό αυτή τη στιγμή. Δες παρακάτω προηγούμενα εκπαιδευτικά προγράμματα.</Text>}
       {(section === "events" || section === "training") && (
         <EventGrid
           training={section === "training"}
