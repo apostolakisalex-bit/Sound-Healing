@@ -209,3 +209,29 @@ Integrated GitHub `shg/premium-renewal` commit **3aa4d71** ("Retire legacy pract
 - Console-only (non-fatal) on /practice: `Unexpected text node … cannot be a child of a <View>` — pre-existing in shared components; does not affect functionality.
 - Public receiver feedback form (`app/feedback/[token].tsx`) renders in **English** (pre-existing Emergent screen, not touched by this commit). Localization to Greek pending owner decision.
 
+---
+
+## v1.5 — Full legacy-environment retirement (owner change of direction, June 2026)
+Owner decision: ONE unified experience, exclusively the new educational flow (active enrollment → practice → student assessment → receiver/group assessment via `/evaluation` → Admin review). No path to the old environment from any menu or direct URL; stored legacy data is kept **isolated in Mongo (not deleted)**, never shown, never credited.
+
+### Retired (frontend)
+- Removed the "Ιστορικό παλαιότερων καταγραφών" button and its `/practices` fetch from the school `PracticeScreen` (`Experience.tsx`).
+- Old routes replaced with thin stubs (new `src/components/RetiredNotice.tsx` — Greek "αποσύρθηκε" notice):
+  - `/legacy-practices` → RetiredNotice (+ link to `/(tabs)/practice`).
+  - `/practice/[id]` → `Redirect` to `/(tabs)/practice`.  `/practice/new` → `Redirect` to `/(tabs)/practice`.
+  - `/level/[id]` → `Redirect` to `/(tabs)/academy`.
+  - `/realm/[id]` → RetiredNotice.  `/ai-chat` → RetiredNotice.
+  - `/feedback/[token]` → PUBLIC RetiredNotice ("Ο σύνδεσμος αποσύρθηκε"), NO form, NO submission.
+- Removed old XP from the active environment: deleted the dead `ProfileScreen` in `Experience.tsx` (showed "παλαιότερα XP") and removed the "παλαιότερα XP" sentence from `Home`.
+- Deleted dead files: `src/components/LevelRing.tsx`, `LegacyHistory.tsx`, `TabsTopBar.tsx` (+ unused `BrandHero` import).
+
+### Retired (backend — `server.py`, data untouched in DB)
+- `GET /api/practices`, `GET /api/practices/{id}`, `GET /api/feedback/{token}`, `POST /api/feedback/{token}` → **410** with Greek messages (`POST /api/practices` was already 410). `/ai/chat` stays 503-gated; `community/feed` stays `[]`.
+
+### Kept (unchanged)
+- MemberProfile (L1–L4 progress bars, practice stars, new stats — no "XP" wording), admin workspace, public home + past seminars marked "Ολοκληρώθηκε", the NEW assessment flow (`/evaluation` + `/evaluations/*`, disjoint from the retired `/feedback`).
+
+### Verification
+- `tsc --noEmit` clean; backend pytest **134 passed / 1 skipped** (AI gated); all 4 old endpoints return 410 live.
+- Runtime (web preview) confirmed by main agent: no history button on `/practice` (even for a student WITH legacy records); direct URLs `/legacy-practices`, `/ai-chat`, `/realm/x` → Greek retirement notice; `/practice/xyz` → new PracticeScreen; `/level/x` → `/academy`; public `/feedback/<token>` → retirement notice with 0 form inputs. Tests updated: all legacy practice/feedback endpoints asserted as 410 (`test_api.py`, `test_google_resend_integration.py`, `unit_tests/test_security.py`); isolated seed fixtures removed.
+

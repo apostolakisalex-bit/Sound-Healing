@@ -397,3 +397,42 @@ agent_communication:
       non-boolean attribute accessible". Do NOT assert certification/XP rules (open decisions). Do NOT re-enable legacy
       creation. Admin: admin@soundhealing.gr/temple2026.
   run_ui: true
+    -agent: "main"
+    -message: >
+      FULL LEGACY ENVIRONMENT RETIREMENT (owner "change of direction"): one unified experience, ONLY the new
+      educational flow. Changes:
+      BACKEND (server.py, data kept isolated in Mongo — nothing deleted): POST /api/practices (already 410), plus NOW
+      GET /api/practices, GET /api/practices/{id}, GET /api/feedback/{token}, POST /api/feedback/{token} all return 410
+      with Greek messages. (/ai/chat stays 503-gated; community/feed stays []).
+      FRONTEND: Removed the "Ιστορικό παλαιότερων καταγραφών" button from the school PracticeScreen (Experience.tsx) and
+      its /practices fetch. Old routes no longer render the old environment:
+        - /legacy-practices -> Greek RETIREMENT notice (new src/components/RetiredNotice.tsx) + link to /(tabs)/practice.
+        - /practice/[id] -> Redirect to /(tabs)/practice.  /practice/new -> Redirect to /(tabs)/practice (unchanged).
+        - /level/[id] -> Redirect to /(tabs)/academy.
+        - /realm/[id] -> Greek RETIREMENT notice.
+        - /ai-chat -> Greek RETIREMENT notice.
+        - /feedback/[token] -> PUBLIC Greek RETIREMENT notice, NO form, NO submission.
+      Removed old XP from the active environment: deleted the dead ProfileScreen (Experience.tsx) that showed "παλαιότερα
+      XP"; removed the "παλαιότερα XP" sentence from Home. Deleted dead files: src/components/LevelRing.tsx,
+      LegacyHistory.tsx, TabsTopBar.tsx. KEPT: MemberProfile (L1-L4 progress bars, practice stars, new stats), admin
+      workspace, public home + past seminars marked "Ολοκληρώθηκε", and the NEW assessment flow (/evaluation +
+      /evaluations/* endpoints — DISJOINT from the retired /feedback).
+      VERIFIED by main agent: tsc --noEmit clean; backend pytest 134 passed / 1 skipped (AI); live 410 on all 4 old
+      endpoints; smoke screenshot shows NO history button on /practice even for a student WITH legacy records.
+      PLEASE FRONTEND-test (web preview) that there is NO path to the old environment and old URLs behave correctly:
+      (A) Student legacy_history@test.gr/HistoryPass12345: Profile -> "Οι πρακτικές μου" -> /practice shows NO
+          "Ιστορικό παλαιότερων καταγραφών" button; no link anywhere to /legacy-practices.
+      (B) Direct URLs (logged in as the student) must NEVER show the old UI:
+          /legacy-practices -> Greek "αποσύρθηκε" notice; /ai-chat -> notice; /realm/anything -> notice;
+          /practice/anything -> lands on the new school PracticeScreen (redirect); /level/anything -> lands on /academy
+          (redirect); /practice/new -> lands on new PracticeScreen.
+      (C) PUBLIC (no login) /feedback/MLgBc_WLT4XAmzr5sHwe8QQEIWNE6PEU_n1m2BMouHA -> Greek retirement notice, NO rating
+          inputs, NO submit button.
+      (D) Admin admin@soundhealing.gr/temple2026 -> /admin workspace loads; its sections have no link to old env.
+      (E) Regression: public landing + 5 bottom tabs + member profile (L1-L4 bars, stars) still fine; the NEW flow for an
+          enrolled student still works: legacy_enrolled@test.gr/EnrolledPass12345 -> /practice create+submit a GROUP
+          practice (receiver_code + participant_count) succeeds; receiver/group assessment via /evaluation unaffected.
+      Pre-existing non-fatal web warnings (NOT regressions): shadow*/resizeMode deprecation, "Received false for
+      non-boolean attribute accessible", and a console-only "Unexpected text node" on /practice. Do NOT assert
+      certification/XP rules.
+  run_ui: true

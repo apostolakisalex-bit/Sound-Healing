@@ -1,5 +1,4 @@
 import { PracticeAssessments } from "@/src/components/Assessments";
-import { BrandHero } from "./BrandHero";
 import { CyclePicker } from "./CyclePicker";
 import { Progress } from "./Progress";
 import React, { useState } from "react";
@@ -151,8 +150,7 @@ export function Home() {
         <Text style={ui.heading}>Ένα βήμα τη φορά</Text>
         <Text style={ui.body}>
           Η εκπαιδευτική σου πρόοδος βασίζεται στην εγγραφή, την παρουσία και
-          την αξιολόγηση της πρακτικής. Τα παλαιότερα XP διατηρούνται στο προφίλ
-          σου ως ιστορικό συμμετοχής.
+          την αξιολόγηση της πρακτικής.
         </Text>
       </View>
     </Shell>
@@ -248,8 +246,6 @@ export function PracticeScreen() {
     [cycleId, setCycleId] = useState(""),
     [participantCount, setParticipantCount] = useState(""),
     [revision, setRevision] = useState(1);
-  const legacy = useLoad<{ id: string }[]>("/practices", []);
-  const router = useRouter();
   const save = async () => {
     const parsedDate = new Date(`${date}T12:00:00Z`);
     if (
@@ -521,75 +517,6 @@ export function PracticeScreen() {
           )}
         </View>
       ))}
-      {!legacy.loading && !legacy.error && legacy.data.length > 0 && <Button
-        secondary
-        label="Ιστορικό παλαιότερων καταγραφών"
-        onPress={() => router.push("/legacy-practices" as any)}
-      />}
-    </Shell>
-  );
-}
-export function ProfileScreen() {
-  const { user, updateProfile, logout } = useAuth();
-  const [name, setName] = useState(user?.name || ""),
-    [bio, setBio] = useState(user?.bio || ""),
-    [message, setMessage] = useState(""),
-    [busy, setBusy] = useState(false);
-  const state = useLoad<School>("/school/me", empty);
-  return (
-    <Shell eyebrow="PROFILE" title="Το προφίλ σου.">
-      <View style={ui.card}>
-        <Field label="Όνομα" value={name} onChange={setName} />
-        <Field
-          label="Λίγα λόγια για εσένα"
-          value={bio}
-          onChange={setBio}
-          multiline
-        />
-        <Button
-          disabled={busy || name.trim().length < 2}
-          label="Αποθήκευση"
-          onPress={async () => {
-            setBusy(true);
-            try {
-              await updateProfile({ name, bio });
-              setMessage("Αποθηκεύτηκε.");
-            } catch {
-              setMessage("Δεν αποθηκεύτηκε. Δοκίμασε ξανά.");
-            } finally {
-              setBusy(false);
-            }
-          }}
-        />
-        <Text style={ui.body}>{message}</Text>
-      </View>
-      <Status state={state} />
-      {!state.loading && !state.error && (
-        <View style={ui.card}>
-          <Text style={ui.heading}>Εκπαίδευση</Text>
-          {state.data.enrollments.map((e) => (
-            <Text key={e.id} style={ui.body}>
-              {e.level_id} · {e.cohort_title}
-            </Text>
-          ))}
-          {!state.data.enrollments.length && (
-            <Text style={ui.body}>
-              Δεν έχει καταχωριστεί εκπαιδευτική εγγραφή.
-            </Text>
-          )}
-          <Text style={ui.body}>
-            Παρουσίες:{" "}
-            {state.data.attendance.filter((a) => a.status === "present").length}
-          </Text>
-        </View>
-      )}
-      <View style={ui.card}>
-        <Text style={ui.heading}>Ιστορικό συμμετοχής</Text>
-        <Text style={ui.body}>
-          {user?.xp || 0} παλαιότερα XP · δεν αποτελούν εκπαιδευτικό τίτλο.
-        </Text>
-      </View>
-      <Button secondary label="Αποσύνδεση" onPress={() => void logout()} />
     </Shell>
   );
 }

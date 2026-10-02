@@ -724,54 +724,23 @@ async def create_practice(payload: PracticeIn, user: dict = Depends(get_current_
 
 @api.get("/practices")
 async def list_practices(user: dict = Depends(get_current_user)):
-    docs = await db.practices.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(500)
-    return [practice_doc_to_out(d) for d in docs]
+    raise HTTPException(410, "Οι παλιές καταγραφές αποσύρθηκαν και δεν εμφανίζονται στην εφαρμογή.")
 
 
 @api.get("/practices/{practice_id}", response_model=PracticeOut)
 async def get_practice(practice_id: str, user: dict = Depends(get_current_user)):
-    doc = await db.practices.find_one({"id": practice_id, "user_id": user["id"]}, {"_id": 0})
-    if not doc:
-        raise HTTPException(404, "Practice not found")
-    return practice_doc_to_out(doc)
+    raise HTTPException(410, "Οι παλιές καταγραφές αποσύρθηκαν και δεν εμφανίζονται στην εφαρμογή.")
 
 
 # PUBLIC — receiver feedback
 @api.get("/feedback/{token}")
 async def get_feedback_form(token: str):
-    doc = await db.practices.find_one({"feedback_token": token}, {"_id": 0})
-    if not doc:
-        raise HTTPException(404, "Invalid or expired feedback link")
-    if doc.get("feedback"):
-        return {"already_submitted": True, "practitioner_name": "this practitioner",
-                "session_date": doc["session_date"], "session_type": doc["session_type"]}
-    user = await db.users.find_one({"id": doc["user_id"]}, {"_id": 0, "name": 1})
-    return {
-        "already_submitted": False,
-        "practitioner_name": user["name"] if user else "Practitioner",
-        "session_date": doc["session_date"],
-        "session_type": doc["session_type"],
-        "duration_minutes": doc["duration_minutes"],
-    }
+    raise HTTPException(410, "Ο σύνδεσμος αξιολόγησης αποσύρθηκε και δεν είναι πλέον ενεργός.")
 
 
 @api.post("/feedback/{token}")
 async def submit_feedback(token: str, payload: ReceiverFeedbackIn):
-    doc = await db.practices.find_one({"feedback_token": token})
-    if not doc:
-        raise HTTPException(404, "Invalid feedback link")
-    if doc.get("feedback"):
-        raise HTTPException(400, "Feedback already submitted")
-    if not payload.consent:
-        raise HTTPException(400, "Consent required")
-    feedback_data = payload.model_dump()
-    feedback_data["submitted_at"] = datetime.now(timezone.utc).isoformat()
-    result = await db.practices.update_one(
-        {"feedback_token": token, "feedback": None},
-        {"$set": {"feedback": feedback_data, "status": "Awaiting Instructor Review", "xp_awarded": 0}})
-    if not result.modified_count:
-        raise HTTPException(409, "Feedback already submitted")
-    return {"ok": True, "thank_you": "Thank you. Your feedback has been received."}
+    raise HTTPException(410, "Ο σύνδεσμος αξιολόγησης αποσύρθηκε και δεν δέχεται νέα υποβολή.")
 
 
 # ============================================================

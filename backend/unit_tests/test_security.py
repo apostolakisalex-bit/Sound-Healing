@@ -34,14 +34,18 @@ def test_private_feed_and_ai_disabled(secured):
     assert c.get('/api/community/feed').json()==[]
     assert c.post('/api/ai/chat',json={'message':'hello','session_id':'another-user'}).status_code==503
 
-def test_feedback_no_auto_certification_or_duplicate_reward(secured):
+def test_legacy_practice_and_feedback_retired_keep_data(secured):
+    # Legacy practice + receiver-feedback flow is fully retired (410). Stored
+    # records remain isolated in Mongo: never read, never submitted, never credited.
     c,db=secured
-    asyncio.run(db.practices.insert_one({'id':'p','feedback_token':'test-token','feedback':None,'user_id':'student'}))
+    asyncio.run(db.practices.insert_one({'id':'p','feedback_token':'test-token','feedback':None,'user_id':'student','status':'Waiting for Receiver Feedback','xp_awarded':0}))
     data={'receiver_name':'Synthetic','relaxation_before':5,'relaxation_after':6,'emotional_experience':'Calm','perceived_safety':8,'clarity_of_instructions':8,'quality_of_holding_space':8,'consent':True}
-    assert c.post('/api/feedback/test-token',json=data).status_code==200
-    assert c.post('/api/feedback/test-token',json=data).status_code in (400,409)
+    assert c.get('/api/feedback/test-token').status_code==410
+    assert c.post('/api/feedback/test-token',json=data).status_code==410
+    assert c.get('/api/practices').status_code==410
+    assert c.get('/api/practices/p').status_code==410
     p=asyncio.run(db.practices.find_one({'id':'p'}))
-    assert p['status']=='Awaiting Instructor Review' and p['xp_awarded']==0
+    assert p['feedback'] is None and p['xp_awarded']==0
     assert asyncio.run(db.users.find_one({'id':'student'}))['xp']==99999
 
 def test_resource_xp_never_grants_access(secured):

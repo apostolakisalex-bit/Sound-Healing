@@ -79,7 +79,7 @@ class TestLoginRegression:
         assert data["user"]["membership_status"] == "approved"
 
 
-# ----- (D) Legacy practice creation is RETIRED -> 410 -----
+# ----- (D) Legacy practice + feedback flow fully RETIRED -> 410 -----
 class TestLegacyPracticeRetired:
     def _payload(self, receiver_email: str):
         return {
@@ -89,11 +89,6 @@ class TestLegacyPracticeRetired:
             "protocol": "Standard sound bath",
             "instruments": ["bowls", "chimes"],
             "intention": "Relaxation",
-            "observations": "",
-            "technical_reflections": "",
-            "what_went_well": "",
-            "what_to_improve": "",
-            "safety_concerns": "",
             "contraindications_checked": True,
             "notes": "TEST_integration",
             "receiver_name": "TEST Receiver",
@@ -114,62 +109,26 @@ class TestLegacyPracticeRetired:
         assert r.status_code != 500, f"must not 500: {r.text}"
         assert r.status_code == 410, f"expected 410 (retired), got {r.status_code}: {r.text}"
 
-
-# ----- Legacy read-only history + public receiver feedback via ISOLATED seeded fixtures -----
-@pytest.fixture(scope="module")
-def student_user_id(student_token):
-    r = requests.get(f"{API}/auth/me", headers=auth(student_token), timeout=15)
-    assert r.status_code == 200, r.text
-    return r.json()["id"]
-
-
-@pytest.fixture(scope="module")
-def seeded_tokens(seed_practice, student_user_id):
-    """Seed two historical records for the reusable student directly in the test DB
-    (creation is retired). Returns their feedback tokens for read/feedback assertions."""
-    with_email = seed_practice(student_user_id, receiver_email="delivered@resend.dev",
-                               receiver_name="TEST Receiver")
-    no_email = seed_practice(student_user_id, receiver_email="", receiver_name="TEST Receiver")
-    return {"with_email": with_email["feedback_token"], "no_email": no_email["feedback_token"]}
-
-
-class TestLegacyHistoryRead:
-    def test_seeded_records_listed(self, student_token, seeded_tokens):
+    def test_list_practices_returns_410(self, student_token):
         r = requests.get(f"{API}/practices", headers=auth(student_token), timeout=15)
-        assert r.status_code == 200
-        tokens = [p["feedback_token"] for p in r.json()]
-        assert seeded_tokens["with_email"] in tokens
-        assert seeded_tokens["no_email"] in tokens
+        assert r.status_code == 410, f"GET /practices must be 410, got {r.status_code}: {r.text}"
 
 
-# ----- Regression: public feedback (no auth) still works on seeded records -----
-class TestPublicFeedback:
-    def test_get_feedback_form_no_auth(self, seeded_tokens):
-        token = seeded_tokens["with_email"]
-        r = requests.get(f"{API}/feedback/{token}", timeout=15)
-        assert r.status_code == 200, r.text
-        data = r.json()
-        assert data.get("already_submitted") is False
-        assert data.get("session_type") == "Tibetan Bowls"
+# ----- Old public receiver-feedback links are RETIRED -> 410 (no new submission) -----
+class TestPublicFeedbackRetired:
+    def test_get_feedback_returns_410(self):
+        r = requests.get(f"{API}/feedback/any-legacy-token", timeout=15)
+        assert r.status_code == 410, f"GET /feedback must be 410, got {r.status_code}: {r.text}"
 
-    def test_submit_feedback_no_auth(self, seeded_tokens):
-        token = seeded_tokens["no_email"]
+    def test_submit_feedback_returns_410(self):
         payload = {
-            "receiver_name": "TEST Receiver",
-            "relaxation_before": 4,
-            "relaxation_after": 9,
-            "emotional_experience": "Calm and grounded.",
-            "body_sensations": "warm",
-            "perceived_safety": 10,
-            "clarity_of_instructions": 9,
-            "quality_of_holding_space": 10,
-            "comments": "TEST integration",
-            "consent": True,
-            "email": "",
+            "receiver_name": "TEST Receiver", "relaxation_before": 4, "relaxation_after": 9,
+            "emotional_experience": "x", "body_sensations": "warm", "perceived_safety": 10,
+            "clarity_of_instructions": 9, "quality_of_holding_space": 10, "comments": "x",
+            "consent": True, "email": "",
         }
-        r = requests.post(f"{API}/feedback/{token}", json=payload, timeout=15)
-        assert r.status_code == 200, r.text
-        assert r.json().get("ok") is True
+        r = requests.post(f"{API}/feedback/any-legacy-token", json=payload, timeout=15)
+        assert r.status_code == 410, f"POST /feedback must be 410, got {r.status_code}: {r.text}"
 
 
 # ----- (R) Member decision regression — ensure email wiring doesn't break it -----
