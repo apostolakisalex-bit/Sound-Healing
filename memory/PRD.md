@@ -183,3 +183,29 @@ Upgraded the Expo app two major SDKs (54 → 57) per owner request. Backend unch
 ### Note
 - Native iOS/Android require a fresh dev/production build (RN 0.86 runtime) — Publish + build to test on real devices; cannot be validated in Expo Go/web preview.
 
+---
+
+## v1.4 — Legacy practice retirement (GitHub commit 3aa4d71, June 2026, preview)
+Integrated GitHub `shg/premium-renewal` commit **3aa4d71** ("Retire legacy practice creation and present prior records as read-only Greek history") via a clean **fast-forward** onto the SDK-57 HEAD — all Emergent changes (SDK 57, Google auth, Resend, aesthetics) preserved; package.json/app.json/yarn.lock untouched by the merge.
+
+### Behavior
+- **Backend**: `POST /api/practices` now returns **410** with a Greek message ("Η παλιά καταγραφή έκλεισε…"). `GET /api/practices`, `GET /api/practices/{id}`, and public `GET/POST /api/feedback/{token}` are unchanged — read-only history + already-sent receiver links keep working. **No XP/credit migration**; feedback still routes to `Awaiting Instructor Review` with `xp_awarded=0`.
+- **Frontend**: `/practice/new` → `<Redirect href="/practice" />` (school practice screen). `/legacy-practices` and `/practice/[id]` are read-only Greek history screens via new `src/components/LegacyHistory.tsx` (`LegacyHistory` list + `LegacyDetail`), using the shared `Shell`. The "Ιστορικό παλαιότερων καταγραφών" button on the school `PracticeScreen` (`Experience.tsx`) renders **only** when the student has ≥1 legacy record. A Greek "read-only / not counted toward Levels" notice is shown; no create/log/share controls.
+
+### Emergent-side fixes on top of the merge
+- `LevelRing.tsx`: `StyleSheet.absoluteFillObject` → `absoluteFill` (SDK 57 `tsc` type error). `tsc --noEmit` now clean.
+- Tests updated per handoff: legacy creation tests now assert **410**; read/feedback tests use **isolated seeded fixtures** in Mongo (`conftest.py` `mongo_db` + `seed_practice`, ids prefixed `TEST_legacy_`, cleaned at session end) — legacy creation is never re-enabled. (`tests/test_api.py`, `tests/test_google_resend_integration.py`.)
+
+### Verification
+- Backend pytest: **34 passed / 1 skipped** (AI gated) in the API suite + **104 passed** in the rest (new_modules, premium_renewal, unit_tests). Live `POST /api/practices` → 410 confirmed.
+- testing_agent iteration_7 (frontend, SDK 57 web preview): **PASS** on all 6 checklist items — (1) no-history → button hidden, (2) with-history → read-only own records, no create/share, (3) `/practice/new` redirects, (4) enrolled student creates+submits a new school practice (group mode), (5) old feedback links render without login, (6) SDK-57 regression fine.
+
+### Fixtures created (approved students)
+- `legacy_empty@test.gr` / `EmptyPass12345` (0 legacy, not enrolled)
+- `legacy_history@test.gr` / `HistoryPass12345` (2 seeded legacy records)
+- `legacy_enrolled@test.gr` / `EnrolledPass12345` (active enrollment "TEST Cohort a72b52")
+
+### Known non-blocking observations (out of scope for this commit)
+- Console-only (non-fatal) on /practice: `Unexpected text node … cannot be a child of a <View>` — pre-existing in shared components; does not affect functionality.
+- Public receiver feedback form (`app/feedback/[token].tsx`) renders in **English** (pre-existing Emergent screen, not touched by this commit). Localization to Greek pending owner decision.
+

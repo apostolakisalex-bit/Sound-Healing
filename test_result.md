@@ -366,3 +366,34 @@ agent_communication:
       dev warnings (NOT regressions, pre-existing): "shadow* deprecated use boxShadow" and "Received false for non-boolean attribute
       accessible". Do NOT assert certification/XP rules (open decisions). Admin: admin@soundhealing.gr/temple2026.
   run_ui: true
+    -agent: "main"
+    -message: >
+      LEGACY PRACTICE RETIREMENT (GitHub commit 3aa4d71 fast-forwarded onto SDK-57 HEAD; Emergent changes preserved).
+      Backend: POST /api/practices now returns 410 (Greek message). GET /api/practices + GET /api/practices/{id} +
+      public GET/POST /api/feedback/{token} unchanged (read-only history + old receiver links still work). No XP/credit
+      migration. Frontend: /practice/new now redirects to /practice (school PracticeScreen); /legacy-practices and
+      /practice/[id] are read-only Greek history screens using the shared Shell (new src/components/LegacyHistory.tsx,
+      exports LegacyHistory + LegacyDetail). The "Ιστορικό παλαιότερων καταγραφών" button on the school PracticeScreen
+      (Experience.tsx) renders ONLY when the student has >=1 legacy record. Verified: TypeScript `tsc --noEmit` clean on
+      SDK 57 (fixed LevelRing StyleSheet.absoluteFillObject->absoluteFill), web bundle builds, backend pytest 34 passed/1
+      skipped (AI) + 104 passed in the rest suite. Legacy creation tests now expect 410; read/feedback tests use isolated
+      seeded fixtures in Mongo (conftest seed_practice/mongo_db, ids prefixed TEST_legacy_, cleaned at session end).
+      PLEASE FRONTEND-test (web preview) these checklist items:
+      (1) legacy_empty@test.gr/EmptyPass12345 (approved, 0 legacy) -> Profile -> "Οι πρακτικές μου" -> /practice:
+          "Ιστορικό παλαιότερων καταγραφών" button is ABSENT.
+      (2) legacy_history@test.gr/HistoryPass12345 (approved, 2 legacy) -> /practice: button PRESENT -> tap ->
+          /legacy-practices shows a Greek read-only list of ONLY that user's 2 records (receivers Ελένη, Γιώργος),
+          NO create/log/share controls; open a record -> read-only detail; a Greek "read-only / not counted toward Levels"
+          notice is shown.
+      (3) Directly open /practice/new -> it REDIRECTS to the school practice screen (/practice), no legacy form.
+      (4) legacy_enrolled@test.gr/EnrolledPass12345 (approved + ACTIVE enrollment "TEST Cohort a72b52") -> /practice:
+          the NEW school-practice draft form is available; create a draft in GROUP mode (receiver_code + participant_count 2-10000)
+          and submit it for review (POST/submit via /school/practices) -> succeeds.
+      (5) Old receiver feedback link works with NO login:
+          GET (view form only, leave unused): /feedback/MLgBc_WLT4XAmzr5sHwe8QQEIWNE6PEU_n1m2BMouHA -> renders form, already_submitted=false.
+          Optional submit-ok: /feedback/bM__q8Af3v8CW1VFXHPX-46dhuWYd-yl0reIgqtgCBw.
+      (6) Regression: public landing + login (admin + student) + 5 bottom tabs still fine on SDK 57.
+      Known pre-existing non-fatal web warnings (NOT regressions): shadow*/resizeMode deprecation, "Received false for
+      non-boolean attribute accessible". Do NOT assert certification/XP rules (open decisions). Do NOT re-enable legacy
+      creation. Admin: admin@soundhealing.gr/temple2026.
+  run_ui: true

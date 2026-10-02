@@ -48,7 +48,7 @@ export function LevelRing({
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </Svg>
-      <View style={StyleSheet.absoluteFillObject}>
+      <View style={StyleSheet.absoluteFill}>
         <View style={styles.center}>
           <Text style={styles.levelTxt}>{level}</Text>
           <Text style={styles.xpTxt}>{xp} XP</Text>

@@ -130,7 +130,13 @@ class TestStamps:
 # ============ PRACTICES + FEEDBACK ============
 class TestPracticesAndFeedback:
     @pytest.fixture(scope="class")
-    def practice(self, api, fresh_user):
+    def practice(self, seed_practice, fresh_user):
+        # Legacy practice CREATION is retired (POST /api/practices -> 410).
+        # Seed a historical record directly in the isolated test DB so the
+        # read-only + public-feedback flows can still be exercised.
+        return seed_practice(fresh_user["user"]["id"], receiver_name="Maria")
+
+    def test_legacy_creation_returns_410(self, api, fresh_user):
         payload = {
             "session_date": "2026-01-15",
             "duration_minutes": 45,
@@ -138,21 +144,14 @@ class TestPracticesAndFeedback:
             "protocol": "Full-body grounding",
             "instruments": ["Tibetan Bowls", "Chimes"],
             "intention": "Inner stillness",
-            "observations": "Receiver entered deep relaxation",
-            "technical_reflections": "Held the F# bowl too long",
-            "what_went_well": "Smooth transitions",
-            "what_to_improve": "Pacing of closing",
-            "safety_concerns": "",
             "contraindications_checked": True,
-            "notes": "",
             "receiver_name": "Maria",
             "receiver_email": "TEST_maria@example.com",
         }
         r = api.post(f"{BASE}/api/practices", json=payload, headers=fresh_user["auth"])
-        assert r.status_code == 200, r.text
-        return r.json()
+        assert r.status_code == 410, f"legacy creation must be retired (410), got {r.status_code}: {r.text}"
 
-    def test_create_practice(self, practice):
+    def test_seeded_history_record_fields(self, practice):
         assert practice["status"] == "Waiting for Receiver Feedback"
         assert practice["feedback_token"]
         assert practice["xp_awarded"] == 0
@@ -224,16 +223,9 @@ class TestPracticesAndFeedback:
         r = api.post(f"{BASE}/api/feedback/{practice['feedback_token']}", json=payload)
         assert r.status_code in (400, 409)
 
-    def test_submit_feedback_requires_consent(self, api, fresh_user):
-        # Create new practice with all required fields
-        new_p = api.post(f"{BASE}/api/practices", json={
-            "session_date": "2026-01-16", "duration_minutes": 30,
-            "session_type": "Sound Bath", "protocol": "Light",
-            "instruments": ["Gong"], "intention": "Rest",
-            "contraindications_checked": True,
-            "receiver_name": "Andreas",
-        }, headers=fresh_user["auth"]).json()
-        assert "feedback_token" in new_p, new_p
+    def test_submit_feedback_requires_consent(self, api, seed_practice, fresh_user):
+        # Seed a fresh historical record (creation is retired; cannot POST).
+        new_p = seed_practice(fresh_user["user"]["id"], receiver_name="Andreas")
         payload = {
             "receiver_name": "Andreas", "relaxation_before": 5, "relaxation_after": 7,
             "emotional_experience": "fine", "body_sensations": "", "perceived_safety": 8,

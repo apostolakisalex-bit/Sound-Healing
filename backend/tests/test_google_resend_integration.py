@@ -3,8 +3,9 @@ Iteration 5 — Verify Emergent Google sign-in + Resend transactional email wiri
 
 Scope (per review_request):
   C) POST /api/auth/session with a bogus session_id must 401 (NOT 500).
-  D) POST /api/practices must succeed WITH and WITHOUT receiver_email and
-     return a feedback_token. The email wiring must not break the request.
+  D) POST /api/practices is RETIRED and must return 410 (NOT 500/200), WITH and
+     WITHOUT receiver_email. Legacy read-only history + public receiver feedback
+     are exercised via isolated seeded fixtures (creation is never re-enabled).
   R) POST /api/admin/members/{uid}/decision regression — still returns ok.
   R) email/password login regression (admin + existing approved student).
   R) GET/POST /api/feedback/{token} public (no auth) still works.
@@ -78,8 +79,8 @@ class TestLoginRegression:
         assert data["user"]["membership_status"] == "approved"
 
 
-# ----- (D) Practice creation with/without receiver_email -----
-class TestPracticeEmailWiring:
+# ----- (D) Legacy practice creation is RETIRED -> 410 -----
+class TestLegacyPracticeRetired:
     def _payload(self, receiver_email: str):
         return {
             "session_date": "2026-01-15",
@@ -99,51 +100,60 @@ class TestPracticeEmailWiring:
             "receiver_email": receiver_email,
         }
 
-    def test_create_practice_with_receiver_email(self, student_token):
+    def test_create_with_receiver_email_returns_410(self, student_token):
         r = requests.post(f"{API}/practices", json=self._payload("delivered@resend.dev"),
                           headers=auth(student_token), timeout=30)
-        assert r.status_code != 500, f"500 from email wiring: {r.text}"
-        assert r.status_code == 200, f"expected 200, got {r.status_code}: {r.text}"
-        data = r.json()
-        assert data.get("feedback_token"), "feedback_token missing"
-        assert len(data["feedback_token"]) > 20
-        assert data["receiver_email"] == "delivered@resend.dev"
-        # Store token for public feedback regression
-        pytest.feedback_token_with_email = data["feedback_token"]
+        assert r.status_code != 500, f"must not 500: {r.text}"
+        assert r.status_code == 410, f"expected 410 (retired), got {r.status_code}: {r.text}"
+        detail = r.json().get("detail", "")
+        assert any(ch in detail for ch in "αβγδεζηθικλμνξοπρστυφχψω"), f"detail not Greek: {detail!r}"
 
-    def test_create_practice_without_receiver_email(self, student_token):
+    def test_create_without_receiver_email_returns_410(self, student_token):
         r = requests.post(f"{API}/practices", json=self._payload(""),
                           headers=auth(student_token), timeout=30)
-        assert r.status_code != 500, f"500 from no-email path: {r.text}"
-        assert r.status_code == 200, f"expected 200, got {r.status_code}: {r.text}"
-        data = r.json()
-        assert data.get("feedback_token"), "feedback_token missing"
-        pytest.feedback_token_no_email = data["feedback_token"]
+        assert r.status_code != 500, f"must not 500: {r.text}"
+        assert r.status_code == 410, f"expected 410 (retired), got {r.status_code}: {r.text}"
 
-    def test_create_practice_persisted(self, student_token):
+
+# ----- Legacy read-only history + public receiver feedback via ISOLATED seeded fixtures -----
+@pytest.fixture(scope="module")
+def student_user_id(student_token):
+    r = requests.get(f"{API}/auth/me", headers=auth(student_token), timeout=15)
+    assert r.status_code == 200, r.text
+    return r.json()["id"]
+
+
+@pytest.fixture(scope="module")
+def seeded_tokens(seed_practice, student_user_id):
+    """Seed two historical records for the reusable student directly in the test DB
+    (creation is retired). Returns their feedback tokens for read/feedback assertions."""
+    with_email = seed_practice(student_user_id, receiver_email="delivered@resend.dev",
+                               receiver_name="TEST Receiver")
+    no_email = seed_practice(student_user_id, receiver_email="", receiver_name="TEST Receiver")
+    return {"with_email": with_email["feedback_token"], "no_email": no_email["feedback_token"]}
+
+
+class TestLegacyHistoryRead:
+    def test_seeded_records_listed(self, student_token, seeded_tokens):
         r = requests.get(f"{API}/practices", headers=auth(student_token), timeout=15)
         assert r.status_code == 200
         tokens = [p["feedback_token"] for p in r.json()]
-        assert getattr(pytest, "feedback_token_with_email", None) in tokens
-        assert getattr(pytest, "feedback_token_no_email", None) in tokens
+        assert seeded_tokens["with_email"] in tokens
+        assert seeded_tokens["no_email"] in tokens
 
 
-# ----- Regression: public feedback (no auth) -----
+# ----- Regression: public feedback (no auth) still works on seeded records -----
 class TestPublicFeedback:
-    def test_get_feedback_form_no_auth(self):
-        token = getattr(pytest, "feedback_token_with_email", None)
-        if not token:
-            pytest.skip("no feedback token from previous test")
+    def test_get_feedback_form_no_auth(self, seeded_tokens):
+        token = seeded_tokens["with_email"]
         r = requests.get(f"{API}/feedback/{token}", timeout=15)
         assert r.status_code == 200, r.text
         data = r.json()
         assert data.get("already_submitted") is False
         assert data.get("session_type") == "Tibetan Bowls"
 
-    def test_submit_feedback_no_auth(self):
-        token = getattr(pytest, "feedback_token_no_email", None)
-        if not token:
-            pytest.skip("no feedback token from previous test")
+    def test_submit_feedback_no_auth(self, seeded_tokens):
+        token = seeded_tokens["no_email"]
         payload = {
             "receiver_name": "TEST Receiver",
             "relaxation_before": 4,
