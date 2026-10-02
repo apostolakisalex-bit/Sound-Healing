@@ -719,34 +719,7 @@ def practice_doc_to_out(doc: dict) -> dict:
 
 @api.post("/practices", response_model=PracticeOut)
 async def create_practice(payload: PracticeIn, user: dict = Depends(get_current_user)):
-    if not payload.contraindications_checked:
-        raise HTTPException(422, "Safety confirmation is required")
-    try:
-        datetime.strptime(payload.session_date, "%Y-%m-%d")
-    except ValueError:
-        raise HTTPException(422, "Invalid session date")
-    feedback_token = secrets.token_urlsafe(32)
-    doc = {
-        "id": str(uuid.uuid4()),
-        "user_id": user["id"],
-        **payload.model_dump(),
-        "feedback_token": feedback_token,
-        "status": "Waiting for Receiver Feedback",
-        "xp_awarded": 0,
-        "feedback": None,
-        "created_at": datetime.now(timezone.utc),
-    }
-    await db.practices.insert_one(dict(doc))
-    if payload.receiver_email:
-        await send_receiver_feedback_invite(
-            to=payload.receiver_email,
-            receiver_name=payload.receiver_name,
-            practitioner_name=user.get("name", "Practitioner"),
-            session_date=payload.session_date,
-            session_type=payload.session_type,
-            feedback_token=feedback_token,
-        )
-    return practice_doc_to_out(doc)
+    raise HTTPException(410, "Η παλιά καταγραφή έκλεισε. Χρησιμοποίησε την εκπαιδευτική πρακτική στη σχολή.")
 
 
 @api.get("/practices")

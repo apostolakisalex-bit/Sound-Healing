@@ -248,6 +248,7 @@ export function PracticeScreen() {
     [cycleId, setCycleId] = useState(""),
     [participantCount, setParticipantCount] = useState(""),
     [revision, setRevision] = useState(1);
+  const legacy = useLoad<{ id: string }[]>("/practices", []);
   const router = useRouter();
   const save = async () => {
     const parsedDate = new Date(`${date}T12:00:00Z`);
@@ -520,11 +521,11 @@ export function PracticeScreen() {
           )}
         </View>
       ))}
-      <Button
+      {!legacy.loading && !legacy.error && legacy.data.length > 0 && <Button
         secondary
-        label="Παλαιότερες καταγραφές"
+        label="Ιστορικό παλαιότερων καταγραφών"
         onPress={() => router.push("/legacy-practices" as any)}
-      />
+      />}
     </Shell>
   );
 }
