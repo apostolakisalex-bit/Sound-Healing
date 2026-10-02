@@ -1,3 +1,4 @@
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SCHOOL_PHOTOS, PAST_TRAININGS } from "@/src/content/schoolGallery";
 import Svg, { Path } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";
@@ -24,7 +25,8 @@ const serviceTitles = [
 ];
 export function PublicHome({ items }: { items: ContentItem[] }) {
   const router = useRouter();
-  const { width } = useWindowDimensions();
+  const { width, fontScale } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const compactScreen = width < 600;
   const settings = items.find(
     (i) => i.published.kind === "site_settings",
@@ -88,8 +90,8 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
     .slice(0, 6);
   return (
     <View style={{ gap: 28 }}>
-      <View style={{ position: "absolute", top: 16, left: 0, right: 0, zIndex: 20 }}><AppHeader hideBrand /></View>
-      <View style={{ height: compactScreen ? 260 : 360, marginHorizontal: -24, overflow: "hidden", backgroundColor: wellness.blueMist }}>
+      <View style={{ position: "absolute", top: 16 + insets.top, left: 0, right: 0, zIndex: 20 }}><AppHeader hideBrand /></View>
+      <View style={{ height: (compactScreen ? 260 : 360) + insets.top, marginHorizontal: -24, overflow: "hidden", backgroundColor: wellness.blueMist }}>
         <ManagedImage source={{ uri: photo("banner", hero?.image_url || hero?.media_url || HERO_IMAGES.main) }} accessibilityLabel={hero?.image_alt || "Sound Healing Greece — η εμπειρία του ήχου"} resizeMode="cover" style={{ position: "absolute", width: "100%", height: "100%" }} />
         <LinearGradient colors={["rgba(232,241,247,0.55)", "rgba(255,255,255,0.76)", "rgba(233,227,243,0.45)"]} style={{ position: "absolute", width: "100%", height: "100%" }} />
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 24, paddingBottom: 35 }}>
@@ -118,7 +120,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
         ].map((column, index) => (
           <View key={index} style={{ flex: 1, gap: 12 }}>
             {column.map(card => (
-              <Pressable key={card.route} accessibilityRole="link" accessibilityLabel={`${card.label}: ${card.title}`} onPress={() => router.push(card.route as any)} style={({ pressed }) => ({ aspectRatio: card.ratio, borderRadius: 12, overflow: "hidden", backgroundColor: wellness.blueMist, opacity: pressed ? .85 : 1 })}>
+              <Pressable key={card.route} accessibilityRole="link" accessibilityLabel={`${card.label}: ${card.title}`} onPress={() => router.push(card.route as any)} style={({ pressed }) => ({ aspectRatio: fontScale > 1.3 ? undefined : card.ratio, minHeight: Math.max(135, 95 * fontScale), borderRadius: 12, overflow: "hidden", backgroundColor: wellness.blueMist, opacity: pressed ? .85 : 1 })}>
                 <ManagedImage source={{ uri: card.image }} accessibilityLabel={card.title} resizeMode="cover" style={{ position: "absolute", width: "100%", height: "100%" }} />
                 <LinearGradient colors={["transparent", "rgba(22,30,40,0.82)"]} locations={[.2,1]} style={{ position: "absolute", width: "100%", height: "100%" }} />
                 <View style={{ marginTop: "auto", padding: compactScreen ? 12 : 20, gap: 5, backgroundColor: "rgba(22,30,40,0.46)" }}>
@@ -153,7 +155,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                       style={[
                         ui.card,
                         {
-                          width: "48%",
+                          width: width < 350 || fontScale > 1.3 ? "100%" : "48%",
                           backgroundColor: item.published.event_end_date && item.published.event_end_date < today ? wellness.ice : wellness.white,
                           padding: 0,
                           overflow: "hidden",
@@ -216,7 +218,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                 style={[
                   iconSurface,
                   {
-                    width: compactScreen ? "30%" : 160,
+                    width: compactScreen ? "46%" : 160,
                     minHeight: compactScreen ? 116 : 140,
                     padding: 12,
                     alignItems: "center",
