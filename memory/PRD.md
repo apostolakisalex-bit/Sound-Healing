@@ -158,3 +158,28 @@ Integrated GitHub branch `shg/premium-renewal` up to **a315535** (mobile safe-ar
 ### Verification
 - testing_agent iteration_4 (aesthetic + regression) PASS; iteration_5 (Google + Resend + regression) PASS (10/10 backend). All browser-level; native device/emulator NOT available.
 
+---
+
+## v1.3 — Expo SDK 54 → 57 upgrade (June 2026, preview, frontend only)
+Upgraded the Expo app two major SDKs (54 → 57) per owner request. Backend unchanged.
+
+### What changed
+- `yarn expo install expo@^57.0.0` then `yarn expo install --fix`. Resulting key versions: `expo@57.0.26`, `react`/`react-dom` 19.2.3, `react-native` 0.86.3, `react-native-reanimated` 4.5.1, `react-native-worklets` 0.10.1, `react-native-gesture-handler` 2.32.0, `react-native-screens` 4.26, `react-native-safe-area-context` 5.7, `react-native-svg` 15.15.4, `expo-router` 57.0.24, `typescript` 6.0.3.
+- `app.json`: removed `newArchEnabled` and `edgeToEdgeEnabled` (both are defaults from SDK 55+); fixed `android.adaptiveIcon.backgroundColor` `#000` → `#000000` (SDK 57 stricter schema).
+- `@expo/vector-icons` (^15.0.3) kept — renders fine on SDK 57, not flagged by expo-doctor.
+- `packageManager: yarn@1.22.22` kept; `pnpm-lock.yaml`/`pnpm-workspace.yaml` preserved (intentional; expo-doctor's "multiple lock files" is an accepted non-blocker).
+- Backups of pre-upgrade `package.json`/`yarn.lock`/`app.json` at `/app/memory/sdk54_backup/`.
+
+### Verification
+- expo-doctor: 19/21 pass (2 non-blocking: multiple lock files [intentional] + non-square icon png warnings). Web bundle builds clean (1473 modules).
+- testing_agent iteration_6: frontend regression CLEAN PASS (9/9) on web preview — public landing, student + admin login, all 5 tabs, practice (enrollment-gated), public feedback expired-token, admin workspace sections, notifications bell placement, session persistence.
+- Node runtime v24.19.0 satisfies SDK 57's ≥22.13 requirement.
+
+### Known non-fatal web-only dev warnings (NOT regressions; backlog cleanup)
+- `shadow*`/`textShadow*` style-prop deprecation → migrate to `boxShadow`/`textShadow`.
+- `Received false for a non-boolean attribute accessible` (SoundSpiral.tsx).
+- NEW in SDK 57: `Image: style.resizeMode is deprecated. Use props.resizeMode.` — minor, non-blocking.
+
+### Note
+- Native iOS/Android require a fresh dev/production build (RN 0.86 runtime) — Publish + build to test on real devices; cannot be validated in Expo Go/web preview.
+

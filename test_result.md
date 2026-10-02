@@ -350,3 +350,19 @@ agent_communication:
       temple2026. Do NOT assert certification/XP rules (open decisions). Email delivery itself cannot be asserted
       (no inbox) — only that endpoints succeed and no 500s occur.
   run_ui: true
+    -agent: "main"
+    -message: >
+      EXPO SDK 54 -> 57 UPGRADE (frontend only; backend untouched). Bumped via `expo install expo@^57.0.0` + `expo install --fix`:
+      expo@57.0.26, react/react-dom 19.2.3, react-native 0.86.3, react-native-reanimated 4.5.1, react-native-worklets 0.10.1,
+      react-native-gesture-handler 2.32.0, react-native-screens 4.26, react-native-safe-area-context 5.7, react-native-svg 15.15.4,
+      expo-router 57.0.24, typescript 6.0.3. app.json: removed `newArchEnabled` and `edgeToEdgeEnabled` (defaults in SDK55+),
+      fixed android adaptiveIcon backgroundColor #000 -> #000000. expo-doctor: 19/21 pass (remaining 2 are non-blocking: multiple
+      lock files [pnpm preserved intentionally] + non-square icon png warnings). Web bundle builds clean (1473 modules). Main-agent
+      smoke screenshots verified: public home renders, student login (uitest_167043@test.gr/TestPass12345) -> profile renders with
+      SVG LevelRing/stars/progress + bottom nav icons. Please run a FRONTEND regression on SDK 57 across: (a) public landing +
+      explore sections; (b) login (admin + approved student) + session persistence; (c) all 5 bottom tabs navigate (Home, Ηχοθεραπεία
+      spiral, Εκπαιδευτικά, Εκδηλώσεις, Profile); (d) practice logging form (keyboard: active field + submit reachable) + receiver
+      feedback form; (e) admin workspace sections; (f) notifications bell visible on /profile + /admin only. Known non-fatal web-only
+      dev warnings (NOT regressions, pre-existing): "shadow* deprecated use boxShadow" and "Received false for non-boolean attribute
+      accessible". Do NOT assert certification/XP rules (open decisions). Admin: admin@soundhealing.gr/temple2026.
+  run_ui: true

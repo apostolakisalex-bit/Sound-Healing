@@ -14,7 +14,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#000000"
+        "backgroundColor": "#000"
       },
       "package": "com.emergent.healinguniverse.vqljow"
     },
@@ -33,13 +33,7 @@
           "resizeMode": "contain",
           "backgroundColor": "#F7F8F2"
         }
-      ],
-      "expo-font",
-      "expo-image",
-      "expo-secure-store",
-      "expo-sharing",
-      "expo-status-bar",
-      "expo-web-browser"
+      ]
     ],
     "experiments": {
       "typedRoutes": true
