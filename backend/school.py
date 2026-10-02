@@ -27,11 +27,12 @@ class Content(Strict):
     title: str = Field(min_length=2, max_length=160)
     summary: str = Field(default='', max_length=500)
     body: str = Field(default='', max_length=30000)
-    kind: Literal['page', 'lesson', 'journey', 'announcement', 'hero', 'site_settings', 'testimonial', 'partner', 'social']
+    kind: Literal['page', 'lesson', 'journey', 'announcement', 'hero', 'site_settings', 'testimonial', 'partner', 'social', 'app_photo']
     section: Literal['home', 'services', 'training', 'about', 'soundhealing', 'events', 'journal', 'contact'] = 'home'
     level_id: Level | None = None
     media_url: str = Field(default='', max_length=2000)
     image_url: str = Field(default='', max_length=2000)
+    photo_slot: Literal['', 'banner', 'about', 'soundhealing', 'L1', 'L2', 'L3', 'L4', 'past_L1', 'past_L2'] = ''
     image_alt: str = Field(default='', max_length=200)
     action_label: str = Field(default='', max_length=80)
     action_url: str = Field(default='', max_length=2000)
@@ -39,6 +40,9 @@ class Content(Strict):
     event_date: str = Field(default='', max_length=100)
     event_time: str = Field(default='', max_length=100)
     event_location: str = Field(default='', max_length=200)
+    show_testimonials: bool = True
+    show_partners: bool = True
+    show_socials: bool = True
     navigation: list[NavigationItem] | None = Field(default=None, max_length=6)
     order: int = Field(default=0, ge=0, le=10000)
 
@@ -183,7 +187,7 @@ def build_school_router(db, current_user, admin_user):
 
     @router.get('/content/public')
     async def public_content():
-        return await db.content_items.find({'published.kind': {'$in': ['page', 'announcement', 'hero', 'site_settings', 'testimonial', 'partner', 'social']}, 'published.level_id': None, 'archived': False}, {'_id': 0, 'id': 1, 'published': 1}).sort([('published.order', 1), ('id', 1)]).to_list(200)
+        return await db.content_items.find({'published.kind': {'$in': ['page', 'announcement', 'hero', 'site_settings', 'testimonial', 'partner', 'social', 'app_photo']}, 'published.level_id': None, 'archived': False}, {'_id': 0, 'id': 1, 'published': 1}).sort([('published.order', 1), ('id', 1)]).to_list(200)
 
     @router.get('/content/library')
     async def library(user=Depends(current_user)):
@@ -221,10 +225,20 @@ def build_school_router(db, current_user, admin_user):
         contents = await db.content_items.find({}, {'_id': 0}).sort('updated_at', -1).to_list(500) if user['role'] == 'admin' else []
         return {'cohorts': cohorts, 'enrollments': enrollments, 'practices': practices, 'users': users, 'content': contents, 'cycles': cycles}
 
+    async def validate_image(url):
+        import re
+        if re.fullmatch(r'/api/media/[0-9a-f-]{36}', url):
+            if not await db.studio_media.find_one({'url': url}):
+                raise HTTPException(422, 'Image not found in library')
+        else:
+            validate_media(url)
+
     @router.post('/admin/content')
     async def create_content(payload: Content, user=Depends(admin_user)):
         validate_media(payload.media_url)
-        validate_media(payload.image_url)
+        await validate_image(payload.image_url)
+        if payload.kind == 'app_photo' and (not payload.photo_slot or not payload.image_url or payload.level_id is not None):
+            raise HTTPException(422, 'App photo requires a slot, an image and public visibility')
         validate_media(payload.action_url)
         if bool(payload.action_label) != bool(payload.action_url):
             raise HTTPException(422, "Action requires both label and HTTPS URL")
@@ -236,7 +250,9 @@ def build_school_router(db, current_user, admin_user):
     @router.put('/admin/content/{item_id}')
     async def edit_content(item_id: str, payload: ContentEdit, user=Depends(admin_user)):
         validate_media(payload.media_url)
-        validate_media(payload.image_url)
+        await validate_image(payload.image_url)
+        if payload.kind == 'app_photo' and (not payload.photo_slot or not payload.image_url or payload.level_id is not None):
+            raise HTTPException(422, 'App photo requires a slot, an image and public visibility')
         validate_media(payload.action_url)
         if bool(payload.action_label) != bool(payload.action_url):
             raise HTTPException(422, "Action requires both label and HTTPS URL")

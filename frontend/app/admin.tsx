@@ -1,3 +1,6 @@
+import { MembersAdmin } from "@/src/components/MemberProfile";
+import { AdminCalendar } from "@/src/components/AdminCalendar";
+import { MediaLibrary } from "@/src/components/MediaLibrary";
 import { PracticeAssessments } from "@/src/components/Assessments";
 import {
   NavigationEditor,
@@ -27,8 +30,12 @@ type Draft = {
   body: string;
   kind: string;
   section?: string;
+  show_testimonials?: boolean;
+  show_partners?: boolean;
+  show_socials?: boolean;
   navigation?: NavigationItem[] | null;
   image_url?: string;
+  photo_slot?: string;
   event_end_date?: string;
   event_date?: string;
   event_time?: string;
@@ -123,9 +130,8 @@ function WorkspaceScreen() {
     enrollments: [],
     practices: [],
   });
-  const [section, setSection] = useState(
-      user?.role === "admin" ? "Περιεχόμενο" : "Αξιολογήσεις",
-    ),
+  const [picker, setPicker] = useState(false);
+  const [section, setSection] = useState("Επισκόπηση"),
     [draft, setDraft] = useState<Draft>({ ...fresh }),
     [edit, setEdit] = useState<Item | null>(null),
     [message, setMessage] = useState(""),
@@ -174,6 +180,10 @@ function WorkspaceScreen() {
         values={
           user?.role === "admin"
             ? [
+                "Επισκόπηση",
+                "Μέλη",
+                "Ημερολόγιο",
+                "Φωτογραφίες",
                 "Περιεχόμενο",
                 "Φόρμες",
                 "Τμήματα",
@@ -183,7 +193,7 @@ function WorkspaceScreen() {
                 "Ιστορικό",
                 "Αξιολογήσεις",
               ]
-            : ["Παρουσίες", "Πρόοδος", "Αξιολογήσεις"]
+            : ["Επισκόπηση", "Παρουσίες", "Πρόοδος", "Αξιολογήσεις"]
         }
         value={section}
         onChange={(value) => {
@@ -193,6 +203,79 @@ function WorkspaceScreen() {
         }}
       />
       <Status state={state} />
+      {section === "Μέλη" && user?.role === "admin" && (
+        <MembersAdmin cohorts={state.data.cohorts} />
+      )}
+      {section === "Ημερολόγιο" && user?.role === "admin" && (
+        <AdminCalendar
+          cohorts={state.data.cohorts}
+          content={state.data.content}
+          onOpen={setSection}
+        />
+      )}
+      {section === "Φωτογραφίες" && user?.role === "admin" && <MediaLibrary />}
+      {section === "Επισκόπηση" && (
+        <View style={{ gap: 16 }}>
+          <Text style={ui.heading}>Κέντρο διαχείρισης</Text>
+          <View style={ui.row}>
+            {(user?.role === "admin"
+              ? [
+                  [
+                    "Μέλη",
+                    "Αιτήσεις εγγραφής, προφίλ, όργανα και επιβεβαίωση πορείας ανά Level.",
+                  ],
+                  [
+                    "Ημερολόγιο",
+                    "Πρόγραμμα, ενάρξεις τμημάτων, παρουσίες και πρακτικές.",
+                  ],
+                  [
+                    "Φωτογραφίες",
+                    "Μεταφόρτωση και επιλογή εικόνων για το περιεχόμενο.",
+                  ],
+                  ["Εγγραφές", "Μαθητές και εγγραφές στα τμήματα."],
+                  [
+                    "Περιεχόμενο",
+                    "Κείμενα, εικόνες, εκπαιδευτικά, εκδηλώσεις, υπηρεσίες και δημόσιο μενού.",
+                  ],
+                  ["Τμήματα", "Levels, ημερομηνίες έναρξης και εκπαιδευτές."],
+                  ["Φόρμες", "Φόρμες αξιολόγησης μαθητών και δεκτών."],
+                  ["Ιστορικό", "Ιστορικό ενεργειών διαχείρισης."],
+                ]
+              : []
+            )
+              .concat([
+                [
+                  "Αξιολογήσεις",
+                  "Έλεγχος πρακτικών, απαντήσεις αξιολογήσεων και διορθώσεις.",
+                ],
+                [
+                  "Πρόοδος",
+                  "Ώρες πρακτικής και παρακολούθησης ανά μαθητή και Level.",
+                ],
+                [
+                  "Παρουσίες",
+                  "Καταγραφή ημερομηνίας, παρουσίας και λεπτών παρακολούθησης.",
+                ],
+              ])
+              .map(([target, description]) => (
+                <View
+                  key={target}
+                  style={[ui.card, { flexGrow: 1, flexBasis: 280 }]}
+                >
+                  <Text style={ui.heading}>
+                    {target === "Εγγραφές" ? "Μαθητές & εγγραφές" : target}
+                  </Text>
+                  <Text style={ui.body}>{description}</Text>
+                  <Button
+                    secondary
+                    label={`Άνοιγμα: ${target}`}
+                    onPress={() => setSection(target)}
+                  />
+                </View>
+              ))}
+          </View>
+        </View>
+      )}
       {section === "Ιστορικό" && user?.role === "admin" && <Activity />}
       {["Εγγραφές", "Παρουσίες"].includes(section) && (
         <Field
@@ -237,6 +320,7 @@ function WorkspaceScreen() {
                     ["Μάθημα", "lesson", "home"],
                     ["Προσωπική πρακτική", "journey", "home"],
                     ["Ρυθμίσεις ιστοτόπου", "site_settings", "home"],
+                    ["Φωτογραφίες εφαρμογής", "app_photo", "home"],
                   ].map(([label, kind, target]) => (
                     <Button
                       key={label}
@@ -287,10 +371,20 @@ function WorkspaceScreen() {
                 "testimonial",
                 "partner",
                 "social",
+                "app_photo",
               ]}
               value={draft.kind}
               onChange={(v) => set("kind", v)}
             />
+            {draft.kind === "app_photo" && <View style={ui.card}>
+              <Text style={ui.heading}>Φωτογραφίες εφαρμογής</Text>
+              <Text style={ui.body}>Επίλεξε θέση, διάλεξε ή ανέβασε φωτογραφία στη βιβλιοθήκη, αποθήκευσε και δημοσίευσε. Για αντικατάσταση, επεξεργάσου την υπάρχουσα καταχώριση της ίδιας θέσης.</Text>
+              {[
+                ["banner", "Banner αρχικής"], ["about", "Μανώλης"], ["soundhealing", "Ηχοθεραπεία"],
+                ["L1", "Level 1"], ["L2", "Level 2"], ["L3", "Level 3"], ["L4", "Level 4"],
+                ["past_L1", "Παλαιότερο εκπαιδευτικό Level 1"], ["past_L2", "Παλαιότερο εκπαιδευτικό Level 2"],
+              ].map(([slot, label]) => <Button key={slot} secondary={draft.photo_slot !== slot} label={label} onPress={() => setDraft(d => ({...d, photo_slot: slot, section: "home", level_id: null, title: label}))} />)}
+            </View>}
             <Choices
               label="Δημόσια ενότητα"
               values={[
@@ -371,6 +465,30 @@ function WorkspaceScreen() {
               onChange={(v) => set("media_url", v)}
             />
             {draft.kind === "site_settings" && (
+              <View style={ui.card}>
+                <Text style={ui.heading}>Ενότητες δημόσιας αρχικής</Text>
+                {(
+                  [
+                    ["show_testimonials", "Μαρτυρίες μαθητών"],
+                    ["show_partners", "Λογότυπα συνεργατών"],
+                    ["show_socials", "Κοινωνικά δίκτυα"],
+                  ] as const
+                ).map(([key, label]) => (
+                  <Choices
+                    key={key}
+                    label={label}
+                    values={["Εμφάνιση", "Απόκρυψη"]}
+                    value={draft[key] === false ? "Απόκρυψη" : "Εμφάνιση"}
+                    onChange={(v) => set(key, v === "Εμφάνιση")}
+                  />
+                ))}
+                <Text style={ui.body}>
+                  Οι αλλαγές εμφανίζονται δημόσια μετά τη δημοσίευση των
+                  ρυθμίσεων.
+                </Text>
+              </View>
+            )}
+            {draft.kind === "site_settings" && (
               <NavigationEditor
                 value={draft.navigation}
                 onChange={(v) => set("navigation", v)}
@@ -383,6 +501,7 @@ function WorkspaceScreen() {
               "testimonial",
               "partner",
               "social",
+                "app_photo",
             ].includes(draft.kind) && (
               <>
                 {[
@@ -391,14 +510,36 @@ function WorkspaceScreen() {
                   "testimonial",
                   "partner",
                   "social",
+                "app_photo",
                 ].includes(draft.kind) && (
                   <>
                     {" "}
                     <Field
-                      label="Εικόνα ενότητας (HTTPS)"
+                      label="Εικόνα ενότητας (σύνδεσμος ή επιλογή από τη βιβλιοθήκη)"
                       value={draft.image_url || ""}
                       onChange={(v) => set("image_url", v)}
                     />
+                    <Button
+                      secondary
+                      label={
+                        picker
+                          ? "Κλείσιμο βιβλιοθήκης"
+                          : "Επιλογή από βιβλιοθήκη φωτογραφιών"
+                      }
+                      onPress={() => setPicker(!picker)}
+                    />
+                    {picker && (
+                      <MediaLibrary
+                        onSelect={(photo) => {
+                          setDraft((d) => ({
+                            ...d,
+                            image_url: photo.url,
+                            image_alt: photo.alt,
+                          }));
+                          setPicker(false);
+                        }}
+                      />
+                    )}
                     <Field
                       label="Περιγραφή εικόνας"
                       value={draft.image_alt || ""}
@@ -527,6 +668,7 @@ function WorkspaceScreen() {
                             "testimonial",
                             "partner",
                             "social",
+                "app_photo",
                           ].includes(item.draft.kind))) &&
                 normalize(
                   item.draft.title + " " + (item.draft.section || "home"),

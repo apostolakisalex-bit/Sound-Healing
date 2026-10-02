@@ -1,3 +1,5 @@
+import { wellness } from "@/src/theme";
+import { ManagedImage } from "./ManagedImage";
 import React, { useState, useEffect } from "react";
 import { Image, Text, View } from "react-native";
 import { Link } from "expo-router";
@@ -24,7 +26,7 @@ export function EditorialIntro({
 }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [imageUrl]);
-  const image = imageUrl?.startsWith("https://") && !failed;
+  const image = (imageUrl?.startsWith("https://") || imageUrl?.startsWith("/api/media/")) && !failed;
   const action = actionLabel && actionUrl?.startsWith("https://");
   return (
     <View style={[ui.card, { padding: 0, overflow: "hidden" }]}>
@@ -36,13 +38,13 @@ export function EditorialIntro({
         }}
       >
         {image && (
-          <View style={{ flexBasis: 320, flexGrow: 1, minHeight: 360 }}>
-            <Image
+          <View style={{ flexBasis: 320, flexGrow: 1, minHeight: 260 }}>
+            <ManagedImage
               source={{ uri: imageUrl }}
               accessibilityLabel={imageAlt || title}
               onError={() => setFailed(true)}
               resizeMode="cover"
-              style={{ width: "100%", height: 360 }}
+              style={{ width: "100%", height: 260 }}
             />
           </View>
         )}
@@ -50,15 +52,15 @@ export function EditorialIntro({
           style={{
             flexBasis: 320,
             flexGrow: 1,
-            padding: 28,
-            gap: 20,
+            padding: 22,
+            gap: 14,
             justifyContent: "center",
           }}
         >
           <Text accessibilityRole="header" style={ui.title}>
             {title}
           </Text>
-          {!!summary && <Text style={ui.heading}>{summary}</Text>}
+          {!!summary && <Text style={ui.body}>{summary}</Text>}
           {!!body && <Text style={ui.body}>{body}</Text>}
           {action &&
             (preview ? (
@@ -69,7 +71,7 @@ export function EditorialIntro({
                 style={[
                   ui.body,
                   {
-                    color: "#80651D",
+                    color: wellness.slate,
                     textDecorationLine: "underline",
                     paddingVertical: 12,
                   },

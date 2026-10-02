@@ -1,3 +1,5 @@
+import { TrainingLevelCards } from "./TrainingLevels";
+import { MembersChat } from "./MembersChat";
 import { PublicHome } from "./PublicHome";
 import { EventGrid } from "./EventGrid";
 import React from "react";
@@ -95,7 +97,10 @@ export function PublicExperience({ section }: { section?: string }) {
     day: "2-digit",
   }).format(new Date());
   const visibleItems = state.data.filter(
-    (i) => !i.published.event_end_date || i.published.event_end_date >= today,
+    (i) =>
+      !i.published.event_end_date ||
+      i.published.event_end_date >= today ||
+      (section === "training" && i.published.section === "training"),
   );
   const settings = state.data.find(
     (i) => i.published.kind === "site_settings",
@@ -117,6 +122,7 @@ export function PublicExperience({ section }: { section?: string }) {
   return (
     <Shell
       publicPage
+      hideHeader={!section}
       siteSettings={settings}
       eyebrow={page?.label || ""}
       title={valid ? "" : "Η σελίδα δεν βρέθηκε"}
@@ -150,30 +156,15 @@ export function PublicExperience({ section }: { section?: string }) {
           actionUrl={intro?.published.action_url}
         />
       )}
-      {!section && !state.loading && !state.error && <PublicHome items={visibleItems} />}
-      {section === "training" && (
-        <View style={ui.row}>
-          {[
-            "Himalayan singing bowls · Τα θεμέλια",
-            "Εμβάθυνση στην ατομική πρακτική",
-            "Συντονισμός ομαδικών Sound Baths",
-            "Εμβάθυνση και επαγγελματική ανάπτυξη",
-          ].map((title, index) => (
-            <View
-              key={title}
-              style={[ui.card, { flexGrow: 1, flexBasis: 280 }]}
-            >
-              <Text style={ui.label}>LEVEL {index + 1}</Text>
-              <Text style={ui.heading}>{title}</Text>
-            </View>
-          ))}
-        </View>
+      {!section && !state.loading && !state.error && (
+        <PublicHome items={state.data} />
       )}
+      {section === "training" && <TrainingLevelCards />}
       {section === "training" && (
         <View style={{ gap: 12 }}>
-          <Text style={ui.heading}>Επόμενα εκπαιδευτικά σεμινάρια</Text>
+          <Text style={ui.heading}>Εκπαιδευτικά σεμινάρια</Text>
           <Text style={ui.body}>
-            Βρες το επόμενο σεμινάριο και δήλωσε ενδιαφέρον για συμμετοχή.
+            Βρες το επόμενο σεμινάριο ή γνώρισε τα προηγούμενα εκπαιδευτικά μας.
           </Text>
           <NavLink href="https://www.soundhealing.gr/training-seminars/">
             Αναλυτικό πρόγραμμα εκπαίδευσης ↗
@@ -196,6 +187,7 @@ export function PublicExperience({ section }: { section?: string }) {
           Περισσότερα για την ηχοθεραπεία ↗
         </NavLink>
       )}
+      {section === "contact" && <MembersChat />}
       <Status state={state} />
       {(section === "events" || section === "training") && (
         <EventGrid

@@ -357,3 +357,64 @@ Available pasted sources F01–F04 are editable source drafts, not automatically
 
 ## Minimal public homepage — owner decision 2026-09-30
 Public navigation: About, Sound Healing, Training, Events, Services, Contact, in this order; legacy menus without soundhealing use the new defaults. Journal route stays accessible but leaves default navigation. User icon opens standard login with signup switch. Homepage replaces the large hero/category catalogue with two image cards, up to four published active training items, up to four standalone events, compact raised service cards, up to three student testimonials, up to eight verified partner logos and social CTAs. CMS supports testimonial/partner/social types, with source links and optional event_end_date (last visible Athens calendar day). Empty partner strips stay hidden until official assets are published. Default student quote is a short attributed excerpt from the official training page; no private assessment answer becomes marketing content automatically. Verified public source pages: /el/about-me/, /el/hxotherapeia/, /el/epipleon-yphresies/. No unverified medical efficacy claims are copied into the introduction.
+
+
+## Homepage visibility controls — 2026-10-01
+The published site_settings record now controls show_testimonials, show_partners and show_socials (default true for backward compatibility). Admins can hide the entire section, including default content. Draft edits remain private until publication. The public logo strip still requires real, published image assets.
+
+
+## Visual refinement — 2026-10-01
+Owner requested a return to the lighter Emergent wellness aesthetic. Reduced shared heading weights/sizes and body scale; removed pill navigation chrome and heavy introductory card framing; reduced image heights and event title scale; softened service-card shadows. Content order, published CMS controls and assessment workflows are unchanged. This is a measured visual refinement, not a claim of pixel-identical restoration of the earlier Emergent preview.
+
+
+### Admin workspace separation — 2026-10-01
+- Admin/instructor sign-in opens /admin. Student tab routes redirect staff to their workspace, with a dedicated staff navigation and sign-out.
+- Workspace opens with shortcuts to content, enrollments, cohorts, assessment forms, reviews, attendance and progress. Role restrictions remain enforced by existing backend endpoints.
+- Manolis is the administrator; do not infer or change account roles from a name or email. Production account provisioning must use the existing secured process.
+- Outstanding: integrated calendar management and direct media upload/library. Existing CMS image editing uses HTTPS URLs. Do not present these outstanding capabilities as complete.
+
+
+## Owner update — 2026-10-01: mobile navigation and membership
+This section supersedes earlier top navigation and self-service registration decisions.
+
+- Greek only for now, explicitly confirmed by owner; no active language switch.
+- Persistent bottom bar: Home, Sound Healing, Training, Events, Profile. Public home remains available when signed in. Staff Profile destination is the admin workspace.
+- Header: Sound Healing Greece without tagline; in-app notifications. Notifications are stored in the application, not external push/email.
+- Home: circular founder portrait with text/CTA, wide sound-healing card, up to two compact training cards side-by-side (past published trainings when none active), active events, compact raised service tiles. Never fabricate a second event when only one exists.
+- Member profile: avatar, editable name/bio, instrument list, circular summary metrics, L1–L4 bars and practice stars. Minutes/sessions are submitted non-draft school practices. Unique receiver count uses individual-practice receiver codes, not identifiable people or group totals. Evaluation count is submitted practitioner assessments.
+- New registration collects first/last name, birth month/year (no day), phone, address and declared Level, alongside email/password. It creates a pending account; declaration never grants enrollment. Existing accounts retain current access for compatibility.
+- Administrator receives an in-app notification, reviews each Level through the declared Level, then approves/rejects membership. Private application fields are not included in member lists or chat.
+- Targets are admin-configured per member/Level, not defaulted to 15. Owner's 15/10/5 was an example. Historical credit requires an evidence note. Separately selected reviewed in-app practices are counted once by ID. No automatic certificate. Disabled bars grey, incomplete progress gold, complete practice targets green.
+- Admin may assign an existing cohort for outstanding prior-Level practice during verification. No synthetic cohort is created.
+- Training admission is a separate request and explicit administrator decision for a selected cohort. Incomplete prior practice does not automatically block admission. Existing requests are protected from duplicate submissions.
+- Members-only text chat appears under Contact, with name attribution, pagination, manual refresh, rate limit and admin moderation. Pending/rejected accounts cannot participate. No receiver health details are displayed in the calendar/chat by the application.
+
+## Admin studio — calendar and photographs
+- Monthly admin calendar with date filter and category filter; create/edit/cancel internal class, training, event or other appointments. Europe/Athens wall time, valid start/end dates, optional cohort or corresponding CMS announcement link. Optimistic revisions prevent stale overwrites.
+- Cohort start dates and daily submitted-practice/attendance counts appear automatically, as read-only source entries. Public CMS event dates remain editorial text and are not guessed/parsed into dates. Creating a calendar appointment does not publish or change the associated public announcement.
+- Photograph library: JPG/PNG/WebP <=8 MB and <=25 MP, validated/re-encoded using Pillow, metadata removed, max dimension 2400px, stored WebP <=4 MB in MongoDB. Images travel with database backups; no Emergent filesystem dependency. Indexed metadata and paginated/searchable picker planned for deployment scale.
+- Library references use /api/media/<id>, resolved against configured backend. Raw images are public only while referenced by an active published public CMS item. Authenticated previews follow admin/enrollment access. Soft archive hides picker entries and preserves existing references/history.
+- Admin can select library image+alt text into a CMS draft. Publication is still explicit. Profile avatars are separately normalized to 256px.
+- New collections: studio_media, studio_calendar, member_levels, training_requests, member_notifications, member_chat. No destructive migration or old-data deletion.
+
+### Preview acceptance / open operational decisions
+- Verify membership registration -> admin Level records -> decision -> member instrument/avatar edits -> training request -> explicit cohort admission using synthetic accounts.
+- Confirm official practice targets/evidence requirements from school sources before entering production member credit. Completion of stars is practice-target completion, not certification.
+- No push/email delivery, external calendar sync, recurring appointments or real-time websocket chat has been implemented; current notifications/chat are in-app with refresh.
+- Production moderation/retention policy and outstanding official form ambiguities still need owner/source resolution. Preserve these as open decisions, not invented requirements.
+
+
+### 2026-10-01 — Previous training visibility
+Owner decision: published past trainings remain visible alongside active programmes on the training page, ordered after active programmes and newest past first. Past cards use an informational CTA and a previous-training label. The compact home preview retains two cards, filling remaining slots with past programmes; the full training page exposes all. CMS-archived/unpublished content remains hidden. Past status uses the explicit event_end_date in Europe/Athens, never inferred editorial dates. This supersedes the fallback-only rule.
+
+
+### 2026-10-01 — Public level cards and modern wellness palette
+Four compact illustrated level cards open /explore/levels with the selected explanation expanded. Symbols: bowl; bowl with tingsha/chimes; bowl with gong/group; lotus. Editorial summaries reference the public curriculum without introducing practice targets. The owner replaces the ivory/gold styling with white, ice grey and pale blue, slate #545F7A primary accents and restrained reference earth tones. Shared tokens govern navigation, public cards, profiles and common admin surfaces. Yellow practice stars and green completion retain their status meanings.
+
+Owner refinement: clean sans-serif logo and headings (Raleway), lavender selected navigation and primary buttons, sage wellness surfaces, champagne reserved premium accent tokens. Do not introduce subscription features solely to demonstrate the palette.
+
+Home layout refinement: photographic CMS hero banner with centered Sound Healing Greece wordmark and smooth sound-wave lower edge. Founder uses a horizontal portrait/text card; sound-healing introduction uses a different horizontal image/text proportion. Preserve clean sans-serif and modern wellness palette.
+
+2026-10-01 public homepage: source gallery photos from soundhealing.gr/training-seminars replace illustrative level images; stronger section labels and consistent card corners. Curated historical links for Chania Level 1 (1–2 August 2026) and Level 2 (3–4 August 2026) appear separately from live CMS programmes, marked completed. Level 2 image alt conflicts with article dates; display uses explicit article Training Information and title (3–4 August), not image alt. These archive links are editorial code content, not CMS records or enrollable cohorts; later CMS import remains needed for admin editing.
+
+App photos: admin CMS type app_photo selects banner/about/soundhealing/L1-L4/past_L1/past_L2; uses the existing media library, draft/publish/revision/archive workflow. Only published public images render. Home training cards now share a wrapping two-column grid, active first then past; end dates in Athens trigger ice-grey backgrounds and completed labels.

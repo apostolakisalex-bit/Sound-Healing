@@ -1,3 +1,5 @@
+import { AppHeader, BottomNavigation } from "./AppNavigation";
+import { ManagedImage } from "./ManagedImage";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -16,7 +18,7 @@ import { Link, usePathname, useRouter } from "expo-router";
 import { useAuth } from "@/src/auth/AuthContext";
 import { ResourcesSection } from "@/src/components/ResourcesSection";
 import { api } from "@/src/api/client";
-import { colors, fonts } from "@/src/theme";
+import { colors, fonts, wellness } from "@/src/theme";
 
 // Reuse the existing Emergent brand instead of introducing a parallel theme.
 const brandFont = (name: string, serif = false) =>
@@ -40,7 +42,7 @@ export const ui = StyleSheet.create({
     maxWidth: 1120,
     alignSelf: "center",
     padding: 24,
-    gap: 24,
+    gap: 20,
     paddingBottom: 64,
   },
   row: {
@@ -51,30 +53,30 @@ export const ui = StyleSheet.create({
   },
   card: {
     backgroundColor: palette.white,
-    borderRadius: 24,
-    padding: 24,
+    borderRadius: 14,
+    padding: 20,
     borderWidth: 1,
     borderColor: palette.line,
     gap: 12,
   },
   title: {
-    fontFamily: brandFont(fonts.heading, true),
-    fontSize: 38,
-    lineHeight: 44,
+    fontFamily: brandFont(fonts.title),
+    fontSize: 26,
+    lineHeight: 34,
     color: palette.ink,
-    fontWeight: "600",
-    letterSpacing: -1,
+    fontWeight: "400",
+    letterSpacing: -0.3,
   },
   heading: {
-    fontFamily: brandFont(fonts.heading, true),
-    fontSize: 23,
+    fontFamily: brandFont(fonts.title),
+    fontSize: 20,
     color: palette.ink,
-    fontWeight: "600",
+    fontWeight: "400",
   },
   body: {
     fontFamily: brandFont(fonts.body),
-    fontSize: 16,
-    lineHeight: 25,
+    fontSize: 14,
+    lineHeight: 23,
     color: palette.muted,
   },
   label: {
@@ -96,9 +98,9 @@ export const ui = StyleSheet.create({
     minHeight: 48,
   },
   button: {
-    backgroundColor: colors.bg.dark,
+    backgroundColor: wellness.lavenderInk,
     borderWidth: 1,
-    borderColor: colors.accent.gold,
+    borderColor: wellness.lavenderInk,
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderRadius: 24,
@@ -247,128 +249,54 @@ export function Shell({
   children,
   publicPage = false,
   siteSettings,
+  hideHeader = false,
 }: {
   title: string;
   eyebrow: string;
   children: React.ReactNode;
   publicPage?: boolean;
+  hideHeader?: boolean;
   siteSettings?: ContentItem["published"];
 }) {
   const router = useRouter();
-  const { user } = useAuth();
-  const pathname = usePathname();
-  const { width } = useWindowDimensions();
-  const compact = publicPage && width < 760;
-  const [menuOpen, setMenuOpen] = useState(false);
-  useEffect(() => setMenuOpen(false), [pathname]);
-  const links = publicPage
-    ? [
-        ...(siteSettings?.navigation?.some((i) => i.section === "soundhealing")
-          ? siteSettings.navigation
-              .filter((item) => item.visible)
-              .map((item) => [item.label, "/explore/" + item.section])
-          : [
-              ["Σχετικά", "/explore/about"],
-              ["Ηχοθεραπεία", "/explore/soundhealing"],
-              ["Εκπαιδευτικά", "/explore/training"],
-              ["Εκδηλώσεις", "/explore/events"],
-              ["Υπηρεσίες", "/explore/services"],
-              ["Επικοινωνία", "/explore/contact"],
-            ]),
-      ]
-    : [
-        ["Αρχική", "/(tabs)/sanctuary"],
-        ["Σχολή", "/(tabs)/academy"],
-        ["Πρακτική", "/(tabs)/practice"],
-        ["Journey", "/(tabs)/journey"],
-        ["Προφίλ", "/(tabs)/profile"],
-      ];
+  const { user, logout } = useAuth();
+  const staff = !!user && ["admin", "instructor"].includes(user.role);
   return (
-    <ScrollView style={ui.page}>
-      <View style={ui.wrap}>
-        <View style={[ui.row, { justifyContent: "space-between" }]}>
-          <Pressable accessibilityRole="link" onPress={() => router.push("/")}>
-            <Text style={[ui.label, { letterSpacing: 2 }]}>
-              {siteSettings?.title || "SOUND HEALING GREECE"}
-            </Text>
-            <Text style={ui.body}>
-              {siteSettings
-                ? siteSettings.summary
-                : "learn · practise · feel connected"}
-            </Text>
-          </Pressable>
-          {publicPage && <Link href={user ? "/profile" : "/login"} asChild><Pressable accessibilityRole="link" accessibilityLabel={user ? "Ο λογαριασμός μου" : "Σύνδεση ή εγγραφή"} style={{ padding: 12, borderRadius: 24, borderWidth: 1, borderColor: palette.line }}><View style={{ width: 24, height: 24, alignItems: "center", gap: 3 }}><View style={{ width: 9, height: 9, borderWidth: 1.5, borderColor: palette.ink, borderRadius: 9 }} /><View style={{ width: 19, height: 10, borderWidth: 1.5, borderColor: palette.ink, borderTopLeftRadius: 12, borderTopRightRadius: 12 }} /></View></Pressable></Link>}
-          {compact && (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={menuOpen ? "Κλείσιμο μενού" : "Άνοιγμα μενού"}
-              accessibilityState={{ expanded: menuOpen }}
-              onPress={() => setMenuOpen(!menuOpen)}
-              style={[ui.button, ui.secondary]}
-            >
-              <Text style={ui.label}>
-                {menuOpen ? "Κλείσιμο ×" : "Μενού ☰"}
+    <View style={ui.page}>
+      <ScrollView style={ui.page}>
+        <View style={[ui.wrap, { paddingBottom: 110, paddingTop: hideHeader ? 0 : 24 }]}>
+          {!hideHeader && <AppHeader />}
+          {staff && !publicPage && (
+            <View style={ui.row}>
+              <Text style={ui.body}>
+                {user?.name} ·{" "}
+                {user?.role === "admin" ? "Διαχειριστής" : "Εκπαιδευτής"}
               </Text>
-            </Pressable>
+              <Button
+                secondary
+                label="Αποσύνδεση"
+                onPress={() => {
+                  void logout().then(() => router.replace("/"));
+                }}
+              />
+            </View>
           )}
-          {user && ["admin", "instructor"].includes(user.role) && (
-            <Button
-              secondary
-              label="Διαχείριση"
-              onPress={() => router.push("/admin" as any)}
-            />
+          {!!title && (
+            <View style={{ gap: 10, marginTop: 16 }}>
+              <Text style={ui.label}>{eyebrow}</Text>
+              <Text style={ui.title}>{title}</Text>
+            </View>
           )}
+          {children}
+          <Text style={ui.body}>
+            {siteSettings
+              ? siteSettings.body
+              : "Sound Healing Greece · Χανιά · Αθήνα · Online"}
+          </Text>
         </View>
-        {(!compact || menuOpen) && (
-          <View style={ui.row}>
-            {links.map(([label, route]) =>
-              publicPage ? (
-                <Link
-                  key={route}
-                  href={route as any}
-                  onPress={() => setMenuOpen(false)}
-                  style={[
-                    ui.body,
-                    {
-                      paddingHorizontal: 16,
-                      paddingVertical: 12,
-                      borderRadius: 24,
-                      borderWidth: 1,
-                      borderColor:
-                        pathname === route ? colors.accent.gold : palette.line,
-                      backgroundColor:
-                        pathname === route ? palette.sage : palette.white,
-                      color: palette.ink,
-                    },
-                  ]}
-                >
-                  {label}
-                </Link>
-              ) : (
-                <Button
-                  secondary
-                  key={route}
-                  label={label}
-                  onPress={() => router.push(route as any)}
-                />
-              ),
-            )}
-          </View>
-        )}
-        {!!title && (
-          <View style={{ gap: 10, marginTop: 16 }}>
-            <Text style={ui.label}>{eyebrow}</Text>
-            <Text style={ui.title}>{title}</Text>
-          </View>
-        )}
-        {children}
-        <Text style={ui.body}>
-          {siteSettings
-            ? siteSettings.body
-            : "Sound Healing Greece · Χανιά · Αθήνα · Online"}
-        </Text>
-      </View>
-    </ScrollView>
+      </ScrollView>
+      <BottomNavigation />
+    </View>
   );
 }
 export type ContentItem = {
@@ -380,8 +308,12 @@ export type ContentItem = {
     body: string;
     kind: string;
     section?: string;
+    show_testimonials?: boolean;
+    show_partners?: boolean;
+    show_socials?: boolean;
     navigation?: { section: string; label: string; visible: boolean }[] | null;
     image_url?: string;
+  photo_slot?: string;
     event_end_date?: string;
     event_date?: string;
     event_time?: string;
@@ -411,7 +343,7 @@ export function ContentCard({
   return (
     <View style={ui.card}>
       {!!p.image_url && (
-        <Image
+        <ManagedImage
           source={{ uri: p.image_url }}
           accessibilityLabel={p.image_alt || p.title}
           resizeMode="cover"

@@ -320,3 +320,25 @@ def test_public_editorial_blocks_and_expiry_validation(env):
     assert call(c,'post','/admin/content',json={'title':'Invalid expiry','kind':'announcement','event_end_date':'2026-02-30'}).status_code==422
     nav=[{'section':s,'label':s,'visible':True} for s in ['about','soundhealing','training','events','services','contact']]
     assert call(c,'post','/admin/content',json={'title':'Navigation','kind':'site_settings','navigation':nav}).status_code==200
+
+def test_home_visibility_settings_publish_only_when_requested(env):
+    c,_=env
+    payload={'title':'Public settings','kind':'site_settings','show_testimonials':False,'show_partners':False,'show_socials':False}
+    item=call(c,'post','/admin/content',json=payload).json()
+    assert call(c,'get','/content/public').json()==[]
+    assert call(c,'post',f'/admin/content/{item["id"]}/publish?revision=1').status_code==200
+    public=call(c,'get','/content/public').json()[0]['published']
+    assert all(public[key] is False for key in ['show_testimonials','show_partners','show_socials'])
+    assert call(c,'put',f'/admin/content/{item["id"]}',json={**payload,'show_testimonials':True,'revision':2}).status_code==200
+    assert call(c,'get','/content/public').json()[0]['published']['show_testimonials'] is False
+
+
+def test_app_photo_requires_admin_and_publication(env):
+    c, _ = env
+    data = {'title': 'Level photo', 'kind': 'app_photo', 'photo_slot': 'L1', 'image_url': 'https://example.org/bowl.jpg'}
+    assert call(c, 'post', '/admin/content', 'student', json=data).status_code == 403
+    assert call(c, 'post', '/admin/content', json={**data, 'photo_slot': ''}).status_code == 422
+    item = call(c, 'post', '/admin/content', json=data).json()
+    assert call(c, 'get', '/content/public').json() == []
+    assert call(c, 'post', f'/admin/content/{item["id"]}/publish?revision=1').status_code == 200
+    assert call(c, 'get', '/content/public').json()[0]['published']['photo_slot'] == 'L1'
