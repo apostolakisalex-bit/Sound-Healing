@@ -276,11 +276,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Auth (register, login, me, update profile, logout)"
-    - "Realms (list, detail, enter/unlock)"
-    - "Academy (list levels, level detail, complete lesson -> XP)"
-    - "Practice logging + public receiver feedback flow (no-auth feedback link)"
-    - "School module (catalog, progress, content CRUD/publish, cohorts, enrollments, attendance, cycles, practices)"
+    - "Members: registration (pending) + admin approval/rejection flow"
+    - "Members: member profile (avatar, instruments, L1-L4 progress, practice stars)"
+    - "Studio: photo library upload (Pillow re-encode) + app_photo CMS + publish"
+    - "Admin calendar: create/edit/cancel internal appointments"
+    - "Practice + assessments (practitioner + receiver) + admin/instructor read access"
+    - "Role separation: admin -> /admin workspace, student -> tabs"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -288,8 +289,16 @@ test_plan:
 agent_communication:
     -agent: "main"
     -message: >
-      GitHub sync (branch shg/premium-renewal) completed via fast-forward merge — no conflicts, no lost work.
-      Backend starts cleanly (200 on /api/), admin login works (admin@soundhealing.gr / temple2026).
-      Frontend bundles and public landing renders. Please run BACKEND regression first across all listed
-      backend tasks (high priority first), then key FRONTEND flows. MongoDB data preserved (existing admin +
-      seed data present). Use admin creds above. EMERGENT_LLM_KEY is set in backend/.env for AI Oracle.
+      SECOND GitHub integration: merged 10 new commits from branch shg/premium-renewal (tip dc37b24) via a clean
+      git merge (HEAD now 5881c95). New backend modules mounted: studio.py (media library + admin calendar,
+      Pillow 12.3.0 installed), members.py (member profile, registration-pending + admin approval, member levels,
+      training requests, member chat). New app_photo CMS type and homepage redesign (Greek-only, fixed bottom bar,
+      sound-wave banner, 4 level cards, trainings grid with completed past cards). Backend starts cleanly (200 on
+      /api/), admin login OK (admin@soundhealing.gr / temple2026), public home renders with new design (verified by
+      screenshot). MongoDB data preserved. IMPORTANT: new registrations create a PENDING membership_status and must
+      be approved by admin before full access (middleware in server.py line ~232 blocks non-approved users from most
+      endpoints except /api/auth/*, /api/members/me, /api/notifications). Please run BACKEND regression first across
+      NEW modules (members, studio, calendar, training requests, chat, app_photo CMS) PLUS prior tasks, then key
+      FRONTEND flows (role separation admin->/admin vs student tabs, registration->pending, admin approval, member
+      profile progress bars/stars, practice+assessments). Do NOT test certification/XP-credit rules — those are
+      intentional OPEN DECISIONS (pending_policy) per product/MASTER_PRODUCT_SPECIFICATION.md.

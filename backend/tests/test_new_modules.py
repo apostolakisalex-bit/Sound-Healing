@@ -20,9 +20,18 @@ def _register(api):
         f"{BASE}/api/auth/register",
         json={
             "email": email,
-            "password": "passw0rd123",
+            "password": "passw0rd123456",
             "name": "Extra Tester",
             "location": "Athens",
+            "application": {
+                "first_name": "Extra",
+                "last_name": "Tester",
+                "birth_month": 4,
+                "birth_year": 1991,
+                "phone": "+306900000002",
+                "address": "Addr",
+                "declared_level": "L1",
+            },
         },
     )
     assert r.status_code == 200, r.text

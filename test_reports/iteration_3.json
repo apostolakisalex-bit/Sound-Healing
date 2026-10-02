@@ -1,0 +1,60 @@
+{
+  "summary": "Second premium-renewal integration (branch shg/premium-renewal, HEAD dc37b24 merged into 5881c95) verified against the live preview backend+Mongo. Backend: 84 passed, 1 skipped (AI chat gated by AI_ENABLED). New test_premium_renewal.py (46 tests) covers all NEW modules: (a) MEMBERS - registration now creates membership_status='pending' with validated Application payload, pending-user middleware correctly ALLOWS /api/auth/*, /api/members/me, /api/notifications and BLOCKS everything else (403 'Η εγγραφή σου δεν έχει εγκριθεί ακόμη'); admin sees /api/admin/members list+detail, PUT /api/admin/members/{uid}/levels/{level} enforces optimistic revision (409 on stale revision), POST /api/admin/members/{uid}/decision rejects 422 until each declared level has a level record with revision>0, then approves/409-idempotent. (b) MEMBER PROFILE - GET /api/members/me returns id/name/bio/profile_image/membership_status/instruments/levels(4)/reviewed_practices/stats/requests; PUT /api/members/me/instruments dedupes+trims; POST /api/members/me/avatar re-encodes to 256px WebP via Pillow (data: URI returned); invalid base64 -> 422. (c) STUDIO MEDIA - POST /api/admin/media accepts JPG/PNG/WebP, strips EXIF, re-encodes to WebP (returns {id,url,width,height,revision,archived}); GET /api/admin/media list omits raw data; non-admin -> 403; preview endpoint returns data URI for authed admin; GET /api/media/{id} (public) returns 404 until the image is referenced by a published PUBLIC_KINDS content item (correct access guard); bad bytes -> 422; archive sets archived=true. (d) ADMIN CALENDAR - create/list/edit/cancel internal entries with optimistic revision; stale revision -> 409; non-admin -> 403; cohort start dates and daily practice/attendance counts surface as read-only aggregated rows. (e) TRAINING REQUESTS - pending user blocked (403); approved can POST once (duplicate -> 409 'Υπάρχει ήδη αίτηση'). (f) MEMBER CHAT - pending user blocked; approved can post+list; admin can hide; 3-second rate limit enforced (429 'Περίμενε λίγο'). (g) ADMIN BYPASS - admin.membership_status defaults to 'approved' and bypasses the middleware (verified against /api/school/catalog, /api/realms, /api/members/chat). Regression (test_api.py + test_new_modules.py): 38/38 passed - auth/realms/academy (enrollment-gated)/stamps/challenges/community rankings/ai history/school catalog+me+progress+content public+library/admin content CRUD + publish + archive/cohorts+enrollments+attendance/forms catalog envelope/admin resources upload+list+download+delete/receiver feedback public submit+duplicate+consent. Frontend smoke: public home renders new design (Sound Healing Greece wordmark with sound-wave edge, 4 LEVEL cards -> /explore/levels, ΣΧΕΤΙΚΑ+Η ΕΜΠΕΙΡΙΑ feature tiles, Εκπαιδευτικά grid with 'Ολοκληρώθηκε' past-training cards in ice-grey, Ενεργές εκδηλώσεις, Υπηρεσίες list, testimonial, social links, Sound Healing Greece · Χανιά · Αθήνα · Online footer, FIXED bottom bar [Home/Ηχοθεραπεία/Εκπαιδευτικά/Εκδηλώσεις/Profile], notifications bell top-right). /explore/levels opens the level detail screen with 4 collapsible L1-L4 panels (L1 'Τα θεμέλια' expanded by default with 'Η ΠΡΑΚΤΙΚΗ ΣΟΥ' section). Login (admin@soundhealing.gr / temple2026) correctly routes admin to /admin (SCHOOL WORKSPACE with 12 sections: Επισκόπηση/Μέλη/Ημερολόγιο/Φωτογραφίες/Περιεχόμενο/Φόρμες/Τμήματα/Εγγραφές/Παρουσίες/Πρόοδος/Ιστορικό/Αξιολογήσεις). Student-only routes (e.g. /sanctuary) correctly REDIRECT the admin back to /admin. Unauth /admin and /profile redirect to public home. Logout returns to public home. Deprecated packages detected: none. SafeAreaView issues detected: none. Stylistic deprecations persist: 'shadow* style props deprecated, use boxShadow' + 'Received non-boolean attribute %s' React warnings fire on every page.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/auth/register", "issue": "The top-level `name` field in RegisterIn is silently OVERRIDDEN by `application.first_name + ' ' + application.last_name` server-side. Either remove `name` from RegisterIn or honor it. Reference: backend/server.py:468. Low priority - cosmetic/API-contract clarity only."},
+      {"endpoint": "POST /api/ai/chat", "issue": "503 'The assistant is not enabled' because AI_ENABLED env var is not set. EMERGENT_LLM_KEY IS present. Intentional config - skipped in tests."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "login / register", "issues": ["Still no testID / data-testid on email/password/Σύνδεση button - tests use positional selectors + text 'Σύνδεση'. Add testID to TextInput and Pressable in frontend/app/login.tsx + register.tsx for stable automation."]},
+      {"screen": "admin workspace (/admin)", "issues": ["Bottom bar [Home/Ηχοθεραπεία/Εκπαιδευτικά/Εκδηλώσεις/Profile] stays visible under the SCHOOL WORKSPACE panel. If these are intentional 'public explore' links for admin too, fine; if admin should see the admin-only navigation only, consider hiding or swapping the chrome. Not a functional bug."]}
+    ],
+    "react_native_issues": [
+      {"component": "Global StyleSheet", "issue": "'shadow*' style props deprecated - use 'boxShadow'. Fires on every page load. Reference: search shadowColor/shadowOffset/shadowOpacity/shadowRadius across frontend/**/*.tsx (same finding as iteration_2, not yet addressed)."},
+      {"component": "React DOM attribute warning", "issue": "'Received %s for a non-boolean attribute %s' React warning fires repeatedly on home + login - some RN prop is leaking to the DOM via react-native-web. Needs a targeted audit of components that forward unknown props. Reference: appears on PublicHome and LoginScreen renders."}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/conftest.py",
+    "/app/backend/tests/test_api.py",
+    "/app/backend/tests/test_new_modules.py",
+    "/app/backend/tests/test_premium_renewal.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Decide: should the top-level `name` field in RegisterIn be removed/honored? Currently silently ignored in favor of application.first_name+last_name (server.py:468). This confused one legacy test asserting a specific display name.",
+    "Add testID props to <TextInput> and submit <Pressable>/<TouchableOpacity> on login + register screens so UI automation can target them deterministically.",
+    "Clarify admin chrome: should admin see the student-facing public bottom bar at /admin? Current behavior: bottom bar is rendered. /sanctuary (student-only) correctly redirects admin back to /admin.",
+    "Migrate deprecated styles across frontend/**/*.tsx: shadowColor/Offset/Opacity/Radius -> boxShadow; props.pointerEvents -> style.pointerEvents (same finding as iteration_2).",
+    "Investigate the 'non-boolean attribute' React DOM warning on home + login (likely a RN prop leaking through react-native-web).",
+    "If AI Oracle is expected in preview, set AI_ENABLED=true in backend/.env and `sudo supervisorctl restart backend` (EMERGENT_LLM_KEY already present)."
+  ],
+  "critical_code_review_comments": [
+    "Membership approval middleware (server.py:232) correctly whitelists /api/auth/*, /api/members/me, /api/notifications only. All other paths require approved status. Admin bypass is implicit via the default 'approved' value - verified in TestAdminBypass.",
+    "members.py decide endpoint checks member_levels revision>0 for each declared level before allowing approval - prevents accidental approval without level verification. Idempotent via a status='pending' guard in the update filter (returns 409 on second call).",
+    "studio.normalize_photo re-encodes images via Pillow stripping EXIF/metadata and bounds output to 4MB after conversion - good for privacy and storage.",
+    "studio.image_access correctly scopes public /api/media/{id} access to only images referenced by PUBLISHED PUBLIC_KINDS items (hero, app_photo, page, announcement, site_settings, testimonial, partner, social). Private kinds (lesson, journey) require enrollment match.",
+    "All optimistic-concurrency updates (member_levels, studio_media, studio_calendar, content_items) use the pattern {$set, $inc:{revision:1}} with revision filter - stale writes correctly 409.",
+    "Member chat rate limiter uses an atomic update on users.last_chat_at (3s window) returning 429 on failure - handles concurrent sends safely.",
+    "Training request upsert uses user+level composite key (uid:level) to make duplicate submission impossible (409).",
+    "Mongo _id consistently excluded via {'_id': 0} projections across all list/get handlers I sampled.",
+    "server.py grew to 1016 lines but members/studio/school/forms/assessments are already externalized as routers. Only server.py core (auth + legacy routes) remains - acceptable for now."
+  ],
+  "updated_files": [
+    "/app/backend/tests/conftest.py (new register payload shape + helper + auto-approve fresh_user via admin decision so legacy tests keep working)",
+    "/app/backend/tests/test_api.py (updated duplicate-register payload to new schema; feedback test asserts practitioner_name from application names)",
+    "/app/backend/tests/test_new_modules.py (updated _register helper to new schema)",
+    "/app/backend/tests/test_premium_renewal.py (NEW - 46 tests for members approval, studio media, admin calendar, training requests, member chat, pending middleware, admin bypass)"
+  ],
+  "success_rate": {"backend": "100% (84/84, 1 skipped by design)", "frontend": "100% of smoke flows (public home + /explore/levels + /login + admin dashboard + role-separation redirects + logout)"},
+  "seed_data_creation": "Ephemeral TEST_*/uitest_* records: students (pending + approved via admin flow), media uploads (archived at end), calendar entries (cancelled at end), chat messages (hidden by admin), content lessons/cohorts, training requests. All prefixed with TEST_ for easy grep+cleanup. Admin user predates the migration (membership_status defaults to 'approved' via serialize_user) and bypasses middleware correctly.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Run: `cd /app && pytest /app/backend/tests/ -v --junitxml=/app/test_reports/pytest/pytest_results.xml`. The conftest.py `fresh_user` fixture now ALSO auto-approves via /api/admin/members/{uid}/levels/L1 (revision 0->1) + /api/admin/members/{uid}/decision - do not use fresh_user if you want a 'pending' lifecycle test; create your own user and skip the approval step (see test_premium_renewal.TestRegistrationPending). Register payload shape: { email, password(>=10), name, location, application: { first_name, last_name, birth_month(1-12), birth_year, phone(>=6), address(>=3), declared_level: L1|L2|L3A|L3B|L4 } }. The server overrides top-level `name` with application.first_name+last_name. Admin bypasses the pending middleware via membership_status default='approved'. Public /api/media/{id} returns 404 until the image is referenced by a PUBLISHED public CMS item.",
+  "rca_of_issue": "No bugs blocking the integration. The three test failures seen during this iteration were test-script issues against the NEW register schema (application sub-model validation requires first_name/last_name min_length=2) and a case-sensitivity assertion (emails are stored lowercase). All fixed. No product changes required to pass the suite."
+}

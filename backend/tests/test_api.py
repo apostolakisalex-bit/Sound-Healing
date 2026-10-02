@@ -22,9 +22,16 @@ class TestAuth:
         assert u["title"] == "Listener Initiate"
 
     def test_register_duplicate_rejected(self, api, fresh_user):
+        # New register schema requires nested application + 10+ char password
         r = api.post(f"{BASE}/api/auth/register", json={
-            "email": fresh_user["email"], "password": "anyvalid123",
-            "name": "Dup", "location": ""
+            "email": fresh_user["email"], "password": "anyvalid123456",
+            "name": "Dup", "location": "",
+            "application": {
+                "first_name": "AA", "last_name": "BB",
+                "birth_month": 1, "birth_year": 1990,
+                "phone": "+300000000", "address": "addr",
+                "declared_level": "L1",
+            },
         })
         assert r.status_code == 400
 
@@ -168,7 +175,7 @@ class TestPracticesAndFeedback:
         assert r.status_code == 200
         body = r.json()
         assert body["already_submitted"] is False
-        assert body["practitioner_name"] == "TEST Student"
+        assert body["practitioner_name"] == "TestFirst TestLast"
         assert body["session_type"] == "Tibetan Bowls"
 
     def test_feedback_form_invalid_token(self, api):

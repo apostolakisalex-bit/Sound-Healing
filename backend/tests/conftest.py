@@ -48,22 +48,58 @@ def admin_auth(admin_token):
     return {"Authorization": f"Bearer {admin_token}"}
 
 
-@pytest.fixture(scope="session")
-def fresh_user(api):
-    """Register a fresh student user once per session."""
-    email = f"TEST_user_{uuid.uuid4().hex[:8]}@example.com"
-    password = "passw0rd123"
-    r = api.post(
-        f"{BASE_URL}/api/auth/register",
-        json={
-            "email": email,
-            "password": password,
-            "name": "TEST Student",
-            "location": "Athens",
+def _register_payload(email: str, password: str = "passw0rd123456"):
+    """New register schema requires nested `application` and 10+ char password."""
+    return {
+        "email": email,
+        "password": password,
+        "name": "TEST Student",
+        "location": "Athens",
+        "application": {
+            "first_name": "TestFirst",
+            "last_name": "TestLast",
+            "birth_month": 5,
+            "birth_year": 1990,
+            "phone": "+306900000000",
+            "address": "Test street 1, Athens",
+            "declared_level": "L1",
         },
-    )
+    }
+
+
+@pytest.fixture(scope="session")
+def fresh_user(api, admin_auth):
+    """Register a fresh student AND approve them so legacy tests can hit protected endpoints.
+    Approval flow: set L1 level record (revision=0 -> 1), then admin decision=approved.
+    For a dedicated 'pending' lifecycle test, see test_premium_renewal.TestRegistrationPending.
+    """
+    email = f"TEST_user_{uuid.uuid4().hex[:8]}@example.com"
+    password = "passw0rd123456"
+    r = api.post(f"{BASE_URL}/api/auth/register", json=_register_payload(email, password))
     assert r.status_code == 200, f"Register failed: {r.status_code} {r.text}"
     data = r.json()
+    uid = data["user"]["id"]
+    lv = api.put(
+        f"{BASE_URL}/api/admin/members/{uid}/levels/L1",
+        json={
+            "cohort_id": None,
+            "credited_practice_ids": [],
+            "enabled": True,
+            "target": 10,
+            "historical_completed": 0,
+            "note": "Auto-approve for legacy tests",
+            "revision": 0,
+        },
+        headers=admin_auth,
+    )
+    assert lv.status_code == 200, f"Level set failed: {lv.status_code} {lv.text}"
+    dec = api.post(
+        f"{BASE_URL}/api/admin/members/{uid}/decision",
+        json={"decision": "approved", "note": "Legacy test auto-approve"},
+        headers=admin_auth,
+    )
+    assert dec.status_code == 200, f"Approve failed: {dec.status_code} {dec.text}"
+    data["user"]["membership_status"] = "approved"
     return {
         "email": email,
         "password": password,
@@ -71,3 +107,9 @@ def fresh_user(api):
         "user": data["user"],
         "auth": {"Authorization": f"Bearer {data['token']}"},
     }
+
+
+@pytest.fixture(scope="session")
+def approved_user(fresh_user):
+    """Alias for approved_user: fresh_user is already approved via admin decision."""
+    return fresh_user
