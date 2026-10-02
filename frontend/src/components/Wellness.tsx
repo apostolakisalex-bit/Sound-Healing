@@ -249,11 +249,13 @@ export function Shell({
   children,
   publicPage = false,
   siteSettings,
+  hideHeader = false,
 }: {
   title: string;
   eyebrow: string;
   children: React.ReactNode;
   publicPage?: boolean;
+  hideHeader?: boolean;
   siteSettings?: ContentItem["published"];
 }) {
   const router = useRouter();
@@ -262,8 +264,8 @@ export function Shell({
   return (
     <View style={ui.page}>
       <ScrollView style={ui.page}>
-        <View style={[ui.wrap, { paddingBottom: 110 }]}>
-          <AppHeader />
+        <View style={[ui.wrap, { paddingBottom: 110, paddingTop: hideHeader ? 0 : 24 }]}>
+          {!hideHeader && <AppHeader />}
           {staff && !publicPage && (
             <View style={ui.row}>
               <Text style={ui.body}>

@@ -32,7 +32,7 @@ export const iconSurface = {
   elevation: 2,
 };
 
-export function AppHeader() {
+export function AppHeader({ hideBrand = false }: { hideBrand?: boolean }) {
   const { user } = useAuth();
   const { language, toggle } = useLanguage();
   const router = useRouter();
@@ -73,7 +73,7 @@ export function AppHeader() {
           gap: 8,
         }}
       >
-        <Pressable
+        {!hideBrand && <Pressable
           accessibilityRole="link"
           accessibilityLabel="Sound Healing Greece Home"
           onPress={() => router.push("/")}
@@ -90,7 +90,8 @@ export function AppHeader() {
           >
             Sound Healing Greece
           </Text>
-        </Pressable>
+        </Pressable>}
+        {hideBrand && <View style={{ flex: 1 }} />}
 
         <Pressable
           accessibilityRole="button"

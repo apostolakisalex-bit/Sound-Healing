@@ -3,7 +3,7 @@ import Svg, { Path } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";
 import { wellness } from "@/src/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { iconSurface } from "./AppNavigation";
+import { AppHeader, iconSurface } from "./AppNavigation";
 import { ManagedImage } from "./ManagedImage";
 import React from "react";
 import {
@@ -88,6 +88,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
     .slice(0, 6);
   return (
     <View style={{ gap: 28 }}>
+      <View style={{ position: "absolute", top: 16, left: 0, right: 0, zIndex: 20 }}><AppHeader hideBrand /></View>
       <View style={{ height: compactScreen ? 260 : 360, marginHorizontal: -24, overflow: "hidden", backgroundColor: wellness.blueMist }}>
         <ManagedImage source={{ uri: photo("banner", hero?.image_url || hero?.media_url || HERO_IMAGES.main) }} accessibilityLabel={hero?.image_alt || "Sound Healing Greece — η εμπειρία του ήχου"} resizeMode="cover" style={{ position: "absolute", width: "100%", height: "100%" }} />
         <LinearGradient colors={["rgba(232,241,247,0.55)", "rgba(255,255,255,0.76)", "rgba(233,227,243,0.45)"]} style={{ position: "absolute", width: "100%", height: "100%" }} />
@@ -110,7 +111,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
             { title: "Ομαδικά Sound Baths", label: "LEVEL 3", image: photo("L3", SCHOOL_PHOTOS[3]), route: "/explore/levels?level=3", ratio: 1.05 },
           ],
           [
-            { title: "Ηχοθεραπεία", label: "Η ΕΜΠΕΙΡΙΑ", image: photo("soundhealing", page("soundhealing")?.image_url || SCHOOL_PHOTOS[4]), route: "/explore/soundhealing", ratio: 1.05 },
+            { title: "Ηχοθεραπεία", label: "Η ΕΜΠΕΙΡΙΑ", image: photo("soundhealing", page("soundhealing")?.image_url || SCHOOL_PHOTOS[4]), route: "/explore/soundhealing", ratio: .68 },
             { title: "Εμβάθυνση", label: "LEVEL 2", image: photo("L2", SCHOOL_PHOTOS[1]), route: "/explore/levels?level=2", ratio: 1.35 },
             { title: "Επαγγελματική ανάπτυξη", label: "LEVEL 4", image: photo("L4", SCHOOL_PHOTOS[2]), route: "/explore/levels?level=4", ratio: .68 },
           ],

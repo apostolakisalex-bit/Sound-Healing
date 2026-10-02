@@ -122,6 +122,7 @@ export function PublicExperience({ section }: { section?: string }) {
   return (
     <Shell
       publicPage
+      hideHeader={!section}
       siteSettings={settings}
       eyebrow={page?.label || ""}
       title={valid ? "" : "Η σελίδα δεν βρέθηκε"}
