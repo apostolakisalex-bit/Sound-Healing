@@ -2,6 +2,7 @@ import { wellness, fonts } from "@/src/theme";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { SoundSpiral } from "@/src/components/icons/SoundSpiral";
 import { usePathname, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/src/auth/AuthContext";
@@ -32,7 +33,13 @@ export const iconSurface = {
   elevation: 2,
 };
 
-export function AppHeader({ hideBrand = false }: { hideBrand?: boolean }) {
+export function AppHeader({
+  hideBrand = false,
+  notifications: showNotifications = false,
+}: {
+  hideBrand?: boolean;
+  notifications?: boolean;
+}) {
   const { user } = useAuth();
   const { language, toggle } = useLanguage();
   const router = useRouter();
@@ -93,29 +100,41 @@ export function AppHeader({ hideBrand = false }: { hideBrand?: boolean }) {
         </Pressable>}
         {hideBrand && <View style={{ flex: 1 }} />}
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={
-            language === "el" ? "Ειδοποιήσεις" : "Notifications"
-          }
-          onPress={() => void notifications()}
-          style={{ padding: 10 }}
-        >
-          <Ionicons name="notifications-outline" size={23} color={wellness.ink} />
-          {rows.some((r) => !r.read) && (
-            <View
-              style={{
-                position: "absolute",
-                right: 7,
-                top: 7,
-                width: 7,
-                height: 7,
-                borderRadius: 4,
-                backgroundColor: wellness.slate,
-              }}
+        {showNotifications && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              language === "el" ? "Ειδοποιήσεις" : "Notifications"
+            }
+            onPress={() => void notifications()}
+            style={{
+              padding: 10,
+              minHeight: 44,
+              minWidth: 44,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Ionicons
+              name="notifications-outline"
+              size={22}
+              color={wellness.ink}
             />
-          )}
-        </Pressable>
+            {rows.some((r) => !r.read) && (
+              <View
+                style={{
+                  position: "absolute",
+                  right: 8,
+                  top: 8,
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: wellness.slate,
+                }}
+              />
+            )}
+          </Pressable>
+        )}
       </View>
       {open && (
         <View
@@ -246,29 +265,39 @@ export function BottomNavigation() {
               accessibilityLabel={language === "el" ? item.label : item.en}
               accessibilityState={{ selected: active }}
               onPress={() => router.push(item.route as any)}
-              style={{ flex: 1, alignItems: "center", gap: 4, minHeight: 48 }}
+              style={{
+                flex: 1,
+                alignItems: "center",
+                gap: 3,
+                minHeight: 48,
+                paddingVertical: 4,
+              }}
             >
               <View
-                style={[
-                  iconSurface,
-                  {
-                    width: 35,
-                    height: 32,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: active ? wellness.lavender : wellness.white,
-                  },
-                ]}
+                style={{
+                  minWidth: 46,
+                  height: 30,
+                  paddingHorizontal: 12,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 14,
+                  backgroundColor: active ? wellness.lavender : "transparent",
+                }}
               >
                 {index === 4 && user?.profile_image ? (
                   <Image
                     source={{ uri: user.profile_image }}
-                    style={{ width: 28, height: 28, borderRadius: 14 }}
+                    style={{ width: 24, height: 24, borderRadius: 12 }}
+                  />
+                ) : index === 1 ? (
+                  <SoundSpiral
+                    size={21}
+                    color={active ? wellness.lavenderInk : wellness.ink}
                   />
                 ) : (
                   <Ionicons
                     name={item.icon}
-                    size={23}
+                    size={21}
                     color={active ? wellness.lavenderInk : wellness.ink}
                   />
                 )}

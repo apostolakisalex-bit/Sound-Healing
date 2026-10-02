@@ -1,8 +1,12 @@
 import React, { useState } from "react";
-import { Text, TextInput, View } from "react-native";
+import { Text, TextInput, View, Platform } from "react-native";
 import { Link, useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
+import * as Linking from "expo-linking";
 import { useAuth } from "@/src/auth/AuthContext";
 import { Shell, ui, Button, Field, Choices } from "@/src/components/Wellness";
+
+WebBrowser.maybeCompleteAuthSession();
 export function AuthScreen({ registering = false }: { registering?: boolean }) {
   const auth = useAuth(),
     router = useRouter();
@@ -11,12 +15,57 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
     [password, setPassword] = useState(""),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
   const [lastName, setLastName] = useState("");
   const [birthMonth, setBirthMonth] = useState("");
   const [birthYear, setBirthYear] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [declaredLevel, setDeclaredLevel] = useState("L1");
+  const googleSignIn = async () => {
+    setError("");
+    setGoogleBusy(true);
+    try {
+      const redirectUrl =
+        Platform.OS === "web"
+          ? window.location.origin + "/"
+          : Linking.createURL("");
+      const authUrl =
+        "https://auth.emergentagent.com/?redirect=" +
+        encodeURIComponent(redirectUrl);
+      if (Platform.OS === "web") {
+        window.location.href = authUrl;
+        return;
+      }
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUrl);
+      let sid: string | null = null;
+      if (result.type === "success" && result.url) {
+        const m = result.url.match(/[?#&]session_id=([^&#]+)/);
+        sid = m ? decodeURIComponent(m[1]) : null;
+      }
+      if (!sid) {
+        const initial = await Linking.getInitialURL();
+        const m = initial ? initial.match(/[?#&]session_id=([^&#]+)/) : null;
+        sid = m ? decodeURIComponent(m[1]) : null;
+      }
+      if (!sid) {
+        setError("Η σύνδεση με Google δεν ολοκληρώθηκε.");
+        return;
+      }
+      const signedIn = await auth.loginWithSession(sid);
+      router.replace(
+        signedIn.membership_status && signedIn.membership_status !== "approved"
+          ? "/(tabs)/profile"
+          : ["admin", "instructor"].includes(signedIn.role)
+            ? "/admin"
+            : "/(tabs)/sanctuary",
+      );
+    } catch {
+      setError("Δεν ήταν δυνατή η σύνδεση με Google.");
+    } finally {
+      setGoogleBusy(false);
+    }
+  };
   const submit = async () => {
     setError("");
     if (
@@ -135,6 +184,12 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
                 : "Σύνδεση"
           }
           onPress={() => void submit()}
+        />
+        <Button
+          secondary
+          disabled={googleBusy}
+          label={googleBusy ? "Σύνδεση…" : "Σύνδεση με Google"}
+          onPress={() => void googleSignIn()}
         />
         <Link href={registering ? "/login" : "/register"} style={ui.body}>
           {registering

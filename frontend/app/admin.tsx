@@ -171,7 +171,7 @@ function WorkspaceScreen() {
   const set = (key: keyof Draft, value: any) =>
     setDraft({ ...draft, [key]: value });
   return (
-    <Shell eyebrow="SCHOOL WORKSPACE" title="Η σχολή στα χέρια σου.">
+    <Shell eyebrow="SCHOOL WORKSPACE" title="Η σχολή στα χέρια σου." notifications>
       <Text style={ui.body}>
         Διαχείριση περιεχομένου, εκπαίδευσης και πρακτικής από έναν χώρο.
       </Text>

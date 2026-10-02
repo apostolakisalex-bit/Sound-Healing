@@ -672,7 +672,7 @@ function LevelEditor({
 
 export function ProfilePage() {
   return (
-    <Shell eyebrow="" title="">
+    <Shell eyebrow="" title="" notifications>
       <MemberProfile />
     </Shell>
   );

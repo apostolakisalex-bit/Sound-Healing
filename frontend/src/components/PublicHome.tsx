@@ -4,7 +4,7 @@ import Svg, { Path } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";
 import { wellness } from "@/src/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { AppHeader, iconSurface } from "./AppNavigation";
+import { iconSurface } from "./AppNavigation";
 import { ManagedImage } from "./ManagedImage";
 import React from "react";
 import {
@@ -90,15 +90,11 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
     .slice(0, 6);
   return (
     <View style={{ gap: 28 }}>
-      <View style={{ position: "absolute", top: 16 + insets.top, left: 0, right: 0, zIndex: 20 }}><AppHeader hideBrand /></View>
       <View style={{ height: (compactScreen ? 260 : 360) + insets.top, marginHorizontal: -24, overflow: "hidden", backgroundColor: wellness.blueMist }}>
         <ManagedImage source={{ uri: photo("banner", hero?.image_url || hero?.media_url || HERO_IMAGES.main) }} accessibilityLabel={hero?.image_alt || "Sound Healing Greece — η εμπειρία του ήχου"} resizeMode="cover" style={{ position: "absolute", width: "100%", height: "100%" }} />
         <LinearGradient colors={["rgba(232,241,247,0.55)", "rgba(255,255,255,0.76)", "rgba(233,227,243,0.45)"]} style={{ position: "absolute", width: "100%", height: "100%" }} />
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 24, paddingBottom: 35 }}>
           <Text accessibilityRole="header" style={[ui.title, { textAlign: "center", fontSize: compactScreen ? 29 : 42, lineHeight: compactScreen ? 38 : 52, letterSpacing: 1.2, color: wellness.ink }]}>Sound Healing Greece</Text>
-          <Svg width={116} height={30} viewBox="0 0 116 30" accessible={false}>
-            <Path d="M1 15 Q8 15 12 15 Q17 15 21 9 Q25 2 29 15 Q33 29 37 15 Q41 -4 45 15 Q49 34 53 15 Q57 -4 61 15 Q65 29 69 15 Q73 2 77 15 Q81 21 85 15 Q91 15 115 15" fill="none" stroke={wellness.slate} strokeWidth={1.4} />
-          </Svg>
         </View>
         <Svg width="100%" height={60} viewBox="0 0 1200 60" preserveAspectRatio="none" style={{ position: "absolute", bottom: -1 }} accessible={false}>
           <Path d="M0 28 C100 0 150 56 250 28 S400 0 500 28 S650 56 750 28 S900 0 1000 28 S1150 56 1200 28 L1200 60 L0 60 Z" fill={wellness.white} />

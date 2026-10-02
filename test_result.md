@@ -302,3 +302,51 @@ agent_communication:
       FRONTEND flows (role separation admin->/admin vs student tabs, registration->pending, admin approval, member
       profile progress bars/stars, practice+assessments). Do NOT test certification/XP-credit rules — those are
       intentional OPEN DECISIONS (pending_policy) per product/MASTER_PRODUCT_SPECIFICATION.md.
+    -agent: "main"
+    -message: >
+      THIRD integration + mobile/aesthetic pass (HEAD 9d2661d after merging GitHub a315535: mobile safe-areas,
+      text scaling, MOBILE_QA doc). Then applied AESTHETIC changes requested by owner:
+      (1) removed the small decorative wave line under the "Sound Healing Greece" wordmark on the banner (kept
+      photo + wordmark + bottom sound-wave edge); (2) slimmer/more elegant bottom-nav icons (size 21, removed
+      heavy shadow/bulky frame, soft lavender active pill, touch target >=44); (3) replaced the Ηχοθεραπεία
+      music-note icon with a minimal custom SVG "sound spiral" (src/components/icons/SoundSpiral.tsx);
+      (4) NOTIFICATIONS relocation: removed the bell from the public home banner and the shared AppHeader by
+      default; the bell now shows ONLY on the student Profile (/profile) and the admin workspace (/admin) via a
+      new `notifications` prop on Shell/AppHeader. Unread-dot badge + dropdown behavior preserved.
+      Browser (react-native-web) checks done by main agent: home @320x568, @844x390 landscape, login @320x568 —
+      no horizontal overflow (scrollWidth==innerWidth), bell absent on home+login, spiral icon renders, nav labels
+      not clipped. NOTE: these are BROWSER checks only; native iOS/Android device/emulator NOT available.
+      Please FRONTEND-test: (a) bell visible on /profile (student) and /admin, absent on home + public sections
+      (/explore/*) + login/register; notifications dropdown still opens and marks read; (b) bottom nav navigates to
+      all 5 tabs incl. spiral Ηχοθεραπεία; (c) regression on login (admin + an approved student), member profile,
+      practice logging form (keyboard: active field + submit reachable), admin workspace sections, receiver feedback
+      form; (d) spot responsive check of /profile, practice form and /admin at 390x844 and 320x568 for horizontal
+      overflow or clipped labels. Admin: admin@soundhealing.gr / temple2026. Student: register new -> PENDING ->
+      approve via admin. Do NOT test certification/XP rules (open decisions).
+  run_ui: true
+    -agent: "main"
+    -message: >
+      Added TWO integrations after the aesthetic pass:
+      (C) EMERGENT GOOGLE SIGN-IN: backend POST /api/auth/session exchanges the one-time Emergent session_id with
+      https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data, upserts the user by email, and mints the
+      app's OWN JWT (same TokenOut as /auth/login). NEW Google users are created with membership_status='pending'
+      (require admin approval) + an admin notification; existing emails are reused. Frontend: "Σύνδεση με Google"
+      button on /login and /register (AuthScreen.tsx); AuthContext.loginWithSession + session_id handling on web mount
+      (hash/search) and native deep links (expo-linking). Verified: /auth/session returns 401 on invalid session_id;
+      Google button renders on /login (screenshot). NOTE: a full Google OAuth round-trip needs a real Google account
+      and (on native) a dev build — cannot be fully automated; web preview works with a real Google login.
+      (D) EMERGENT-MANAGED RESEND EMAIL: backend/emailer.py (guardrail gate + send_email, never raises). Two triggers:
+      (1) member approval/rejection -> email the member (members.py decide()); (2) practice creation with a
+      receiver_email -> email the receiver the feedback link {PUBLIC_WEB_URL}/feedback/{token} (server.py
+      create_practice()). Env added: EMERGENT_EMAIL_KEY, EMAIL_FROM_NAME='Sound Healing Greece',
+      PUBLIC_WEB_URL. Verified: email proxy send to delivered@resend.dev returned a provider id.
+      PLEASE TEST (frontend+backend, focused — do NOT re-run full suites):
+      (a) Google button visible on /login AND /register; POST /api/auth/session with a bogus session_id -> 401.
+      (b) Email/password login still works (admin@soundhealing.gr/temple2026) — regression.
+      (c) POST /api/practices WITH a receiver_email and WITHOUT one both succeed (200) and return a feedback_token;
+      the email wiring must not break practice creation (email send is fire-and-safe, never 500s the request).
+      (d) Member approval/rejection decision endpoint still returns ok (regression) — email send must not break it.
+      Reusable approved student from iteration_4: uitest_167043@test.gr / TestPass12345. Admin: admin@soundhealing.gr /
+      temple2026. Do NOT assert certification/XP rules (open decisions). Email delivery itself cannot be asserted
+      (no inbox) — only that endpoints succeed and no 500s occur.
+  run_ui: true

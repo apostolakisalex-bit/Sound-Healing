@@ -128,3 +128,33 @@ Synced the user's GitHub repo `apostolakisalex-bit/Sound-Healing` (branch `shg/p
 - Decide whether to enable AI Oracle in preview (`AI_ENABLED=true`).
 - Security follow-ups SEC-001, SEC-002, and hardening items above.
 - Add `testID`s to login/register inputs for automation; migrate `shadow*`→`boxShadow`, `props.pointerEvents`→`style.pointerEvents` (deprecation warnings).
+
+---
+
+## v1.2 — Mobile QA + Aesthetic + Google Auth + Email (June 2026, preview)
+Integrated GitHub branch `shg/premium-renewal` up to **a315535** (mobile safe-areas, text scaling, MOBILE_QA doc) via clean merge (HEAD 9d2661d). Then, per owner request, applied the following on top (preview only — not pushed to production):
+
+### Mobile responsive QA (browser/react-native-web only — NOT native-device confirmed)
+- Verified no horizontal overflow (scrollWidth==innerWidth) on home @320×568, @844×390 landscape, and login @320×568; bottom nav + forms reachable. The a315535 commit already added shared safe-area insets, iOS keyboard avoidance, training-card stacking <350px, large-font handling, 2-col service cards.
+
+### Aesthetic changes (owner-requested)
+1. Removed the small decorative wave line under the "Sound Healing Greece" wordmark (kept the photo banner, wordmark, and bottom sound-wave edge). — `PublicHome.tsx`
+2. Slimmer, more elegant bottom-nav icons (size 21, no heavy shadow/bulky frame, soft lavender active pill, touch target ≥44). — `AppNavigation.tsx`
+3. Replaced the Ηχοθεραπεία music-note icon with a minimal custom SVG "sound spiral". — `src/components/icons/SoundSpiral.tsx`
+4. Notifications bell removed from the public home + shared header; now shown ONLY on the student Profile (/profile) and admin workspace (/admin) via a `notifications` prop on `Shell`/`AppHeader`. Unread dot + dropdown preserved. — `Wellness.tsx`, `AppNavigation.tsx`, `MemberProfile.tsx`, `admin.tsx`
+
+### 🅲 Emergent Google sign-in
+- Backend `POST /api/auth/session`: exchanges the one-time Emergent `session_id` (via `demobackend.emergentagent.com/.../session-data`), upserts the user by email, mints the app's own JWT. NEW Google users → `membership_status='pending'` (admin approval required) + admin notification; existing emails reused.
+- Frontend: "Σύνδεση με Google" on /login & /register; `AuthContext.loginWithSession` + session handling on web mount (hash/query) and native deep links.
+- Works on web preview with a real Google account; native needs a dev build. Verified: 401 on bogus session_id, button renders.
+
+### 🅳 Emergent-managed Resend email
+- `backend/emailer.py` (guardrail gate + non-raising `send_email`). Triggers: (1) member approval/rejection → emails the member (`members.py`); (2) practice creation with a `receiver_email` → emails the receiver the feedback link `{PUBLIC_WEB_URL}/feedback/{token}` (`server.py`).
+- Env added: `EMERGENT_EMAIL_KEY`, `EMAIL_FROM_NAME='Sound Healing Greece'`, `PUBLIC_WEB_URL`. Verified: proxy send returned a provider id.
+
+### Deferred
+- 🅴 Emergent push notifications — deferred by owner (needs Publish+build + google-services.json; not testable in Expo Go/preview).
+
+### Verification
+- testing_agent iteration_4 (aesthetic + regression) PASS; iteration_5 (Google + Resend + regression) PASS (10/10 backend). All browser-level; native device/emulator NOT available.
+

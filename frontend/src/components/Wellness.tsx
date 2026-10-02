@@ -252,12 +252,14 @@ export function Shell({
   publicPage = false,
   siteSettings,
   hideHeader = false,
+  notifications = false,
 }: {
   title: string;
   eyebrow: string;
   children: React.ReactNode;
   publicPage?: boolean;
   hideHeader?: boolean;
+  notifications?: boolean;
   siteSettings?: ContentItem["published"];
 }) {
   const router = useRouter();
@@ -268,7 +270,7 @@ export function Shell({
     <KeyboardAvoidingView style={[ui.page, { paddingLeft: insets.left, paddingRight: insets.right }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScrollView style={ui.page} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
         <View style={[ui.wrap, { paddingBottom: 110 + insets.bottom, paddingTop: hideHeader ? 0 : 24 + insets.top }]}>
-          {!hideHeader && <AppHeader />}
+          {!hideHeader && <AppHeader notifications={notifications} />}
           {staff && !publicPage && (
             <View style={ui.row}>
               <Text style={ui.body}>

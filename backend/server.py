@@ -13,6 +13,8 @@ import uuid
 import jwt
 import bcrypt
 import secrets
+import httpx
+from emailer import send_receiver_feedback_invite
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr, field_validator
 from typing import List, Optional, Literal
@@ -92,6 +94,10 @@ class RegisterIn(BaseModel):
 class LoginIn(BaseModel):
     email: EmailStr
     password: str
+
+
+class SessionIn(BaseModel):
+    session_id: str
 
 
 class TokenOut(BaseModel):
@@ -495,6 +501,74 @@ async def login(payload: LoginIn):
     return {"token": token, "user": serialize_user(user)}
 
 
+EMERGENT_SESSION_URL = "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data"
+
+
+@api.post("/auth/session", response_model=TokenOut)
+async def google_session(payload: SessionIn):
+    # Exchange the one-time Emergent session_id for the Google profile, then
+    # upsert the user and mint our own app JWT. New Google users are PENDING.
+    try:
+        async with httpx.AsyncClient(timeout=15) as http:
+            resp = await http.get(
+                EMERGENT_SESSION_URL,
+                headers={"X-Session-ID": payload.session_id},
+            )
+    except Exception:
+        raise HTTPException(status_code=502, detail="Αποτυχία επικοινωνίας με την υπηρεσία σύνδεσης.")
+    if resp.status_code != 200:
+        raise HTTPException(status_code=401, detail="Μη έγκυρη ή ληγμένη σύνδεση Google.")
+    data = resp.json()
+    email = (data.get("email") or "").strip().lower()
+    if not email:
+        raise HTTPException(status_code=401, detail="Δεν δόθηκε email από τη Google.")
+    name = (data.get("name") or email.split("@")[0]).strip()
+    picture = data.get("picture") or ""
+    user = await db.users.find_one({"email": email})
+    if not user:
+        user_id = str(uuid.uuid4())
+        parts = name.split(" ", 1)
+        user = {
+            "id": user_id,
+            "email": email,
+            "name": name,
+            "application": {
+                "first_name": parts[0],
+                "last_name": parts[1] if len(parts) > 1 else "",
+                "birth_month": 0,
+                "birth_year": 0,
+                "phone": "",
+                "address": "",
+                "declared_level": "L1",
+                "source": "google",
+            },
+            "membership_status": "pending",
+            "password_hash": hash_password(secrets.token_urlsafe(32)),
+            "bio": "",
+            "location": "",
+            "profile_image": picture,
+            "title": LEVEL_TITLES["L1"],
+            "level": "L1",
+            "xp": 0,
+            "stamps": [],
+            "unlocked_realms": ["temple-of-breath"],
+            "role": "student",
+            "auth_provider": "google",
+            "created_at": datetime.now(timezone.utc),
+        }
+        await db.users.insert_one(user)
+        await db.member_notifications.insert_one({
+            "id": str(uuid.uuid4()),
+            "audience": "admin",
+            "user_id": None,
+            "text": "Νέα αίτηση εγγραφής (Google): " + user["name"],
+            "created_at": datetime.now(timezone.utc),
+            "read_by": [],
+        })
+    token = create_token(user["id"], user.get("token_version", 0))
+    return {"token": token, "user": serialize_user(user)}
+
+
 @api.post("/auth/logout")
 async def logout(user: dict = Depends(get_current_user)):
     await db.users.update_one({"id": user["id"]}, {"$inc": {"token_version": 1}})
@@ -663,6 +737,15 @@ async def create_practice(payload: PracticeIn, user: dict = Depends(get_current_
         "created_at": datetime.now(timezone.utc),
     }
     await db.practices.insert_one(dict(doc))
+    if payload.receiver_email:
+        await send_receiver_feedback_invite(
+            to=payload.receiver_email,
+            receiver_name=payload.receiver_name,
+            practitioner_name=user.get("name", "Practitioner"),
+            session_date=payload.session_date,
+            session_type=payload.session_type,
+            feedback_token=feedback_token,
+        )
     return practice_doc_to_out(doc)
 
 

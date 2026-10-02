@@ -5,6 +5,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import Field, model_validator
 from school import Strict, Level
+from emailer import send_membership_decision
 
 class Application(Strict):
     first_name: str = Field(min_length=2, max_length=80)
@@ -166,6 +167,7 @@ def build_members_router(db, current_user, admin_user):
         if not r.modified_count: raise HTTPException(409)
         await notify(('Η εγγραφή σου εγκρίθηκε. ' if payload.decision == 'approved' else 'Η αίτηση εγγραφής δεν εγκρίθηκε. ') + payload.note, uid)
         await audit(user, 'member.' + payload.decision, uid)
+        await send_membership_decision(to=member.get('email', ''), name=member.get('name', ''), approved=payload.decision == 'approved', note=payload.note)
         return {'ok': True}
 
     @router.post('/members/me/training-requests')

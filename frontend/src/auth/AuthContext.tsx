@@ -6,7 +6,16 @@ import React, {
   ReactNode,
   useCallback,
 } from "react";
+import { Platform } from "react-native";
+import * as Linking from "expo-linking";
 import { api, setAuthToken, getAuthToken } from "@/src/api/client";
+
+const processedSessions = new Set<string>();
+function extractSessionId(url?: string | null): string | null {
+  if (!url) return null;
+  const m = url.match(/[?#&]session_id=([^&#]+)/);
+  return m ? decodeURIComponent(m[1]) : null;
+}
 
 export type User = {
   id: string;
@@ -29,6 +38,7 @@ type AuthContextType = {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
+  loginWithSession: (sessionId: string) => Promise<User>;
   register: (
     email: string,
     password: string,
@@ -62,12 +72,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const loginWithSession = useCallback(async (sessionId: string) => {
+    if (processedSessions.has(sessionId)) {
+      const { data } = await api.get("/auth/me");
+      setUser(data);
+      return data as User;
+    }
+    processedSessions.add(sessionId);
+    const { data } = await api.post("/auth/session", { session_id: sessionId });
+    await setAuthToken(data.token);
+    setUser(data.user);
+    return data.user as User;
+  }, []);
+
   useEffect(() => {
     (async () => {
+      try {
+        if (Platform.OS === "web") {
+          const sid =
+            extractSessionId(window.location.hash) ||
+            extractSessionId(window.location.search);
+          if (sid) {
+            await loginWithSession(sid);
+            try {
+              window.history.replaceState(
+                window.history.state,
+                "",
+                window.location.pathname || "/",
+              );
+            } catch {
+              /* ignore */
+            }
+            setLoading(false);
+            return;
+          }
+        } else {
+          const sid = extractSessionId(await Linking.getInitialURL());
+          if (sid) {
+            await loginWithSession(sid);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch {
+        /* fall back to normal session check */
+      }
       await refresh();
       setLoading(false);
     })();
-  }, [refresh]);
+  }, [refresh, loginWithSession]);
+
+  useEffect(() => {
+    if (Platform.OS === "web") return;
+    const sub = Linking.addEventListener("url", ({ url }) => {
+      const sid = extractSessionId(url);
+      if (sid) void loginWithSession(sid);
+    });
+    return () => sub.remove();
+  }, [loginWithSession]);
 
   const login = useCallback(async (email: string, password: string) => {
     const { data } = await api.post("/auth/login", { email, password });
@@ -115,7 +177,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, logout, refresh, updateProfile }}
+      value={{
+        user,
+        loading,
+        login,
+        loginWithSession,
+        register,
+        logout,
+        refresh,
+        updateProfile,
+      }}
     >
       {children}
     </AuthContext.Provider>
