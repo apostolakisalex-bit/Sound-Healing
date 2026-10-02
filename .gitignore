@@ -86,3 +86,12 @@ android-sdk/
 credentials.json
 *.key
 .credentials
+
+
+.venv/
+__pycache__/
+.pytest_cache/
+.env
+.preview/
+
+!.env.example

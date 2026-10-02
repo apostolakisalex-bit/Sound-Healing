@@ -1,0 +1,193 @@
+diff --git a/backend/tests/conftest.py b/backend/tests/conftest.py
+index e75d122..d696c29 100644
+--- a/backend/tests/conftest.py
++++ b/backend/tests/conftest.py
+@@ -48,22 +48,58 @@ def admin_auth(admin_token):
+     return {"Authorization": f"Bearer {admin_token}"}
+ 
+ 
++def _register_payload(email: str, password: str = "passw0rd123456"):
++    """New register schema requires nested `application` and 10+ char password."""
++    return {
++        "email": email,
++        "password": password,
++        "name": "TEST Student",
++        "location": "Athens",
++        "application": {
++            "first_name": "TestFirst",
++            "last_name": "TestLast",
++            "birth_month": 5,
++            "birth_year": 1990,
++            "phone": "+306900000000",
++            "address": "Test street 1, Athens",
++            "declared_level": "L1",
++        },
++    }
++
++
+ @pytest.fixture(scope="session")
+-def fresh_user(api):
+-    """Register a fresh student user once per session."""
++def fresh_user(api, admin_auth):
++    """Register a fresh student AND approve them so legacy tests can hit protected endpoints.
++    Approval flow: set L1 level record (revision=0 -> 1), then admin decision=approved.
++    For a dedicated 'pending' lifecycle test, see test_premium_renewal.TestRegistrationPending.
++    """
+     email = f"TEST_user_{uuid.uuid4().hex[:8]}@example.com"
+-    password = "passw0rd123"
+-    r = api.post(
+-        f"{BASE_URL}/api/auth/register",
++    password = "passw0rd123456"
++    r = api.post(f"{BASE_URL}/api/auth/register", json=_register_payload(email, password))
++    assert r.status_code == 200, f"Register failed: {r.status_code} {r.text}"
++    data = r.json()
++    uid = data["user"]["id"]
++    lv = api.put(
++        f"{BASE_URL}/api/admin/members/{uid}/levels/L1",
+         json={
+-            "email": email,
+-            "password": password,
+-            "name": "TEST Student",
+-            "location": "Athens",
++            "cohort_id": None,
++            "credited_practice_ids": [],
++            "enabled": True,
++            "target": 10,
++            "historical_completed": 0,
++            "note": "Auto-approve for legacy tests",
++            "revision": 0,
+         },
++        headers=admin_auth,
+     )
+-    assert r.status_code == 200, f"Register failed: {r.status_code} {r.text}"
+-    data = r.json()
++    assert lv.status_code == 200, f"Level set failed: {lv.status_code} {lv.text}"
++    dec = api.post(
++        f"{BASE_URL}/api/admin/members/{uid}/decision",
++        json={"decision": "approved", "note": "Legacy test auto-approve"},
++        headers=admin_auth,
++    )
++    assert dec.status_code == 200, f"Approve failed: {dec.status_code} {dec.text}"
++    data["user"]["membership_status"] = "approved"
+     return {
+         "email": email,
+         "password": password,
+@@ -71,3 +107,9 @@ def fresh_user(api):
+         "user": data["user"],
+         "auth": {"Authorization": f"Bearer {data['token']}"},
+     }
++
++
++@pytest.fixture(scope="session")
++def approved_user(fresh_user):
++    """Alias for approved_user: fresh_user is already approved via admin decision."""
++    return fresh_user
+diff --git a/backend/tests/test_api.py b/backend/tests/test_api.py
+index 298b0f0..b411574 100644
+--- a/backend/tests/test_api.py
++++ b/backend/tests/test_api.py
+@@ -22,9 +22,16 @@ class TestAuth:
+         assert u["title"] == "Listener Initiate"
+ 
+     def test_register_duplicate_rejected(self, api, fresh_user):
++        # New register schema requires nested application + 10+ char password
+         r = api.post(f"{BASE}/api/auth/register", json={
+-            "email": fresh_user["email"], "password": "anyvalid123",
+-            "name": "Dup", "location": ""
++            "email": fresh_user["email"], "password": "anyvalid123456",
++            "name": "Dup", "location": "",
++            "application": {
++                "first_name": "AA", "last_name": "BB",
++                "birth_month": 1, "birth_year": 1990,
++                "phone": "+300000000", "address": "addr",
++                "declared_level": "L1",
++            },
+         })
+         assert r.status_code == 400
+ 
+@@ -168,7 +175,7 @@ class TestPracticesAndFeedback:
+         assert r.status_code == 200
+         body = r.json()
+         assert body["already_submitted"] is False
+-        assert body["practitioner_name"] == "TEST Student"
++        assert body["practitioner_name"] == "TestFirst TestLast"
+         assert body["session_type"] == "Tibetan Bowls"
+ 
+     def test_feedback_form_invalid_token(self, api):
+diff --git a/backend/tests/test_new_modules.py b/backend/tests/test_new_modules.py
+index 27b07ba..88a963b 100644
+--- a/backend/tests/test_new_modules.py
++++ b/backend/tests/test_new_modules.py
+@@ -20,9 +20,18 @@ def _register(api):
+         f"{BASE}/api/auth/register",
+         json={
+             "email": email,
+-            "password": "passw0rd123",
++            "password": "passw0rd123456",
+             "name": "Extra Tester",
+             "location": "Athens",
++            "application": {
++                "first_name": "Extra",
++                "last_name": "Tester",
++                "birth_month": 4,
++                "birth_year": 1991,
++                "phone": "+306900000002",
++                "address": "Addr",
++                "declared_level": "L1",
++            },
+         },
+     )
+     assert r.status_code == 200, r.text
+diff --git a/test_reports/pytest/pytest_results.xml b/test_reports/pytest/pytest_results.xml
+index e9b9780..488d69d 100644
+--- a/test_reports/pytest/pytest_results.xml
++++ b/test_reports/pytest/pytest_results.xml
+@@ -1 +1 @@
+-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="1" tests="49" time="6.291" timestamp="2026-09-30T20:42:05.088133+00:00" hostname="agent-env-0a8b6cda-d63f-47d8-8150-b0e4261ccc33"><testcase classname="backend.tests.test_api.TestAuth" name="test_root" time="0.259" /><testcase classname="backend.tests.test_api.TestAuth" name="test_register_returns_token_and_l1_user" time="0.311" /><testcase classname="backend.tests.test_api.TestAuth" name="test_register_duplicate_rejected" time="0.070" /><testcase classname="backend.tests.test_api.TestAuth" name="test_admin_login" time="0.290" /><testcase classname="backend.tests.test_api.TestAuth" name="test_login_wrong_password" time="0.296" /><testcase classname="backend.tests.test_api.TestAuth" name="test_me_returns_profile" time="0.069" /><testcase classname="backend.tests.test_api.TestAuth" name="test_me_requires_auth" time="0.065" /><testcase classname="backend.tests.test_api.TestRealms" name="test_list_realms_returns_7" time="0.074" /><testcase classname="backend.tests.test_api.TestRealms" name="test_get_single_realm" time="0.070" /><testcase classname="backend.tests.test_api.TestAcademy" name="test_list_academy_5_levels" time="0.064" /><testcase classname="backend.tests.test_api.TestAcademy" name="test_admin_sees_lessons" time="0.380" /><testcase classname="backend.tests.test_api.TestAcademy" name="test_complete_lesson_requires_enrollment" time="0.079" /><testcase classname="backend.tests.test_api.TestAcademy" name="test_admin_complete_lesson_ok" time="0.073" /><testcase classname="backend.tests.test_api.TestStamps" name="test_list_stamps_returns_10" time="0.073" /><testcase classname="backend.tests.test_api.TestPracticesAndFeedback" name="test_create_practice" time="0.077" /><testcase classname="backend.tests.test_api.TestPracticesAndFeedback" name="test_list_practices" time="0.062" /><testcase classname="backend.tests.test_api.TestPracticesAndFeedback" name="test_get_practice_by_id" time="0.074" /><testcase classname="backend.tests.test_api.TestPracticesAndFeedback" name="test_feedback_form_public_no_auth" time="0.090" /><testcase classname="backend.tests.test_api.TestPracticesAndFeedback" name="test_feedback_form_invalid_token" time="0.064" /><testcase classname="backend.tests.test_api.TestPracticesAndFeedback" name="test_submit_feedback_marks_awaiting_review" time="0.294" /><testcase classname="backend.tests.test_api.TestPracticesAndFeedback" name="test_submit_feedback_duplicate_blocked" time="0.069" /><testcase classname="backend.tests.test_api.TestPracticesAndFeedback" name="test_submit_feedback_requires_consent" time="0.138" /><testcase classname="backend.tests.test_api.TestCommunity" name="test_community_feed" time="0.064" /><testcase classname="backend.tests.test_api.TestAIChat" name="test_ai_chat_status" time="0.069"><skipped type="pytest.skip" message="AI_ENABLED flag is off in this env — reported to main agent">/app/backend/tests/test_api.py:260: AI_ENABLED flag is off in this env — reported to main agent</skipped></testcase><testcase classname="backend.tests.test_new_modules.TestAuthExtras" name="test_update_profile_persists" time="0.136" /><testcase classname="backend.tests.test_new_modules.TestAuthExtras" name="test_logout_invalidates_own_token" time="0.421" /><testcase classname="backend.tests.test_new_modules.TestRealmEnter" name="test_enter_unlocked_realm" time="0.064" /><testcase classname="backend.tests.test_new_modules.TestRealmEnter" name="test_enter_locked_realm_forbidden" time="0.138" /><testcase classname="backend.tests.test_new_modules.TestChallengesAndRankings" name="test_challenges_list" time="0.074" /><testcase classname="backend.tests.test_new_modules.TestChallengesAndRankings" name="test_join_first_challenge" time="0.146" /><testcase classname="backend.tests.test_new_modules.TestChallengesAndRankings" name="test_community_rankings" time="0.078" /><testcase classname="backend.tests.test_new_modules.TestAIHistory" name="test_ai_history" time="0.068" /><testcase classname="backend.tests.test_new_modules.TestSchoolReads" name="test_catalog" time="0.069" /><testcase classname="backend.tests.test_new_modules.TestSchoolReads" name="test_me" time="0.074" /><testcase classname="backend.tests.test_new_modules.TestSchoolReads" name="test_progress" time="0.063" /><testcase classname="backend.tests.test_new_modules.TestSchoolReads" name="test_content_public_no_auth" time="0.234" /><testcase classname="backend.tests.test_new_modules.TestSchoolReads" name="test_content_library_auth" time="0.068" /><testcase classname="backend.tests.test_new_modules.TestSchoolAdmin" name="test_content_created" time="0.065" /><testcase classname="backend.tests.test_new_modules.TestSchoolAdmin" name="test_content_update_requires_revision" time="0.072" /><testcase classname="backend.tests.test_new_modules.TestSchoolAdmin" name="test_content_publish" time="0.074" /><testcase classname="backend.tests.test_new_modules.TestSchoolAdmin" name="test_content_archive" time="0.112" /><testcase classname="backend.tests.test_new_modules.TestSchoolAdmin" name="test_cohort_enrollment_attendance_flow" time="0.578" /><testcase classname="backend.tests.test_new_modules.TestForms" name="test_admin_forms_denied_for_student" time="0.077" /><testcase classname="backend.tests.test_new_modules.TestForms" name="test_admin_forms_ok_for_admin" time="0.069" /><testcase classname="backend.tests.test_new_modules.TestAdminResources" name="test_upload_resource" time="0.068" /><testcase classname="backend.tests.test_new_modules.TestAdminResources" name="test_public_list_resources" time="0.061" /><testcase classname="backend.tests.test_new_modules.TestAdminResources" name="test_admin_list_resources" time="0.086" /><testcase classname="backend.tests.test_new_modules.TestAdminResources" name="test_download_resource" time="0.075" /><testcase classname="backend.tests.test_new_modules.TestAdminResources" name="test_delete_resource" time="0.065" /></testsuite></testsuites>
+\ No newline at end of file
++<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="1" tests="85" time="13.653" timestamp="2026-10-02T12:25:59.342981+00:00" hostname="agent-env-0a8b6cda-d63f-47d8-8150-b0e4261ccc33"><testcase classname="backend.tests.test_api.TestAuth" name="test_root" time="0.209" /><testcase classname="backend.tests.test_api.TestAuth" name="test_register_returns_token_and_l1_user" time="0.708" /><testcase classname="backend.tests.test_api.TestAuth" name="test_register_duplicate_rejected" time="0.065" /><testcase classname="backend.tests.test_api.TestAuth" name="test_admin_login" time="0.284" /><testcase classname="backend.tests.test_api.TestAuth" name="test_login_wrong_password" time="0.285" /><testcase classname="backend.tests.test_api.TestAuth" name="test_me_returns_profile" time="0.063" /><testcase classname="backend.tests.test_api.TestAuth" name="test_me_requires_auth" time="0.059" /><testcase classname="backend.tests.test_api.TestRealms" name="test_list_realms_returns_7" time="0.062" /><testcase classname="backend.tests.test_api.TestRealms" name="test_get_single_realm" time="0.060" /><testcase classname="backend.tests.test_api.TestAcademy" name="test_list_academy_5_levels" time="0.066" /><testcase classname="backend.tests.test_api.TestAcademy" name="test_admin_sees_lessons" time="0.066" /><testcase classname="backend.tests.test_api.TestAcademy" name="test_complete_lesson_requires_enrollment" time="0.072" /><testcase classname="backend.tests.test_api.TestAcademy" name="test_admin_complete_lesson_ok" time="0.061" /><testcase classname="backend.tests.test_api.TestStamps" name="test_list_stamps_returns_10" time="0.066" /><testcase classname="backend.tests.test_api.TestPracticesAndFeedback" name="test_create_practice" time="0.065" /><testcase classname="backend.tests.test_api.TestPracticesAndFeedback" name="test_list_practices" time="0.061" /><testcase classname="backend.tests.test_api.TestPracticesAndFeedback" name="test_get_practice_by_id" time="0.062" /><testcase classname="backend.tests.test_api.TestPracticesAndFeedback" name="test_feedback_form_public_no_auth" time="0.063" /><testcase classname="backend.tests.test_api.TestPracticesAndFeedback" name="test_feedback_form_invalid_token" time="0.061" /><testcase classname="backend.tests.test_api.TestPracticesAndFeedback" name="test_submit_feedback_marks_awaiting_review" time="0.255" /><testcase classname="backend.tests.test_api.TestPracticesAndFeedback" name="test_submit_feedback_duplicate_blocked" time="0.065" /><testcase classname="backend.tests.test_api.TestPracticesAndFeedback" name="test_submit_feedback_requires_consent" time="0.124" /><testcase classname="backend.tests.test_api.TestCommunity" name="test_community_feed" time="0.068" /><testcase classname="backend.tests.test_api.TestAIChat" name="test_ai_chat_status" time="0.065"><skipped type="pytest.skip" message="AI_ENABLED flag is off in this env — reported to main agent">/app/backend/tests/test_api.py:267: AI_ENABLED flag is off in this env — reported to main agent</skipped></testcase><testcase classname="backend.tests.test_new_modules.TestAuthExtras" name="test_update_profile_persists" time="0.124" /><testcase classname="backend.tests.test_new_modules.TestAuthExtras" name="test_logout_invalidates_own_token" time="0.418" /><testcase classname="backend.tests.test_new_modules.TestRealmEnter" name="test_enter_unlocked_realm" time="0.065" /><testcase classname="backend.tests.test_new_modules.TestRealmEnter" name="test_enter_locked_realm_forbidden" time="0.124" /><testcase classname="backend.tests.test_new_modules.TestChallengesAndRankings" name="test_challenges_list" time="0.061" /><testcase classname="backend.tests.test_new_modules.TestChallengesAndRankings" name="test_join_first_challenge" time="0.131" /><testcase classname="backend.tests.test_new_modules.TestChallengesAndRankings" name="test_community_rankings" time="0.066" /><testcase classname="backend.tests.test_new_modules.TestAIHistory" name="test_ai_history" time="0.077" /><testcase classname="backend.tests.test_new_modules.TestSchoolReads" name="test_catalog" time="0.066" /><testcase classname="backend.tests.test_new_modules.TestSchoolReads" name="test_me" time="0.076" /><testcase classname="backend.tests.test_new_modules.TestSchoolReads" name="test_progress" time="0.064" /><testcase classname="backend.tests.test_new_modules.TestSchoolReads" name="test_content_public_no_auth" time="0.068" /><testcase classname="backend.tests.test_new_modules.TestSchoolReads" name="test_content_library_auth" time="0.069" /><testcase classname="backend.tests.test_new_modules.TestSchoolAdmin" name="test_content_created" time="0.067" /><testcase classname="backend.tests.test_new_modules.TestSchoolAdmin" name="test_content_update_requires_revision" time="0.064" /><testcase classname="backend.tests.test_new_modules.TestSchoolAdmin" name="test_content_publish" time="0.065" /><testcase classname="backend.tests.test_new_modules.TestSchoolAdmin" name="test_content_archive" time="0.067" /><testcase classname="backend.tests.test_new_modules.TestSchoolAdmin" name="test_cohort_enrollment_attendance_flow" time="0.849" /><testcase classname="backend.tests.test_new_modules.TestForms" name="test_admin_forms_denied_for_student" time="0.063" /><testcase classname="backend.tests.test_new_modules.TestForms" name="test_admin_forms_ok_for_admin" time="0.062" /><testcase classname="backend.tests.test_new_modules.TestAdminResources" name="test_upload_resource" time="0.077" /><testcase classname="backend.tests.test_new_modules.TestAdminResources" name="test_public_list_resources" time="0.065" /><testcase classname="backend.tests.test_new_modules.TestAdminResources" name="test_admin_list_resources" time="0.064" /><testcase classname="backend.tests.test_new_modules.TestAdminResources" name="test_download_resource" time="0.069" /><testcase classname="backend.tests.test_new_modules.TestAdminResources" name="test_delete_resource" time="0.061" /><testcase classname="backend.tests.test_premium_renewal.TestRegistrationPending" name="test_register_sets_pending" time="0.288" /><testcase classname="backend.tests.test_premium_renewal.TestRegistrationPending" name="test_pending_can_access_me" time="0.068" /><testcase classname="backend.tests.test_premium_renewal.TestRegistrationPending" name="test_pending_can_access_notifications" time="0.065" /><testcase classname="backend.tests.test_premium_renewal.TestRegistrationPending" name="test_pending_can_access_auth_me" time="0.062" /><testcase classname="backend.tests.test_premium_renewal.TestRegistrationPending" name="test_pending_blocked_from_protected" time="0.061" /><testcase classname="backend.tests.test_premium_renewal.TestRegistrationPending" name="test_pending_blocked_from_chat" time="0.062" /><testcase classname="backend.tests.test_premium_renewal.TestRegistrationPending" name="test_pending_blocked_from_realms" time="0.064" /><testcase classname="backend.tests.test_premium_renewal.TestAdminBypass" name="test_admin_me" time="0.060" /><testcase classname="backend.tests.test_premium_renewal.TestAdminBypass" name="test_admin_access_protected" time="0.205" /><testcase classname="backend.tests.test_premium_renewal.TestAdminMembersApproval" name="test_admin_members_list" time="0.347" /><testcase classname="backend.tests.test_premium_renewal.TestAdminMembersApproval" name="test_admin_member_detail" time="0.063" /><testcase classname="backend.tests.test_premium_renewal.TestAdminMembersApproval" name="test_decision_requires_level_records" time="0.063" /><testcase classname="backend.tests.test_premium_renewal.TestAdminMembersApproval" name="test_set_level_record" time="0.126" /><testcase classname="backend.tests.test_premium_renewal.TestAdminMembersApproval" name="test_level_revision_conflict" time="0.061" /><testcase classname="backend.tests.test_premium_renewal.TestAdminMembersApproval" name="test_approve_after_level_records" time="0.194" /><testcase classname="backend.tests.test_premium_renewal.TestAdminMembersApproval" name="test_approve_idempotent_409" time="0.065" /><testcase classname="backend.tests.test_premium_renewal.TestMemberProfile" name="test_instruments_update" time="0.137" /><testcase classname="backend.tests.test_premium_renewal.TestMemberProfile" name="test_avatar_upload" time="0.154" /><testcase classname="backend.tests.test_premium_renewal.TestMemberProfile" name="test_avatar_rejects_bad_data" time="0.072" /><testcase classname="backend.tests.test_premium_renewal.TestStudioMedia" name="test_upload_returns_meta" time="0.067" /><testcase classname="backend.tests.test_premium_renewal.TestStudioMedia" name="test_list_media" time="0.069" /><testcase classname="backend.tests.test_premium_renewal.TestStudioMedia" name="test_media_denied_for_non_admin" time="0.103" /><testcase classname="backend.tests.test_premium_renewal.TestStudioMedia" name="test_preview_admin_can_fetch" time="0.064" /><testcase classname="backend.tests.test_premium_renewal.TestStudioMedia" name="test_public_photo_unreferenced_404" time="0.062" /><testcase classname="backend.tests.test_premium_renewal.TestStudioMedia" name="test_bad_image_rejected" time="0.064" /><testcase classname="backend.tests.test_premium_renewal.TestStudioMedia" name="test_archive" time="0.075" /><testcase classname="backend.tests.test_premium_renewal.TestAdminCalendar" name="test_calendar_list" time="0.182" /><testcase classname="backend.tests.test_premium_renewal.TestAdminCalendar" name="test_calendar_denied_for_non_admin" time="0.062" /><testcase classname="backend.tests.test_premium_renewal.TestAdminCalendar" name="test_calendar_edit" time="0.064" /><testcase classname="backend.tests.test_premium_renewal.TestAdminCalendar" name="test_calendar_edit_stale_revision_conflicts" time="0.066" /><testcase classname="backend.tests.test_premium_renewal.TestAdminCalendar" name="test_calendar_cancel" time="0.064" /><testcase classname="backend.tests.test_premium_renewal.TestTrainingRequests" name="test_pending_cannot_request" time="0.350" /><testcase classname="backend.tests.test_premium_renewal.TestTrainingRequests" name="test_approved_can_request_and_duplicate_blocked" time="0.129" /><testcase classname="backend.tests.test_premium_renewal.TestMemberChat" name="test_pending_blocked" time="0.356" /><testcase classname="backend.tests.test_premium_renewal.TestMemberChat" name="test_approved_can_post_and_list" time="0.128" /><testcase classname="backend.tests.test_premium_renewal.TestMemberChat" name="test_admin_can_hide" time="3.411" /></testsuite></testsuites>
+\ No newline at end of file
+diff --git a/test_result.md b/test_result.md
+index 75492cc..bc3cf89 100644
+--- a/test_result.md
++++ b/test_result.md
+@@ -276,11 +276,12 @@ metadata:
+ 
+ test_plan:
+   current_focus:
+-    - "Auth (register, login, me, update profile, logout)"
+-    - "Realms (list, detail, enter/unlock)"
+-    - "Academy (list levels, level detail, complete lesson -> XP)"
+-    - "Practice logging + public receiver feedback flow (no-auth feedback link)"
+-    - "School module (catalog, progress, content CRUD/publish, cohorts, enrollments, attendance, cycles, practices)"
++    - "Members: registration (pending) + admin approval/rejection flow"
++    - "Members: member profile (avatar, instruments, L1-L4 progress, practice stars)"
++    - "Studio: photo library upload (Pillow re-encode) + app_photo CMS + publish"
++    - "Admin calendar: create/edit/cancel internal appointments"
++    - "Practice + assessments (practitioner + receiver) + admin/instructor read access"
++    - "Role separation: admin -> /admin workspace, student -> tabs"
+   stuck_tasks: []
+   test_all: false
+   test_priority: "high_first"
+@@ -288,8 +289,16 @@ test_plan:
+ agent_communication:
+     -agent: "main"
+     -message: >
+-      GitHub sync (branch shg/premium-renewal) completed via fast-forward merge — no conflicts, no lost work.
+-      Backend starts cleanly (200 on /api/), admin login works (admin@soundhealing.gr / temple2026).
+-      Frontend bundles and public landing renders. Please run BACKEND regression first across all listed
+-      backend tasks (high priority first), then key FRONTEND flows. MongoDB data preserved (existing admin +
+-      seed data present). Use admin creds above. EMERGENT_LLM_KEY is set in backend/.env for AI Oracle.
++      SECOND GitHub integration: merged 10 new commits from branch shg/premium-renewal (tip dc37b24) via a clean
++      git merge (HEAD now 5881c95). New backend modules mounted: studio.py (media library + admin calendar,
++      Pillow 12.3.0 installed), members.py (member profile, registration-pending + admin approval, member levels,
++      training requests, member chat). New app_photo CMS type and homepage redesign (Greek-only, fixed bottom bar,
++      sound-wave banner, 4 level cards, trainings grid with completed past cards). Backend starts cleanly (200 on
++      /api/), admin login OK (admin@soundhealing.gr / temple2026), public home renders with new design (verified by
++      screenshot). MongoDB data preserved. IMPORTANT: new registrations create a PENDING membership_status and must
++      be approved by admin before full access (middleware in server.py line ~232 blocks non-approved users from most
++      endpoints except /api/auth/*, /api/members/me, /api/notifications). Please run BACKEND regression first across
++      NEW modules (members, studio, calendar, training requests, chat, app_photo CMS) PLUS prior tasks, then key
++      FRONTEND flows (role separation admin->/admin vs student tabs, registration->pending, admin approval, member
++      profile progress bars/stars, practice+assessments). Do NOT test certification/XP-credit rules — those are
++      intentional OPEN DECISIONS (pending_policy) per product/MASTER_PRODUCT_SPECIFICATION.md.
