@@ -1,8 +1,10 @@
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppHeader, BottomNavigation } from "./AppNavigation";
 import { ManagedImage } from "./ManagedImage";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Image,
   Linking,
   Platform,
@@ -259,12 +261,13 @@ export function Shell({
   siteSettings?: ContentItem["published"];
 }) {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
   const staff = !!user && ["admin", "instructor"].includes(user.role);
   return (
-    <View style={ui.page}>
-      <ScrollView style={ui.page}>
-        <View style={[ui.wrap, { paddingBottom: 110, paddingTop: hideHeader ? 0 : 24 }]}>
+    <KeyboardAvoidingView style={[ui.page, { paddingLeft: insets.left, paddingRight: insets.right }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView style={ui.page} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
+        <View style={[ui.wrap, { paddingBottom: 110 + insets.bottom, paddingTop: hideHeader ? 0 : 24 + insets.top }]}>
           {!hideHeader && <AppHeader />}
           {staff && !publicPage && (
             <View style={ui.row}>
@@ -296,7 +299,7 @@ export function Shell({
         </View>
       </ScrollView>
       <BottomNavigation />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 export type ContentItem = {
