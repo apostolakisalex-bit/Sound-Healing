@@ -247,3 +247,11 @@ Owner decision: ONE unified experience, exclusively the new educational flow (ac
 - **TrainingLevels**: top back-arrow changed from "← Εκπαιδευτικά" (`/explore/training`) to **"← Αρχική"** (`/`).
 - Verified: `tsc --noEmit` clean; lint clean; admin home renders avatar + ΔΑΣΚΑΛΟΣ + stat circles (54/4/7/1); roster collage shows avatars + Level-scaled cards.
 
+---
+
+## v1.7 — Uniform golden "sound dust" aesthetic across all screens (June 2026)
+Owner request: the main page's look (white background + golden ηχοσκόνη/sound dust) should be identical on every screen in the app. The `GoldenDust.tsx` effect already mounts globally via the shared `Shell` (Wellness.tsx), but its grains were too faint (barely visible) on inner screens, so they felt bare vs the main page.
+- Enhanced `GoldenDust.tsx`: grain `COUNT` 16 → 36; two warm gold tones (`#D9B45E` / `#E7C479`); size range widened (1.5–6.5px); peak opacity raised (0.24 + 0.64·sin → ~0.88); added a soft `boxShadow` glow per grain for a luminous, shimmering feel — "moderate/visible, like the main page" per owner.
+- Scope: applies to ALL screens automatically (student tabs, profile, login/register, admin, retirement notices) because they all render through `Shell`, which mounts `<GoldenDust />` behind content over the white (`wellness.white`) page.
+- Verified: `tsc --noEmit` clean; web preview — golden dust now clearly visible/shimmering on login (and thus all Shell screens) over white background.
+
