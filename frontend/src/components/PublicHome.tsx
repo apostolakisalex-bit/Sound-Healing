@@ -96,7 +96,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 24, paddingBottom: 35 }}>
           <Text accessibilityRole="header" style={[ui.title, { textAlign: "center", fontSize: compactScreen ? 29 : 42, lineHeight: compactScreen ? 38 : 52, letterSpacing: 1.2, color: wellness.ink }]}>Sound Healing Greece</Text>
         </View>
-        <Svg width="100%" height={60} viewBox="0 0 1200 60" preserveAspectRatio="none" style={{ position: "absolute", bottom: -1 }} accessible={false}>
+        <Svg width="100%" height={60} viewBox="0 0 1200 60" preserveAspectRatio="none" style={{ position: "absolute", bottom: -1 }}>
           <Path d="M0 28 C100 0 150 56 250 28 S400 0 500 28 S650 56 750 28 S900 0 1000 28 S1150 56 1200 28 L1200 60 L0 60 Z" fill={wellness.white} />
         </Svg>
       </View>

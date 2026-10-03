@@ -27,7 +27,6 @@ export function BrandHero({ item }: { item?: ContentItem }) {
       }}
     >
       <ImageBackground
-        accessible={false}
         source={{ uri: item?.published.media_url || HERO_IMAGES.main }}
         style={StyleSheet.absoluteFill}
         resizeMode="cover"

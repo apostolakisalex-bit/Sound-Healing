@@ -29,7 +29,7 @@ export function SoundSpiral({
     d += (i === 0 ? "M" : " L") + x.toFixed(2) + " " + y.toFixed(2);
   }
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" accessible={false}>
+    <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path
         d={d}
         fill="none"

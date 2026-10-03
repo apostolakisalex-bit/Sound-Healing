@@ -436,3 +436,18 @@ agent_communication:
       non-boolean attribute accessible", and a console-only "Unexpected text node" on /practice. Do NOT assert
       certification/XP rules.
   run_ui: true
+    -agent: "main"
+    -message: >
+      BUGFIX: user reported recurring Console Error "Received `false` for a non-boolean attribute `accessible`."
+      Root cause: three components passed `accessible={false}` to react-native-svg `Svg` / `ImageBackground`, which
+      react-native-web forwards to the DOM as an invalid boolean attribute. The live culprit is
+      src/components/icons/SoundSpiral.tsx (rendered in the bottom nav on EVERY screen); also fixed PublicHome.tsx
+      (wave <Svg>) and BrandHero.tsx (<ImageBackground>). Fix: removed the `accessible={false}` prop from all three
+      (decorative elements). No other `accessible={...}` remains in app/src. tsc clean, web bundle builds.
+      PLEASE VERIFY (frontend, web preview, capture console logs): the warning "Received `false` for a non-boolean
+      attribute `accessible`" NO LONGER appears on (a) public landing "/", (b) after student login
+      (uitest_167043@test.gr / TestPass12345) on the member tabs, and (c) after admin login
+      (admin@soundhealing.gr / temple2026) on /admin. Confirm no new console errors were introduced and the bottom
+      nav (incl. the spiral "Ηχοθεραπεία" icon) still renders. Other pre-existing web-only dev warnings
+      (shadow*/resizeMode deprecation, "Unexpected text node") are out of scope.
+  run_ui: true
