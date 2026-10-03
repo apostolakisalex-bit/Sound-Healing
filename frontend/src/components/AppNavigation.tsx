@@ -1,12 +1,18 @@
-import { wellness, fonts } from "@/src/theme";
+import { wellness } from "@/src/theme";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { Image, Platform, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SoundSpiral } from "@/src/components/icons/SoundSpiral";
 import { usePathname, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/src/auth/AuthContext";
 import { api } from "@/src/api/client";
+
+// Elegant wellness wordmark (Cormorant Garamond) for the brand logotype.
+const BRAND_WORDMARK =
+  Platform.OS === "web"
+    ? "CormorantGaramond_600SemiBold, Georgia, serif"
+    : "CormorantGaramond_600SemiBold";
 
 const Language = createContext({ language: "el", toggle: () => {} });
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
@@ -88,11 +94,11 @@ export function AppHeader({
         >
           <Text
             style={{
-              fontSize: 18,
-              fontFamily: fonts.bodySemi,
+              fontSize: 21,
+              fontFamily: BRAND_WORDMARK,
               fontWeight: "600",
               color: wellness.ink,
-              letterSpacing: 0.1,
+              letterSpacing: 1.2,
             }}
           >
             Sound Healing Greece

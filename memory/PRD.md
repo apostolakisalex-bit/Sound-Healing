@@ -255,3 +255,12 @@ Owner request: the main page's look (white background + golden ηχοσκόνη/
 - Scope: applies to ALL screens automatically (student tabs, profile, login/register, admin, retirement notices) because they all render through `Shell`, which mounts `<GoldenDust />` behind content over the white (`wellness.white`) page.
 - Verified: `tsc --noEmit` clean; web preview — golden dust now clearly visible/shimmering on login (and thus all Shell screens) over white background.
 
+---
+
+## v1.8 — Hero logotype + real active seminars + site symbols (June 2026)
+Three owner-requested polish items, sourced from soundhealing.gr.
+1. **Hero wordmark** (`PublicHome.tsx`): "Sound Healing Greece" moved to the TOP of the hero banner (`justifyContent: flex-start` + `paddingTop: insets.top + 20/34`) so it no longer overlaps the golden sound-wave graphic; restyled with an elegant wellness logotype font — **Cormorant Garamond** (`CormorantGaramond_600SemiBold`, already loaded in `_layout.tsx`), larger size + wider letter-spacing (2.5). Same wordmark font applied to the shared `AppHeader` brand (`AppNavigation.tsx`, size 21, letterSpacing 1.2) for a consistent logo across all inner screens. `fonts` import dropped from AppNavigation (was only used there).
+2. **Active trainings** (`schoolGallery.ts` new `ACTIVE_TRAININGS` + `PublicHome.tsx`): the home "Εκπαιδευτικά" section now surfaces the real upcoming seminars scraped from https://www.soundhealing.gr/el/ekpaideftika-seminaria/ — Level 1 · Αθήνα 31 Οκτ–1 Νοε 2026, Level 2 · Αθήνα 6–8 Νοε 2026, Level 1 · Αθήνα 28–29 Νοε 2026 (each with its real poster image + permalink). Injected client-side as synthesized `announcement` ContentItems (future `event_end_date` → shown as active/"● ΕΝΕΡΓΟ" lavender cards, before past archive cards). Active/archive synthesized cards now open their external seminar URL on press.
+3. **Sacred-geometry symbols** (`PublicHome.tsx` "Υπηρεσίες"): replaced the placeholder Ionicons (mic/leaf/people) with the site's own sacred-geometry PNGs (`rsz_7sacred_shape_5`, `flower-of-life-2`, `rsz_sacred_shape_2`), tinted `wellness.slate`; `Ionicons` import removed from PublicHome.
+- Verified: `tsc --noEmit` clean; web preview — hero wordmark sits high in Cormorant serif; three active seminar cards render with posters + ● ΕΝΕΡΓΟ; services show sacred symbols.
+

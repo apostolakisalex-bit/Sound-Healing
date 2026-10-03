@@ -1,14 +1,14 @@
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { SCHOOL_PHOTOS, PAST_TRAININGS } from "@/src/content/schoolGallery";
+import { SCHOOL_PHOTOS, PAST_TRAININGS, ACTIVE_TRAININGS } from "@/src/content/schoolGallery";
 import Svg, { Path } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";
 import { wellness } from "@/src/theme";
-import { Ionicons } from "@expo/vector-icons";
 import { iconSurface } from "./AppNavigation";
 import { ManagedImage } from "./ManagedImage";
 import React from "react";
 import {
   Image,
+  Platform,
   Pressable,
   Text,
   View,
@@ -22,6 +22,17 @@ const serviceTitles = [
   "Διαδραστικά εργαστήρια & ομιλίες",
   "Συμβουλευτική για ξενοδοχεία & Spa",
   "Εταιρικές εκδηλώσεις & εργαστήρια",
+];
+// Elegant wellness wordmark (Cormorant Garamond) for the brand logotype.
+const BRAND_WORDMARK =
+  Platform.OS === "web"
+    ? "CormorantGaramond_600SemiBold, Georgia, serif"
+    : "CormorantGaramond_600SemiBold";
+// Sacred-geometry symbols sourced from soundhealing.gr (services section).
+const SERVICE_SYMBOLS = [
+  "https://www.soundhealing.gr/wp-content/uploads/2021/02/rsz_7sacred_shape_5-01-1.png",
+  "https://www.soundhealing.gr/wp-content/uploads/2021/02/flower-of-life-2.png",
+  "https://www.soundhealing.gr/wp-content/uploads/2021/02/rsz_sacred_shape_2-01-1.png",
 ];
 export function PublicHome({ items }: { items: ContentItem[] }) {
   const router = useRouter();
@@ -51,6 +62,14 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
   const programmes = (section: string) => {
     const all = allProgrammes(section);
     if (section === "training") {
+      for (const t of ACTIVE_TRAININGS) {
+        if (all.some((item) => item.published.action_url === t.url)) continue;
+        all.push({ id: t.id, published: {
+          title: t.title, summary: "", body: "", kind: "announcement", section: "training", level_id: null, media_url: "",
+          image_url: t.image, action_url: t.url,
+          event_date: t.date, event_end_date: t.endDate,
+        }});
+      }
       for (const past of PAST_TRAININGS) {
         if (all.some(item => item.published.action_url === past.url)) continue;
         const first = past.title.startsWith("Level 1");
@@ -93,8 +112,8 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       <View style={{ height: (compactScreen ? 260 : 360) + insets.top, marginHorizontal: -24, overflow: "hidden", backgroundColor: wellness.blueMist }}>
         <ManagedImage source={{ uri: photo("banner", hero?.image_url || hero?.media_url || HERO_IMAGES.main) }} accessibilityLabel={hero?.image_alt || "Sound Healing Greece — η εμπειρία του ήχου"} resizeMode="cover" style={{ position: "absolute", width: "100%", height: "100%" }} />
         <LinearGradient colors={["rgba(232,241,247,0.55)", "rgba(255,255,255,0.76)", "rgba(233,227,243,0.45)"]} style={{ position: "absolute", width: "100%", height: "100%" }} />
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 24, paddingBottom: 35 }}>
-          <Text accessibilityRole="header" style={[ui.title, { textAlign: "center", fontSize: compactScreen ? 29 : 42, lineHeight: compactScreen ? 38 : 52, letterSpacing: 1.2, color: wellness.ink }]}>Sound Healing Greece</Text>
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "flex-start", paddingHorizontal: 24, paddingTop: insets.top + (compactScreen ? 20 : 34) }}>
+          <Text accessibilityRole="header" style={[ui.title, { fontFamily: BRAND_WORDMARK, textAlign: "center", fontSize: compactScreen ? 30 : 46, lineHeight: compactScreen ? 40 : 56, letterSpacing: 2.5, color: wellness.ink }]}>Sound Healing Greece</Text>
         </View>
         <Svg width="100%" height={60} viewBox="0 0 1200 60" preserveAspectRatio="none" style={{ position: "absolute", bottom: -1 }}>
           <Path d="M0 28 C100 0 150 56 250 28 S400 0 500 28 S650 56 750 28 S900 0 1000 28 S1150 56 1200 28 L1200 60 L0 60 Z" fill={wellness.white} />
@@ -146,7 +165,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
             section === "training" ? (
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
                 {programmes(section).map((item) => (
-                  <Pressable key={item.id} onPress={() => router.push((item.id.startsWith("archive-") ? item.published.action_url : "/explore/training") as any)}
+                  <Pressable key={item.id} onPress={() => router.push(((item.id.startsWith("archive-") || item.id.startsWith("active-")) ? item.published.action_url : "/explore/training") as any)}
                       accessibilityRole="link"
                       style={[
                         ui.card,
@@ -231,14 +250,11 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                   },
                 ]}
               >
-                <Ionicons
-                  name={
-                    (
-                      ["mic-outline", "leaf-outline", "people-outline"] as const
-                    )[index % 3]
-                  }
-                  size={26}
-                  color={wellness.slate}
+                <ManagedImage
+                  source={{ uri: SERVICE_SYMBOLS[index % 3] }}
+                  accessibilityLabel={title}
+                  resizeMode="contain"
+                  style={{ width: 42, height: 42, tintColor: wellness.slate }}
                 />
                 <Text
                   style={{
