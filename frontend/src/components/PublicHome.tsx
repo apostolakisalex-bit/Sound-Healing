@@ -16,8 +16,9 @@ import {
 } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { FOUNDER, HERO_IMAGES, SOCIAL_LINKS, INSTRUMENTS } from "@/src/content/public";
-import { ContentItem, ui } from "./Wellness";
+import { ContentItem, ui, useLoad } from "./Wellness";
 import { EventGrid } from "./EventGrid";
+type LiveTraining = { slug: string; title: string; image: string; url: string; date: string; end_date: string; price: string };
 const serviceTitles = [
   "Διαδραστικά εργαστήρια & ομιλίες",
   "Συμβουλευτική για ξενοδοχεία & Spa",
@@ -39,6 +40,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
   const { width, fontScale } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const compactScreen = width < 600;
+  const liveTrainings = useLoad<{ items: LiveTraining[] }>("/trainings/active", { items: [] });
   const settings = items.find(
     (i) => i.published.kind === "site_settings",
   )?.published;
@@ -62,10 +64,14 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
   const programmes = (section: string) => {
     const all = allProgrammes(section);
     if (section === "training") {
-      for (const t of ACTIVE_TRAININGS) {
+      const live = liveTrainings.data.items;
+      const activeSource = live.length
+        ? live.map((t) => ({ id: `active-${t.slug}`, title: t.title, image: t.image, url: t.url, date: t.date, endDate: t.end_date, price: t.price }))
+        : ACTIVE_TRAININGS.map((t) => ({ id: `active-${t.url.replace(/\/+$/, "").split("/").pop()}`, title: t.title, image: t.image, url: t.url, date: t.date, endDate: t.endDate, price: "" }));
+      for (const t of activeSource) {
         if (all.some((item) => item.published.action_url === t.url)) continue;
         all.push({ id: t.id, published: {
-          title: t.title, summary: "", body: "", kind: "announcement", section: "training", level_id: null, media_url: "",
+          title: t.title, summary: t.price || "", body: "", kind: "announcement", section: "training", level_id: null, media_url: "",
           image_url: t.image, action_url: t.url,
           event_date: t.date, event_end_date: t.endDate,
         }});
@@ -165,7 +171,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
             section === "training" ? (
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
                 {programmes(section).map((item) => (
-                  <Pressable key={item.id} onPress={() => router.push(((item.id.startsWith("archive-") || item.id.startsWith("active-")) ? item.published.action_url : "/explore/training") as any)}
+                  <Pressable key={item.id} onPress={() => router.push((item.id.startsWith("active-") ? `/seminar/${item.id.slice(7)}` : item.id.startsWith("archive-") ? item.published.action_url : "/explore/training") as any)}
                       accessibilityRole="link"
                       style={[
                         ui.card,
@@ -201,6 +207,11 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                         <Text style={[ui.body, { fontSize: 11 }]}>
                           {item.published.event_date}
                         </Text>
+                        {!!item.published.summary && (
+                          <Text style={{ fontSize: 11, fontWeight: "700", color: wellness.slate }}>
+                            {item.published.summary}
+                          </Text>
+                        )}
                         {item.published.event_end_date &&
                         item.published.event_end_date < today ? (
                           <Text style={{ fontSize: 10, color: wellness.muted }}>

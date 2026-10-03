@@ -114,7 +114,7 @@ export default function Admin() {
   const { user } = useAuth();
   if (!user || !["admin", "instructor"].includes(user.role))
     return (
-      <Shell eyebrow="WORKSPACE" title="Περιορισμένη πρόσβαση">
+      <Shell eyebrow="ΧΩΡΟΣ ΕΡΓΑΣΙΑΣ" title="Περιορισμένη πρόσβαση">
         <Text style={ui.body}>
           Αυτός ο χώρος είναι διαθέσιμος στην ομάδα της σχολής.
         </Text>
@@ -173,7 +173,7 @@ function WorkspaceScreen() {
   const set = (key: keyof Draft, value: any) =>
     setDraft({ ...draft, [key]: value });
   return (
-    <Shell eyebrow="SCHOOL WORKSPACE" title="Η σχολή στα χέρια σου." notifications>
+    <Shell eyebrow="ΧΩΡΟΣ ΤΗΣ ΣΧΟΛΗΣ" title="Η σχολή στα χέρια σου." notifications>
       <Text style={ui.body}>
         Διαχείριση περιεχομένου, εκπαίδευσης και πρακτικής από έναν χώρο.
       </Text>
@@ -670,7 +670,7 @@ function WorkspaceScreen() {
           <Text style={ui.heading}>Κατάλογος περιεχομένου</Text>
           <Choices
             label="Περιοχή"
-            values={["Όλα", "Δημόσιο", "Μαθήματα", "Journey", "Ρυθμίσεις"]}
+            values={["Όλα", "Δημόσιο", "Μαθήματα", "Ταξίδι", "Ρυθμίσεις"]}
             value={contentScope}
             onChange={setContentScope}
           />
@@ -685,7 +685,7 @@ function WorkspaceScreen() {
                 (contentScope === "Όλα" ||
                   (contentScope === "Μαθήματα"
                     ? item.draft.kind === "lesson"
-                    : contentScope === "Journey"
+                    : contentScope === "Ταξίδι"
                       ? item.draft.kind === "journey"
                       : contentScope === "Ρυθμίσεις"
                         ? item.draft.kind === "site_settings"

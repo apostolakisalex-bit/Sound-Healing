@@ -58,7 +58,7 @@ export function Home() {
       title={`Καλώς ήρθες, ${user?.name?.split(" ")[0] || "φίλε μας"}.`}
     >
       <View style={[ui.card, { backgroundColor: palette.sage, padding: 32 }]}>
-        <Text style={ui.label}>A LITTLE SPACE TO GROW</Text>
+        <Text style={ui.label}>ΕΝΑΣ ΧΩΡΟΣ ΓΙΑ ΝΑ ΑΝΘΙΣΕΙΣ</Text>
         <Text style={ui.title}>Άκου. Μάθε. Εξελίξου.</Text>
         <Text style={ui.body}>
           Η εκπαίδευσή σου και η προσωπική σου πρακτική, σε έναν ήρεμο χώρο.
@@ -162,7 +162,7 @@ export function SchoolScreen() {
   >("/school/catalog", []);
   const library = useLoad<ContentItem[]>("/content/library", []);
   return (
-    <Shell eyebrow="SCHOOL" title="Η διαδρομή της μάθησης.">
+    <Shell eyebrow="ΣΧΟΛΗ" title="Η διαδρομή της μάθησης.">
       <Text style={ui.body}>
         Τέσσερα εκπαιδευτικά Levels. Το υλικό σου ακολουθεί την εγγραφή σου στη
         σχολή.
@@ -208,7 +208,7 @@ export function SchoolScreen() {
 export function JourneyScreen() {
   const state = useLoad<ContentItem[]>("/content/library", []);
   return (
-    <Shell eyebrow="JOURNEY" title="Λίγος χρόνος για εσένα.">
+    <Shell eyebrow="ΤΑΞΙΔΙ" title="Λίγος χρόνος για εσένα.">
       <Text style={ui.body}>
         Μικρές πρακτικές ακρόασης και προσωπικής φροντίδας, στον δικό σου ρυθμό.
       </Text>
@@ -322,7 +322,7 @@ export function PracticeScreen() {
     }
   };
   return (
-    <Shell eyebrow="PRACTICE" title="Η εμπειρία γίνεται μάθηση.">
+    <Shell eyebrow="ΠΡΑΚΤΙΚΗ" title="Η εμπειρία γίνεται μάθηση.">
       <Text style={ui.body}>
         Κατάγραψε την πρακτική σου με κωδικό δέκτη ή ομάδας, χωρίς αναγνωριστικά
         υγείας. Ο αρχικός έλεγχος δεν ισοδυναμεί με πιστοποίηση.

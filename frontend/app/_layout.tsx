@@ -31,7 +31,7 @@ function AuthGate() {
     const onAuthScreen = segments[0] === "login" || segments[0] === "register";
     const isPublicFeedback =
       segments[0] === "feedback" || segments[0] === "evaluation";
-    if (isPublicFeedback || segments[0] === "explore") return;
+    if (isPublicFeedback || segments[0] === "explore" || segments[0] === "seminar") return;
 
     // Unauthenticated: protect non-public routes
     if (!user && !onLandingRoot && !onAuthScreen) {
@@ -50,7 +50,7 @@ function AuthGate() {
     }
   }, [user, loading, segments, router]);
 
-  const publicRoute = segments[0] === undefined || segments[0] === "explore";
+  const publicRoute = segments[0] === undefined || segments[0] === "explore" || segments[0] === "seminar";
   if (loading && !publicRoute) {
     return (
       <View style={styles.loader}>
@@ -73,6 +73,7 @@ function AuthGate() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="realm/[id]" />
       <Stack.Screen name="level/[id]" />
+      <Stack.Screen name="seminar/[slug]" />
       <Stack.Screen name="practice/new" options={{ presentation: "modal" }} />
       <Stack.Screen name="practice/[id]" />
       <Stack.Screen name="feedback/[token]" />

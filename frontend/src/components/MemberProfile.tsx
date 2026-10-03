@@ -517,7 +517,7 @@ export function MemberProfile({
           />
           <Button
             secondary
-            label="Journey"
+            label="Ταξίδι"
             onPress={() => router.push("/journey")}
           />
           <Button

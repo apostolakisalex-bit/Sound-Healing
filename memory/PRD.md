@@ -264,3 +264,29 @@ Three owner-requested polish items, sourced from soundhealing.gr.
 3. **Sacred-geometry symbols** (`PublicHome.tsx` "Υπηρεσίες"): replaced the placeholder Ionicons (mic/leaf/people) with the site's own sacred-geometry PNGs (`rsz_7sacred_shape_5`, `flower-of-life-2`, `rsz_sacred_shape_2`), tinted `wellness.slate`; `Ionicons` import removed from PublicHome.
 - Verified: `tsc --noEmit` clean; web preview — hero wordmark sits high in Cormorant serif; three active seminar cards render with posters + ● ΕΝΕΡΓΟ; services show sacred symbols.
 
+---
+
+## v1.9 — Live seminars + in-app detail, Ηχοθεραπεία guide, Greek labels (June 2026)
+Four items (3 user-selected next-actions + 1 new request).
+1. **Auto-pull active trainings** — new `backend/trainings.py` (mounted in `server.py`) scrapes
+   soundhealing.gr/el/ekpaideftika-seminaria with a 6h in-memory cache. The live site sits behind a JS
+   browser-challenge ("hcdn") that intermittently 403s server requests, so a RICH curated snapshot
+   (`CURATED`/`FALLBACK`, 3 seminars with program/price/location/phone verified via crawl) is the base and live
+   data is MERGED over it for freshness/discovery. `GET /api/trainings/active` (summaries) + `GET
+   /api/trainings/{slug}` (full detail); unknown slug → 404; always ≥3 items. Image URLs percent-encoded for RN.
+   `PublicHome` now fetches `/trainings/active` (fallback to the static `ACTIVE_TRAININGS`) and cards show price.
+2. **In-app seminar detail** — new `src/components/SeminarDetail.tsx` + route `app/seminar/[slug].tsx` (added to the
+   AuthGate public allowlist in `app/_layout.tsx`). Hero + LEVEL/ΕΝΕΡΓΟ badges, infographic fact chips, "Κράτηση
+   θέσης" card with tel: + WhatsApp buttons, description, program ("Τι θα δούμε") and audience. Home cards now
+   open this in-app screen instead of the external site.
+3. **Ηχοθεραπεία in-app guide** — new `src/components/SoundHealingGuide.tsx` rendered at `/explore/soundhealing`
+   (replaced the external link). Content sourced from soundhealing.gr/el/hxotherapeia + /therapeies: intro, stat
+   infographic cards (60% / 4–8Hz / 2.400+ / 7), benefit chips, instrument pills, EXPANDABLE therapy cards (5),
+   "Τι να περιμένεις" steps, in-app CTA to /explore/contact. Student never leaves the app.
+4. **Greek labels** — bottom nav "Αρχική"/"Προφίλ"; eyebrows ΣΧΟΛΗ/ΤΑΞΙΔΙ/ΠΡΑΚΤΙΚΗ/ΕΥΕΞΙΑ/"Ο ΧΩΡΟΣ ΕΥΕΞΙΑΣ ΣΟΥ"/
+   "ΧΩΡΟΣ ΕΡΓΑΣΙΑΣ"/"ΧΩΡΟΣ ΤΗΣ ΣΧΟΛΗΣ"; tab titles + admin filter "Journey"→"Ταξίδι" (value + comparison).
+- Deps: added `beautifulsoup4` to backend requirements.
+- Verified: `tsc --noEmit` + eslint clean; testing_agent iteration_9 — backend 5/5 (active/detail/404, no auth),
+  frontend flows all pass (home live cards, card-tap + direct /seminar nav, soundhealing guide + expand, Greek nav).
+
+

@@ -358,7 +358,7 @@ export function ContentCard({
           style={{ width: "100%", height: 240, borderRadius: 16 }}
         />
       )}
-      <Text style={ui.label}>{p.level_id || "WELLNESS"}</Text>
+      <Text style={ui.label}>{p.level_id || "ΕΥΕΞΙΑ"}</Text>
       <Text style={ui.heading}>{p.title}</Text>
       <Text style={ui.body}>{p.summary}</Text>
       {!!p.body && <Text style={ui.body}>{p.body}</Text>}

@@ -202,7 +202,7 @@ export function BottomNavigation() {
     icon: keyof typeof Ionicons.glyphMap;
     route: string;
   }[] = [
-    { label: "Home", en: "Home", icon: "home-outline", route: "/" },
+    { label: "Αρχική", en: "Home", icon: "home-outline", route: "/" },
     {
       label: "Ηχοθεραπεία",
       en: "Sound",
@@ -222,7 +222,7 @@ export function BottomNavigation() {
       route: "/explore/events",
     },
     {
-      label: "Profile",
+      label: "Προφίλ",
       en: "Profile",
       icon: "person-outline",
       route: user

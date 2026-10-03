@@ -451,3 +451,34 @@ agent_communication:
       nav (incl. the spiral "Ηχοθεραπεία" icon) still renders. Other pre-existing web-only dev warnings
       (shadow*/resizeMode deprecation, "Unexpected text node") are out of scope.
   run_ui: true
+
+  run_ui: true
+    -agent: "main"
+    -message: >
+      NEW FEATURES (3 user-selected + 1 new request) to validate:
+      (1) LIVE TRAININGS AUTO-PULL + SEMINAR DETAIL: new backend module backend/trainings.py mounted in server.py
+          exposes GET /api/trainings/active (list) and GET /api/trainings/{slug} (detail). It scrapes
+          soundhealing.gr/el/ekpaideftika-seminaria with 6h cache; the live site uses a JS browser-challenge that
+          intermittently 403s the server, so a RICH curated snapshot (CURATED/FALLBACK, 3 seminars) is the base and
+          live data is MERGED over it for freshness. ALWAYS returns >=3 active items. Unknown slug -> 404.
+          Backend test: GET /api/trainings/active returns items[] with slug,title,level,date,end_date,image,price;
+          GET /api/trainings/<any returned slug> returns program[]/audience[]/time/address/phone etc; GET
+          /api/trainings/bogus -> 404. These endpoints are PUBLIC (no auth).
+      (2) FRONTEND (public, no login): on landing "/" the "Εκπαιδευτικά" cards now come from /api/trainings/active
+          (show date + price + ● ΕΝΕΡΓΟ). Tapping a card opens the IN-APP screen /seminar/[slug]
+          (src/components/SeminarDetail.tsx) with hero, infographic fact chips (date/time/price/location/seats/lang),
+          "Κράτηση θέσης" card with Κλήση (tel:) + WhatsApp buttons, description, "Τι θα δούμε" (program) and
+          "Για ποιους είναι" (audience). Verify /seminar/<slug> loads directly too (route added to AuthGate public
+          allowlist in app/_layout.tsx).
+      (3) ΗΧΟΘΕΡΑΠΕΙΑ in-app guide: /explore/soundhealing now renders src/components/SoundHealingGuide.tsx instead of
+          an external link — stat infographic cards (60% / 4-8Hz / 2.400+ / 7), benefit chips, instrument pills,
+          EXPANDABLE therapy cards (tap toggles benefits), "Τι να περιμένεις" steps, and an in-app CTA to
+          /explore/contact. User requirement: NO leaving the app to the website.
+      (4) GREEK LABELS: bottom nav now "Αρχική"/"Προφίλ"; eyebrows translated (ΣΧΟΛΗ/ΤΑΞΙΔΙ/ΠΡΑΚΤΙΚΗ/ΕΥΕΞΙΑ/
+          "Ο ΧΩΡΟΣ ΕΥΕΞΙΑΣ ΣΟΥ"/"ΧΩΡΟΣ ΕΡΓΑΣΙΑΣ"/"ΧΩΡΟΣ ΤΗΣ ΣΧΟΛΗΣ"); admin content filter "Journey"->"Ταξίδι"
+          (value + comparison both updated). Hero wordmark + header use Cormorant Garamond.
+      Main agent already verified via screenshots: home live cards, card tap -> detail, direct /seminar URL, the
+      soundhealing guide (stats+therapies expand), Greek nav. tsc --noEmit clean, lint clean on new files.
+      PLEASE TEST BOTH: backend trainings endpoints (active/detail/404) AND public frontend flows above. No auth
+      needed for these. Credentials if needed: student uitest_167043@test.gr/TestPass12345, admin
+      admin@soundhealing.gr/temple2026. Ignore pre-existing web-only warnings (shadow*/resizeMode).

@@ -8,6 +8,7 @@ import { Link, useLocalSearchParams } from "expo-router";
 import Head from "expo-router/head";
 import { EditorialIntro } from "./EditorialIntro";
 import { BrandHero } from "./BrandHero";
+import { SoundHealingGuide } from "./SoundHealingGuide";
 import {
   Shell,
   ui,
@@ -182,11 +183,7 @@ export function PublicExperience({ section }: { section?: string }) {
           Η διαδρομή του Μανώλη · αναλυτικό βιογραφικό ↗
         </NavLink>
       )}
-      {section === "soundhealing" && (
-        <NavLink href="https://www.soundhealing.gr/el/hxotherapeia/">
-          Περισσότερα για την ηχοθεραπεία ↗
-        </NavLink>
-      )}
+      {section === "soundhealing" && <SoundHealingGuide />}
       {section === "contact" && <MembersChat />}
       <Status state={state} />
       {(section === "events" || section === "training") && (

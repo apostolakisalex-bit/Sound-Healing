@@ -1039,3 +1039,6 @@ app.include_router(build_studio_router(db, get_current_user, get_admin_user))
 
 from members import build_members_router
 app.include_router(build_members_router(db, get_current_user, get_admin_user))
+
+from trainings import build_trainings_router
+app.include_router(build_trainings_router())

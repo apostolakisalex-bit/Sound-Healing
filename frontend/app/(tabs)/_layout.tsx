@@ -15,11 +15,11 @@ export default function TabsLayout() {
         tabBarStyle: { display: 'none' },
       }}
     >
-      <Tabs.Screen name="sanctuary" options={{ title: 'Sanctuary' }} />
-      <Tabs.Screen name="journey" options={{ title: 'Journey' }} />
-      <Tabs.Screen name="academy" options={{ title: 'Academy' }} />
-      <Tabs.Screen name="practice" options={{ title: 'Practice' }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
+      <Tabs.Screen name="sanctuary" options={{ title: 'Αρχική' }} />
+      <Tabs.Screen name="journey" options={{ title: 'Ταξίδι' }} />
+      <Tabs.Screen name="academy" options={{ title: 'Σχολή' }} />
+      <Tabs.Screen name="practice" options={{ title: 'Πρακτική' }} />
+      <Tabs.Screen name="profile" options={{ title: 'Προφίλ' }} />
     </Tabs>
   );
 }

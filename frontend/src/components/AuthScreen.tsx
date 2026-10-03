@@ -115,7 +115,7 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
   return (
     <Shell
       publicPage
-      eyebrow="YOUR WELLNESS SPACE"
+      eyebrow="Ο ΧΩΡΟΣ ΕΥΕΞΙΑΣ ΣΟΥ"
       title={registering ? "Η διαδρομή σου ξεκινά εδώ." : "Καλώς ήρθες ξανά."}
     >
       <View
