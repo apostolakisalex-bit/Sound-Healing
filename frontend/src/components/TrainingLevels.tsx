@@ -171,8 +171,8 @@ export default function TrainingLevelsPage() {
       <Head>
         <title>Τα 4 Levels · Sound Healing Greece</title>
       </Head>
-      <Link href="/explore/training" style={[ui.body, { color: wellness.slate }]}>
-        ← Εκπαιδευτικά
+      <Link href="/" style={[ui.body, { color: wellness.slate }]}>
+        ← Αρχική
       </Link>
       <Text style={ui.body}>
         Από την πρώτη επαφή με τα singing bowls μέχρι την εμβάθυνση στην

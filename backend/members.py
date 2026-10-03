@@ -106,7 +106,7 @@ def build_members_router(db, current_user, admin_user):
         return {'ok': True}
 
     @router.post('/members/me/avatar')
-    async def avatar(payload: Avatar, user=Depends(approved)):
+    async def avatar(payload: Avatar, user=Depends(current_user)):
         import base64, io
         from PIL import Image
         from studio import normalize_photo
@@ -124,7 +124,7 @@ def build_members_router(db, current_user, admin_user):
         import re
         query = {'role': 'student'}
         if q: query['name'] = {'$regex': re.escape(q), '$options': 'i'}
-        return {'items': await db.users.find(query, {'_id': 0, 'id': 1, 'name': 1, 'email': 1, 'membership_status': 1}).sort('created_at', -1).skip(offset).limit(30).to_list(30), 'total': await db.users.count_documents(query)}
+        return {'items': await db.users.find(query, {'_id': 0, 'id': 1, 'name': 1, 'email': 1, 'membership_status': 1, 'level': 1, 'profile_image': 1}).sort('name', 1).skip(offset).limit(30).to_list(30), 'total': await db.users.count_documents(query)}
 
     @router.get('/admin/members/{uid}')
     async def member(uid: str, user=Depends(admin_user)):

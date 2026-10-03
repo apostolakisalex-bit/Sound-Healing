@@ -152,7 +152,9 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                         ui.card,
                         {
                           width: width < 350 || fontScale > 1.3 ? "100%" : "48%",
-                          backgroundColor: item.published.event_end_date && item.published.event_end_date < today ? wellness.ice : wellness.white,
+                          backgroundColor: item.published.event_end_date && item.published.event_end_date < today ? wellness.ice : wellness.lavender,
+                          borderColor: item.published.event_end_date && item.published.event_end_date < today ? wellness.line : wellness.lavenderInk,
+                          borderWidth: item.published.event_end_date && item.published.event_end_date < today ? 1 : 1.5,
                           padding: 0,
                           overflow: "hidden",
                           gap: 8,
@@ -180,12 +182,16 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                         <Text style={[ui.body, { fontSize: 11 }]}>
                           {item.published.event_date}
                         </Text>
-                        {!!item.published.event_end_date &&
-                          item.published.event_end_date < today && (
-                            <Text style={{ fontSize: 10, color: wellness.muted }}>
-                              Ολοκληρώθηκε
-                            </Text>
-                          )}
+                        {item.published.event_end_date &&
+                        item.published.event_end_date < today ? (
+                          <Text style={{ fontSize: 10, color: wellness.muted }}>
+                            Ολοκληρώθηκε
+                          </Text>
+                        ) : (
+                          <Text style={{ fontSize: 10, fontWeight: "700", color: wellness.lavenderInk, letterSpacing: 1 }}>
+                            ● ΕΝΕΡΓΟ
+                          </Text>
+                        )}
                         <Text style={{ fontSize: 12, color: wellness.slate }}>
                           Περισσότερα →
                         </Text>

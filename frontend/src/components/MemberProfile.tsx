@@ -1,12 +1,12 @@
 import { wellness } from "@/src/theme";
 import { pickPhoto } from "@/src/utils/pickPhoto";
 import React, { useState } from "react";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { api } from "@/src/api/client";
 import { useAuth } from "@/src/auth/AuthContext";
-import { Button, Choices, Field, Shell, Status, ui, useLoad } from "./Wellness";
+import { Button, Choices, Field, Shell, Status, ui, palette, useLoad } from "./Wellness";
 import { iconSurface } from "./AppNavigation";
 
 type Level = {
@@ -692,6 +692,8 @@ export function MembersAdmin({
       name: string;
       email: string;
       membership_status?: string;
+      level?: string;
+      profile_image?: string;
     }[];
     total: number;
   }>(`/admin/members?offset=${offset}&q=${encodeURIComponent(query)}`, {
@@ -723,19 +725,17 @@ export function MembersAdmin({
             }}
           />
           <Status state={state} />
-          {state.data.items.map((m) => (
-            <View key={m.id} style={ui.card}>
-              <Text style={ui.heading}>{m.name}</Text>
-              <Text style={ui.body}>
-                {statusLabel[m.membership_status || "approved"]}
-              </Text>
-              <Button
-                secondary
-                label={`Προφίλ: ${m.name}`}
-                onPress={() => setSelected(m.id)}
-              />
-            </View>
-          ))}
+          <View style={rosterStyles.collage}>
+            {[...state.data.items]
+              .sort((a, b) => a.name.localeCompare(b.name, "el"))
+              .map((m) => (
+                <RosterCard
+                  key={m.id}
+                  member={m}
+                  onPress={() => setSelected(m.id)}
+                />
+              ))}
+          </View>
           <View style={ui.row}>
             <Button
               secondary
@@ -755,3 +755,119 @@ export function MembersAdmin({
     </View>
   );
 }
+
+// Admin roster: students as a collage of small cards (avatar circle + name +
+// level). Cards are ordered alphabetically; higher level -> slightly larger card.
+const LEVEL_SCALE: Record<string, number> = {
+  L1: 1,
+  L2: 1.14,
+  L3A: 1.28,
+  L3B: 1.28,
+  L4: 1.44,
+};
+
+function RosterCard({
+  member,
+  onPress,
+}: {
+  member: {
+    id: string;
+    name: string;
+    level?: string;
+    profile_image?: string;
+  };
+  onPress: () => void;
+}) {
+  const level = member.level || "L1";
+  const scale = LEVEL_SCALE[level] ?? 1;
+  const avatar = Math.round(52 * scale);
+  const width = Math.round(110 * scale);
+  const initial = (member.name || "?").trim().charAt(0).toUpperCase();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`Προφίλ: ${member.name}`}
+      style={({ pressed }) => [
+        rosterStyles.card,
+        { width, opacity: pressed ? 0.7 : 1 },
+      ]}
+    >
+      <View
+        style={[
+          rosterStyles.avatar,
+          { width: avatar, height: avatar, borderRadius: avatar / 2 },
+        ]}
+      >
+        {member.profile_image ? (
+          <Image
+            source={{ uri: member.profile_image }}
+            style={{ width: avatar, height: avatar }}
+          />
+        ) : (
+          <Text
+            style={[
+              rosterStyles.initial,
+              { fontSize: Math.round(avatar * 0.42) },
+            ]}
+          >
+            {initial}
+          </Text>
+        )}
+      </View>
+      <Text numberOfLines={2} style={[ui.label, rosterStyles.name]}>
+        {member.name}
+      </Text>
+      <View style={rosterStyles.badge}>
+        <Text style={rosterStyles.badgeText}>{level}</Text>
+      </View>
+    </Pressable>
+  );
+}
+
+const rosterStyles = StyleSheet.create({
+  collage: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    alignItems: "flex-start",
+  },
+  card: {
+    backgroundColor: palette.white,
+    borderWidth: 1,
+    borderColor: palette.line,
+    borderRadius: 16,
+    boxShadow: "0 2px 4px rgba(45,38,66,0.08), 0 14px 26px rgba(45,38,66,0.14)",
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+    alignItems: "center",
+    gap: 8,
+  },
+  avatar: {
+    backgroundColor: wellness.sage,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  initial: {
+    color: wellness.lavenderInk,
+    fontWeight: "700",
+  },
+  name: {
+    fontSize: 13,
+    letterSpacing: 0.2,
+    textAlign: "center",
+  },
+  badge: {
+    backgroundColor: wellness.lavenderInk,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 999,
+  },
+  badgeText: {
+    color: palette.white,
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1,
+  },
+});

@@ -235,3 +235,15 @@ Owner decision: ONE unified experience, exclusively the new educational flow (ac
 - `tsc --noEmit` clean; backend pytest **134 passed / 1 skipped** (AI gated); all 4 old endpoints return 410 live.
 - Runtime (web preview) confirmed by main agent: no history button on `/practice` (even for a student WITH legacy records); direct URLs `/legacy-practices`, `/ai-chat`, `/realm/x` → Greek retirement notice; `/practice/xyz` → new PracticeScreen; `/level/x` → `/academy`; public `/feedback/<token>` → retirement notice with 0 form inputs. Tests updated: all legacy practice/feedback endpoints asserted as 410 (`test_api.py`, `test_google_resend_integration.py`, `unit_tests/test_security.py`); isolated seed fixtures removed.
 
+---
+
+## v1.6 — Admin aesthetic parity + global visual polish (June 2026)
+- **Admin roster (collage)**: `/admin/members` now returns `level` + `profile_image`, sorted by name; `MembersAdmin` renders students as a wrap **collage of small cards** (circle avatar / initial, name, Level badge). Higher Level → slightly larger card (`LEVEL_SCALE`). Alphabetical (localeCompare "el").
+- **Admin home header** (`AdminHome.tsx`): mirrors the student profile header — avatar circle (with photo upload) + **"ΔΑΣΚΑΛΟΣ"** badge instead of Level bars + **school stats in circles** (Μαθητές, Ενεργές εγγραφές, Τμήματα, Για έλεγχο — computed from `/admin/workspace`). Avatar upload now allowed for staff: `/members/me/avatar` uses `current_user` (admin had `membership_status:null` and was blocked by `approved`).
+- **Admin "Επισκόπηση"**: section tiles restyled as an **Instagram-style collage** (two-up pressable cards with lavender accent header).
+- **Public home "Εκπαιδευτικά"**: active trainings now use an accent color (lavender + accent border + "● ΕΝΕΡΓΟ"); completed stay ice-grey ("Ολοκληρώθηκε").
+- **3D cards app-wide**: `ui.card` + roster cards get a soft `boxShadow` (depth).
+- **Golden dust**: new `GoldenDust.tsx` (reanimated) — 16 faint gold grains drift/fade in waves on the white background, mounted behind content in the shared `Shell` (all screens). Non-interactive.
+- **TrainingLevels**: top back-arrow changed from "← Εκπαιδευτικά" (`/explore/training`) to **"← Αρχική"** (`/`).
+- Verified: `tsc --noEmit` clean; lint clean; admin home renders avatar + ΔΑΣΚΑΛΟΣ + stat circles (54/4/7/1); roster collage shows avatars + Level-scaled cards.
+

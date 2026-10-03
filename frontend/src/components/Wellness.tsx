@@ -1,5 +1,6 @@
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppHeader, BottomNavigation } from "./AppNavigation";
+import { GoldenDust } from "./GoldenDust";
 import { ManagedImage } from "./ManagedImage";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -59,6 +60,7 @@ export const ui = StyleSheet.create({
     padding: 20,
     borderWidth: 1,
     borderColor: palette.line,
+    boxShadow: "0 1px 2px rgba(45,38,66,0.06), 0 14px 28px rgba(45,38,66,0.12)",
     gap: 12,
   },
   title: {
@@ -268,7 +270,8 @@ export function Shell({
   const staff = !!user && ["admin", "instructor"].includes(user.role);
   return (
     <KeyboardAvoidingView style={[ui.page, { paddingLeft: insets.left, paddingRight: insets.right }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <ScrollView style={ui.page} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
+      <GoldenDust />
+      <ScrollView style={[ui.page, { backgroundColor: "transparent" }]} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
         <View style={[ui.wrap, { paddingBottom: 110 + insets.bottom, paddingTop: hideHeader ? 0 : 24 + insets.top }]}>
           {!hideHeader && <AppHeader notifications={notifications} />}
           {staff && !publicPage && (

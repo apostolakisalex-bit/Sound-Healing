@@ -11,7 +11,9 @@ import { FormWorkspace } from "@/src/components/FormWorkspace";
 import { Progress } from "@/src/components/Progress";
 import { Activity } from "@/src/components/Activity";
 import React, { useState } from "react";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { wellness } from "@/src/theme";
+import { AdminHome } from "@/src/components/AdminHome";
 import { ResourcesSection } from "@/src/components/ResourcesSection";
 import { api } from "@/src/api/client";
 import { useAuth } from "@/src/auth/AuthContext";
@@ -175,6 +177,16 @@ function WorkspaceScreen() {
       <Text style={ui.body}>
         Διαχείριση περιεχομένου, εκπαίδευσης και πρακτικής από έναν χώρο.
       </Text>
+      {user?.role === "admin" && (
+        <AdminHome
+          stats={[
+            { label: "Μαθητές", value: state.data.users.filter((u: any) => u.role === "student").length },
+            { label: "Ενεργές εγγραφές", value: state.data.enrollments.filter((e: any) => e.status === "active").length },
+            { label: "Τμήματα", value: state.data.cohorts.length },
+            { label: "Για έλεγχο", value: state.data.practices.filter((p: any) => p.status === "submitted").length },
+          ]}
+        />
+      )}
       <Choices
         label="Ενότητα"
         values={
@@ -258,20 +270,36 @@ function WorkspaceScreen() {
                 ],
               ])
               .map(([target, description]) => (
-                <View
+                <Pressable
                   key={target}
-                  style={[ui.card, { flexGrow: 1, flexBasis: 280 }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Άνοιγμα: ${target}`}
+                  onPress={() => setSection(target)}
+                  style={({ pressed }) => [
+                    ui.card,
+                    { flexGrow: 1, flexBasis: "46%", padding: 0, overflow: "hidden", opacity: pressed ? 0.85 : 1 },
+                  ]}
                 >
-                  <Text style={ui.heading}>
-                    {target === "Εγγραφές" ? "Μαθητές & εγγραφές" : target}
-                  </Text>
-                  <Text style={ui.body}>{description}</Text>
-                  <Button
-                    secondary
-                    label={`Άνοιγμα: ${target}`}
-                    onPress={() => setSection(target)}
-                  />
-                </View>
+                  <View
+                    style={{
+                      height: 56,
+                      backgroundColor: wellness.lavender,
+                      borderBottomWidth: 1,
+                      borderColor: wellness.lavenderInk,
+                      justifyContent: "center",
+                      paddingHorizontal: 14,
+                    }}
+                  >
+                    <Text style={[ui.label, { color: wellness.lavenderInk }]}>
+                      {target === "Εγγραφές" ? "ΜΑΘΗΤΕΣ & ΕΓΓΡΑΦΕΣ" : target.toUpperCase()}
+                    </Text>
+                  </View>
+                  <View style={{ padding: 14 }}>
+                    <Text style={[ui.body, { fontSize: 12 }]} numberOfLines={3}>
+                      {description}
+                    </Text>
+                  </View>
+                </Pressable>
               ))}
           </View>
         </View>
