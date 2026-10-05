@@ -320,5 +320,23 @@ Owner request: a calendar-reminder button on every seminar.
 - Verified: `tsc` + eslint clean; web preview — active cards show both actions, completed card hidden, detail shows
   both buttons. Native calendar/share validated only on real device (Expo Go/build).
 
+---
+
+## v1.12 — Security audit remediation (June 2026)
+Ran the read-only Security Audit (verdict: CONDITIONAL PASS, no Critical/High). Fixed all findings:
+- **SEC-001 (Medium)** `server.py` `ProfileUpdate` now has `max_length` on name/bio/location/profile_image; `PUT
+  /api/auth/me` routes `profile_image` through `studio.normalize_photo` + 256px WEBP re-encode (same guard as the
+  avatar endpoint). Verified: oversized bio → 422, valid → 200.
+- **SEC-002 (Medium)** `ChatIn.message` capped (1–4000 chars); `POST /api/ai/chat` adds a per-user rate limit
+  (20/min). Verified: oversized → 422.
+- **SEC-003 (Low)** New `backend/ratelimit.py` sliding-window limiter (IP + hashed-email buckets) applied to
+  `/api/auth/login` (60/min IP, 6/10min email) and `/api/auth/register` (20/h IP, 4/h email); returns 429 +
+  `Retry-After`; `Retry-After` added to CORS `expose_headers`. Verified: 429 after 6 bad logins, header present.
+- **SEC-004 (Low)** FastAPI `docs_url/redoc_url/openapi_url` disabled unless `ENABLE_DOCS=true`. Verified: /docs &
+  /openapi.json → 404.
+- **Hardening** `trainings.py` scraper pinned to `ALLOWED_HOSTS` (rejects off-site redirects) with `max_redirects=3`.
+- Audit confirmed already-solid controls: JWT HS256 + revocation, admin guards, no secret leakage, SSRF/ReDoS safe,
+  CORS non-wildcard with credentials off.
+
 
 

@@ -22,6 +22,7 @@ logger = logging.getLogger("shg.trainings")
 
 SOURCE = "https://www.soundhealing.gr/el/ekpaideftika-seminaria/"
 BASE = "https://www.soundhealing.gr"
+ALLOWED_HOSTS = {"www.soundhealing.gr", "soundhealing.gr"}
 UA = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"
@@ -365,15 +366,22 @@ def _merge(live: dict) -> dict:
 
 async def _scrape() -> list:
     headers = {"User-Agent": UA, "Accept-Language": "el,en;q=0.8"}
-    async with httpx.AsyncClient(headers=headers, timeout=15.0, follow_redirects=True) as cx:
+    async with httpx.AsyncClient(
+        headers=headers, timeout=15.0, follow_redirects=True, max_redirects=3
+    ) as cx:
         listing = await cx.get(SOURCE)
         listing.raise_for_status()
+        if listing.url.host not in ALLOWED_HOSTS:
+            raise ValueError(f"listing redirected off-site: {listing.url.host}")
         links = _seminar_links(listing.text)
         items = []
         for url in links:
             try:
                 r = await cx.get(url)
                 r.raise_for_status()
+                if r.url.host not in ALLOWED_HOSTS:
+                    logger.warning("skip off-site redirect: %s", r.url.host)
+                    continue
                 items.append(_parse_detail(r.text, url))
             except Exception as exc:  # noqa: BLE001
                 logger.warning("training detail failed %s: %s", url, exc)

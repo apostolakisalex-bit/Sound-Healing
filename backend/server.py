@@ -15,6 +15,7 @@ import bcrypt
 import secrets
 import httpx
 from emailer import send_receiver_feedback_invite
+from ratelimit import limit_auth, limit_key
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr, field_validator
 from typing import List, Optional, Literal
@@ -35,7 +36,13 @@ JWT_EXPIRE_DAYS = 30
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
 
-app = FastAPI(title="Sound Healing Greece API")
+_DOCS = os.environ.get("ENABLE_DOCS") == "true"
+app = FastAPI(
+    title="Sound Healing Greece API",
+    docs_url="/docs" if _DOCS else None,
+    redoc_url="/redoc" if _DOCS else None,
+    openapi_url="/openapi.json" if _DOCS else None,
+)
 api = APIRouter(prefix="/api")
 security = HTTPBearer(auto_error=False)
 
@@ -106,10 +113,10 @@ class TokenOut(BaseModel):
 
 
 class ProfileUpdate(BaseModel):
-    name: Optional[str] = None
-    bio: Optional[str] = None
-    location: Optional[str] = None
-    profile_image: Optional[str] = None
+    name: Optional[str] = Field(default=None, max_length=120)
+    bio: Optional[str] = Field(default=None, max_length=2000)
+    location: Optional[str] = Field(default=None, max_length=160)
+    profile_image: Optional[str] = Field(default=None, max_length=11_200_000)
 
 
 class PracticeIn(BaseModel):
@@ -170,7 +177,7 @@ class ReceiverFeedbackIn(BaseModel):
 
 
 class ChatIn(BaseModel):
-    message: str
+    message: str = Field(min_length=1, max_length=4000)
     session_id: Optional[str] = None
 
 
@@ -463,7 +470,8 @@ async def root():
 
 
 @api.post("/auth/register", response_model=TokenOut)
-async def register(payload: RegisterIn):
+async def register(payload: RegisterIn, request: Request):
+    limit_auth(request, str(payload.email), (20, 3600), (4, 3600))
     existing = await db.users.find_one({"email": payload.email.lower()})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -493,7 +501,8 @@ async def register(payload: RegisterIn):
 
 
 @api.post("/auth/login", response_model=TokenOut)
-async def login(payload: LoginIn):
+async def login(payload: LoginIn, request: Request):
+    limit_auth(request, str(payload.email), (60, 60), (6, 600))
     user = await db.users.find_one({"email": payload.email.lower()})
     if not user or not verify_password(payload.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
@@ -583,6 +592,16 @@ async def me(user: dict = Depends(get_current_user)):
 @api.put("/auth/me", response_model=UserPublic)
 async def update_me(payload: ProfileUpdate, user: dict = Depends(get_current_user)):
     update = {k: v for k, v in payload.model_dump().items() if v is not None}
+    if update.get("profile_image"):
+        import base64, io
+        from PIL import Image
+        from studio import normalize_photo
+        from starlette.concurrency import run_in_threadpool
+        raw, _, _ = await run_in_threadpool(normalize_photo, update["profile_image"])
+        with Image.open(io.BytesIO(raw)) as image:
+            image.thumbnail((256, 256))
+            out = io.BytesIO(); image.save(out, format="WEBP", quality=82)
+        update["profile_image"] = "data:image/webp;base64," + base64.b64encode(out.getvalue()).decode()
     if update:
         await db.users.update_one({"id": user["id"]}, {"$set": update})
     fresh = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})
@@ -790,6 +809,7 @@ Begin every first reply with a soft greeting acknowledging the user by name if y
 async def ai_chat(payload: ChatIn, user: dict = Depends(get_current_user)):
     if os.environ.get("AI_ENABLED") != "true":
         raise HTTPException(503, "The assistant is not enabled")
+    limit_key(f"ai:{user['id']}", 20, 60)
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     session_id = f"shg-{user['id']}"
     system_msg = SYSTEM_MSG + f"\n\nThe user's name is {user['name']}. Their current level is {user.get('level','L1')} ({user.get('title','')}). XP: {user.get('xp',0)}."
@@ -1023,6 +1043,7 @@ app.add_middleware(
     allow_origins=[x.strip() for x in os.environ.get("CORS_ORIGINS", "http://localhost:8081").split(",") if x.strip()],
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Retry-After"],
 )
 
 
