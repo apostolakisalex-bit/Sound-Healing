@@ -9,14 +9,19 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.emergent.healinguniverse.vqljow"
+      "bundleIdentifier": "com.emergent.healinguniverse.vqljow",
+      "infoPlist": {
+        "NSCalendarsUsageDescription": "Αποθήκευσε σεμινάρια στο ημερολόγιό σου",
+        "NSCalendarsWriteOnlyAccessUsageDescription": "Αποθήκευσε σεμινάρια στο ημερολόγιό σου"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
       },
-      "package": "com.emergent.healinguniverse.vqljow"
+      "package": "com.emergent.healinguniverse.vqljow",
+      "permissions": ["android.permission.WRITE_CALENDAR", "android.permission.READ_CALENDAR"]
     },
     "web": {
       "bundler": "metro",
@@ -39,7 +44,13 @@
       "expo-secure-store",
       "expo-sharing",
       "expo-status-bar",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "Αποθήκευσε σεμινάρια στο ημερολόγιό σου"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

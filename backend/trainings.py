@@ -92,7 +92,7 @@ FALLBACK = [
         "url": f"{BASE}/el/seminario-ixotherapias-athina-31-1-noemvriou-2026/",
         "full_title": "Εκπαιδευτικό Σεμινάριο Ηχοθεραπείας — Βασικό Επίπεδο",
         "title": "Level 1 · Αθήνα", "level": 1, "location": "Αθήνα",
-        "date": "31 Οκτ & 1 Νοε 2026", "end_date": "2026-11-01",
+        "date": "31 Οκτ & 1 Νοε 2026", "start_date": "2026-10-31", "end_date": "2026-11-01",
         "image": f"{BASE}/wp-content/uploads/2026/05/TRAINING-SEMINAR-%CE%95%CE%9A%CE%A0%CE%91%CE%99%CE%94%CE%95%CE%A5%CE%A4%CE%99%CE%9A%CE%9F-%CE%A3%CE%95%CE%9C%CE%99%CE%9D%CE%91%CE%A1%CE%99%CE%9F-1500x1000.jpg",
         "price": "Early Bird €300 έως 1 Αυγ · €350 μετά", "time": "10:00 – 18:00",
         "address": _ADDR_ATHENS, "language": "Ελληνικά", "max_participants": "10",
@@ -105,7 +105,7 @@ FALLBACK = [
         "url": f"{BASE}/el/ekpaideftiko-seminario-ixotherapeias-epipedo-2-athina-6-8-noemvriou-2026/",
         "full_title": "Εκπαιδευτικό Σεμινάριο Ηχοθεραπείας — 2ο Επίπεδο",
         "title": "Level 2 · Αθήνα", "level": 2, "location": "Αθήνα",
-        "date": "6–8 Νοεμβρίου 2026", "end_date": "2026-11-08",
+        "date": "6–8 Νοεμβρίου 2026", "start_date": "2026-11-06", "end_date": "2026-11-08",
         "image": f"{BASE}/wp-content/uploads/2026/02/Training-Seminars-1-1500x1000.jpg",
         "price": "Early Bird €330 έως 1 Αυγ · €360 μετά", "time": "Παρ 18:30–20:30 (online) · Σάβ & Κυρ 10:00–18:00",
         "address": "Ginger Yoga Studio — Δημοσθένους Καλεμκερή 21, Ραφήνα 190 09",
@@ -125,7 +125,7 @@ FALLBACK = [
         "url": f"{BASE}/el/ekpaideftiko-seminario-ixotherapias-level1-28-29-noemvriou-athina/",
         "full_title": "Εκπαιδευτικό Σεμινάριο Ηχοθεραπείας — Βασικό Επίπεδο",
         "title": "Level 1 · Αθήνα", "level": 1, "location": "Αθήνα",
-        "date": "28 & 29 Νοεμβρίου 2026", "end_date": "2026-11-29",
+        "date": "28 & 29 Νοεμβρίου 2026", "start_date": "2026-11-28", "end_date": "2026-11-29",
         "image": f"{BASE}/wp-content/uploads/2026/08/TRAINING-SEMINAR-%CE%95%CE%9A%CE%A0%CE%91%CE%99%CE%94%CE%95%CE%A5%CE%A4%CE%99%CE%9A%CE%9F-%CE%A3%CE%95%CE%9C%CE%99%CE%9D%CE%91%CE%A1%CE%99%CE%9F-2-1500x1000.png",
         "price": "€350", "time": "10:00 – 18:00",
         "address": _ADDR_ATHENS, "language": "Ελληνικά", "max_participants": "10",
@@ -136,7 +136,7 @@ FALLBACK = [
 ]
 
 SUMMARY_FIELDS = (
-    "slug", "url", "title", "level", "location", "date", "end_date", "image", "price",
+    "slug", "url", "title", "level", "location", "date", "start_date", "end_date", "image", "price",
 )
 
 
@@ -150,14 +150,14 @@ def _month_from_word(word: str) -> Optional[int]:
     return best
 
 
-def _parse_greek_date(text: str) -> str:
-    """Return ISO end-date (YYYY-MM-DD) for a Greek date string, or ''."""
+def _parse_greek_range(text: str) -> tuple:
+    """Return (start_iso, end_iso) for a Greek date string, or ('', '')."""
     if not text:
-        return ""
+        return "", ""
     low = text.lower()
     year_m = re.search(r"(20\d{2})", low)
     if not year_m:
-        return ""
+        return "", ""
     year = int(year_m.group(1))
     months = []
     for m in re.finditer(r"[α-ωά-ώϊϋΐΰ]+", low):
@@ -170,14 +170,16 @@ def _parse_greek_date(text: str) -> str:
         if 1 <= d <= 31:
             days.append((m.start(), d))
     if not months or not days:
-        return ""
+        return "", ""
     candidates = []
     for pos, d in days:
         right = [mn for mp, mn in months if mp >= pos]
         chosen = right[0] if right else months[-1][1]
         candidates.append((year, chosen, d))
+    start = min(candidates)
     end = max(candidates)
-    return f"{end[0]:04d}-{end[1]:02d}-{end[2]:02d}"
+    iso = lambda c: f"{c[0]:04d}-{c[1]:02d}-{c[2]:02d}"
+    return iso(start), iso(end)
 
 
 def _detect_level(text: str) -> Optional[int]:
@@ -286,7 +288,7 @@ def _parse_detail(html: str, url: str) -> dict:
     hay = f"{slug} {full_title}"
     level = _detect_level(hay)
     location = _detect_location(f"{hay} {address} {date}")
-    end_date = _parse_greek_date(date)
+    start_date, end_date = _parse_greek_range(date)
 
     short = full_title
     if level and location:
@@ -299,7 +301,7 @@ def _parse_detail(html: str, url: str) -> dict:
     return {
         "slug": slug, "url": url, "full_title": full_title, "title": short,
         "level": level, "location": location, "image": image,
-        "date": date, "end_date": end_date, "time": time_v, "address": address,
+        "date": date, "start_date": start_date, "end_date": end_date, "time": time_v, "address": address,
         "price": price, "language": language, "max_participants": maxp,
         "phone": phone or "6945562818", "description": description,
         "program": program, "audience": audience, "certification": certification,
@@ -349,7 +351,7 @@ def _merge(live: dict) -> dict:
         return live
     merged = dict(base)
     # Fresh scheduling/discovery fields always follow the live site.
-    for k in ("date", "end_date", "image", "url", "full_title", "time",
+    for k in ("date", "start_date", "end_date", "image", "url", "full_title", "time",
               "language", "max_participants"):
         if live.get(k):
             merged[k] = live[k]

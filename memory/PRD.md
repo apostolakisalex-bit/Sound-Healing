@@ -289,4 +289,21 @@ Four items (3 user-selected next-actions + 1 new request).
 - Verified: `tsc --noEmit` + eslint clean; testing_agent iteration_9 — backend 5/5 (active/detail/404, no auth),
   frontend flows all pass (home live cards, card-tap + direct /seminar nav, soundhealing guide + expand, Greek nav).
 
+---
+
+## v1.10 — "Πρόσθεσε στο ημερολόγιο" on each seminar (June 2026)
+Owner request: a calendar-reminder button on every seminar.
+- Backend `trainings.py`: `_parse_greek_date` → `_parse_greek_range` now returns (start_iso, end_iso); added
+  `start_date` to the detail dict, `_merge` fresh fields, `SUMMARY_FIELDS`, and all 3 FALLBACK items.
+- Frontend `SeminarDetail.tsx`: new "Πρόσθεσε στο ημερολόγιο" button (above the booking card).
+  - Web → opens a Google Calendar event template URL (all-day, title/dates/location/notes).
+  - Native (iOS/Android) → `expo-calendar`: permission flow (request → denied/blocked → Open Settings),
+    picks the default/writable calendar, creates the event (start 09:00 / end 18:00, Europe/Athens) with a
+    1-day-before alarm; success/denial Alerts in Greek.
+- `expo-calendar@57.0.5` added; `app.json` gets iOS `NSCalendarsUsageDescription` +
+  `NSCalendarsWriteOnlyAccessUsageDescription`, Android WRITE/READ_CALENDAR, and the expo-calendar plugin.
+- Note: the native add-to-device-calendar path works in Expo Go / a real build; the web preview uses the Google
+  Calendar fallback. Verified: `tsc` + lint clean; button renders; backend serves `start_date` live.
+
+
 
