@@ -305,5 +305,20 @@ Owner request: a calendar-reminder button on every seminar.
 - Note: the native add-to-device-calendar path works in Expo Go / a real build; the web preview uses the Google
   Calendar fallback. Verified: `tsc` + lint clean; button renders; backend serves `start_date` live.
 
+---
+
+## v1.11 — Calendar on home cards + Share on every seminar (June 2026)
+- New shared util `src/utils/seminarActions.ts`: `addToDeviceCalendar()` (moved out of SeminarDetail; expo-calendar
+  loaded lazily via dynamic `import()` so the web/landing bundle never touches it) and `shareSeminar()` (native
+  `Share.share`; web → Web Share API, else clipboard copy, else open URL).
+- `PublicHome.tsx`: each ACTIVE seminar card on the landing now has a compact action row — "Ημερολόγιο" button +
+  a share icon button (nested Pressables with stopPropagation so they don't trigger card navigation). Completed/
+  archive cards don't show it. Calendar pulls `start_date`/`location` by looking up the live training by slug.
+  `LiveTraining` type extended with `start_date`/`location`; `Ionicons` re-imported.
+- `SeminarDetail.tsx`: the single calendar button became a two-button row "Ημερολόγιο" + "Μοιράσου"; now delegates
+  to the shared util (removed inline expo-calendar/Alert/Platform imports).
+- Verified: `tsc` + eslint clean; web preview — active cards show both actions, completed card hidden, detail shows
+  both buttons. Native calendar/share validated only on real device (Expo Go/build).
+
 
 

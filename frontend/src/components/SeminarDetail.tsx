@@ -1,11 +1,11 @@
 import React from "react";
-import { Alert, Linking, Platform, Pressable, Text, View } from "react-native";
-import * as Calendar from "expo-calendar";
+import { Linking, Pressable, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { wellness } from "@/src/theme";
 import { ManagedImage } from "./ManagedImage";
 import { Shell, ui, Status, useLoad } from "./Wellness";
+import { addToDeviceCalendar, shareSeminar } from "@/src/utils/seminarActions";
 
 type Training = {
   slug: string;
@@ -122,87 +122,20 @@ export function SeminarDetail() {
   const tone = LEVEL_TONE[t.level || 0] || LEVEL_TONE[4];
   const phone = t.phone || "6945562818";
 
-  const addToCalendar = async () => {
-    const start = t.start_date || t.end_date;
-    const end = t.end_date || t.start_date;
-    if (!start) {
-      Alert.alert("Ημερομηνία μη διαθέσιμη");
-      return;
-    }
-    const title = t.full_title || t.title;
-    const location = t.address || t.location || "";
-    const notes = [
-      t.time && `Ώρα: ${t.time}`,
-      t.price && `Κόστος: ${t.price}`,
-      t.phone && `Κράτηση: ${t.phone}`,
-    ]
-      .filter(Boolean)
-      .join("\n");
-
-    if (Platform.OS === "web") {
-      const ymd = (iso: string) => iso.replace(/-/g, "");
-      const e = new Date(`${end}T00:00:00`);
-      e.setDate(e.getDate() + 1);
-      const endExcl = `${e.getFullYear()}${String(e.getMonth() + 1).padStart(2, "0")}${String(e.getDate()).padStart(2, "0")}`;
-      const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-        title,
-      )}&dates=${ymd(start!)}/${endExcl}&details=${encodeURIComponent(
-        notes,
-      )}&location=${encodeURIComponent(location)}`;
-      void Linking.openURL(url);
-      return;
-    }
-
-    try {
-      let perm = await Calendar.getCalendarPermissionsAsync();
-      if (perm.status !== "granted") {
-        perm = await Calendar.requestCalendarPermissionsAsync();
-      }
-      if (perm.status !== "granted") {
-        Alert.alert(
-          "Άδεια ημερολογίου",
-          perm.canAskAgain
-            ? "Χρειαζόμαστε πρόσβαση στο ημερολόγιο για να προσθέσουμε το σεμινάριο."
-            : "Δώσε πρόσβαση στο ημερολόγιο από τις Ρυθμίσεις.",
-          perm.canAskAgain
-            ? [{ text: "Εντάξει" }]
-            : [
-                { text: "Άκυρο", style: "cancel" },
-                { text: "Ρυθμίσεις", onPress: () => void Linking.openSettings() },
-              ],
-        );
-        return;
-      }
-      let calId = "";
-      try {
-        const def = await Calendar.getDefaultCalendarAsync();
-        calId = def?.id || "";
-      } catch {
-        calId = "";
-      }
-      if (!calId) {
-        const cals = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
-        const writable = cals.find((c) => c.allowsModifications) || cals[0];
-        calId = writable?.id || "";
-      }
-      if (!calId) {
-        Alert.alert("Δεν βρέθηκε ημερολόγιο στη συσκευή.");
-        return;
-      }
-      await Calendar.createEventAsync(calId, {
-        title,
-        location,
-        notes,
-        startDate: new Date(`${start}T09:00:00`),
-        endDate: new Date(`${end}T18:00:00`),
-        timeZone: "Europe/Athens",
-        alarms: [{ relativeOffset: -60 * 24 }],
-      });
-      Alert.alert("Έτοιμο ✓", "Το σεμινάριο προστέθηκε στο ημερολόγιό σου.");
-    } catch {
-      Alert.alert("Ωχ!", "Δεν μπορέσαμε να προσθέσουμε το σεμινάριο. Δοκίμασε ξανά.");
-    }
-  };
+  const addToCalendar = () =>
+    addToDeviceCalendar({
+      title: t.full_title || t.title,
+      location: t.address || t.location,
+      start: t.start_date,
+      end: t.end_date,
+      notes: [
+        t.time && `Ώρα: ${t.time}`,
+        t.price && `Κόστος: ${t.price}`,
+        t.phone && `Κράτηση: ${t.phone}`,
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    });
 
   const facts: {
     icon: keyof typeof Ionicons.glyphMap;
@@ -302,29 +235,58 @@ export function SeminarDetail() {
               ))}
           </View>
 
-          <Pressable
-            accessibilityRole="button"
-            onPress={addToCalendar}
-            style={({ pressed }) => ({
-              flexDirection: "row",
-              gap: 8,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: wellness.white,
-              borderWidth: 1.5,
-              borderColor: wellness.lavenderInk,
-              paddingVertical: 14,
-              paddingHorizontal: 18,
-              borderRadius: 24,
-              minHeight: 48,
-              opacity: pressed ? 0.8 : 1,
-            })}
-          >
-            <Ionicons name="calendar-outline" size={18} color={wellness.lavenderInk} />
-            <Text style={{ color: wellness.lavenderInk, fontWeight: "700", fontSize: 15 }}>
-              Πρόσθεσε στο ημερολόγιο
-            </Text>
-          </Pressable>
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={addToCalendar}
+              style={({ pressed }) => ({
+                flexGrow: 1,
+                flexBasis: "47%",
+                flexDirection: "row",
+                gap: 8,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: wellness.white,
+                borderWidth: 1.5,
+                borderColor: wellness.lavenderInk,
+                paddingVertical: 14,
+                paddingHorizontal: 14,
+                borderRadius: 24,
+                minHeight: 48,
+                opacity: pressed ? 0.8 : 1,
+              })}
+            >
+              <Ionicons name="calendar-outline" size={18} color={wellness.lavenderInk} />
+              <Text style={{ color: wellness.lavenderInk, fontWeight: "700", fontSize: 14 }}>
+                Ημερολόγιο
+              </Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => shareSeminar(t.full_title || t.title, t.url)}
+              style={({ pressed }) => ({
+                flexGrow: 1,
+                flexBasis: "47%",
+                flexDirection: "row",
+                gap: 8,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: wellness.white,
+                borderWidth: 1.5,
+                borderColor: wellness.lavenderInk,
+                paddingVertical: 14,
+                paddingHorizontal: 14,
+                borderRadius: 24,
+                minHeight: 48,
+                opacity: pressed ? 0.8 : 1,
+              })}
+            >
+              <Ionicons name="share-social-outline" size={18} color={wellness.lavenderInk} />
+              <Text style={{ color: wellness.lavenderInk, fontWeight: "700", fontSize: 14 }}>
+                Μοιράσου
+              </Text>
+            </Pressable>
+          </View>
 
           {/* Booking CTA */}
           <View

@@ -14,11 +14,13 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { addToDeviceCalendar, shareSeminar } from "@/src/utils/seminarActions";
 import { Link, useRouter } from "expo-router";
 import { FOUNDER, HERO_IMAGES, SOCIAL_LINKS, INSTRUMENTS } from "@/src/content/public";
 import { ContentItem, ui, useLoad } from "./Wellness";
 import { EventGrid } from "./EventGrid";
-type LiveTraining = { slug: string; title: string; image: string; url: string; date: string; end_date: string; price: string };
+type LiveTraining = { slug: string; title: string; image: string; url: string; date: string; start_date: string; end_date: string; price: string; location?: string };
 const serviceTitles = [
   "Διαδραστικά εργαστήρια & ομιλίες",
   "Συμβουλευτική για ξενοδοχεία & Spa",
@@ -41,6 +43,17 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
   const insets = useSafeAreaInsets();
   const compactScreen = width < 600;
   const liveTrainings = useLoad<{ items: LiveTraining[] }>("/trainings/active", { items: [] });
+  const cardCalendar = (item: ContentItem) => {
+    const slug = item.id.startsWith("active-") ? item.id.slice(7) : "";
+    const live = slug ? liveTrainings.data.items.find((x) => x.slug === slug) : undefined;
+    void addToDeviceCalendar({
+      title: item.published.title,
+      location: live?.location || "",
+      start: live?.start_date || item.published.event_end_date,
+      end: item.published.event_end_date,
+      notes: item.published.summary ? `Κόστος: ${item.published.summary}` : "",
+    });
+  };
   const settings = items.find(
     (i) => i.published.kind === "site_settings",
   )?.published;
@@ -225,6 +238,53 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                         <Text style={{ fontSize: 12, color: wellness.slate }}>
                           Περισσότερα →
                         </Text>
+                        {!(item.published.event_end_date && item.published.event_end_date < today) && (
+                          <View style={{ flexDirection: "row", gap: 8, marginTop: 4 }}>
+                            <Pressable
+                              accessibilityLabel="Προσθήκη στο ημερολόγιο"
+                              onPress={(e) => {
+                                (e as any)?.stopPropagation?.();
+                                cardCalendar(item);
+                              }}
+                              style={{
+                                flexDirection: "row",
+                                gap: 5,
+                                alignItems: "center",
+                                backgroundColor: wellness.white,
+                                borderWidth: 1,
+                                borderColor: wellness.lavenderInk,
+                                borderRadius: 999,
+                                paddingVertical: 7,
+                                paddingHorizontal: 10,
+                                minHeight: 36,
+                              }}
+                            >
+                              <Ionicons name="calendar-outline" size={14} color={wellness.lavenderInk} />
+                              <Text style={{ fontSize: 11, fontWeight: "700", color: wellness.lavenderInk }}>
+                                Ημερολόγιο
+                              </Text>
+                            </Pressable>
+                            <Pressable
+                              accessibilityLabel="Μοιράσου"
+                              onPress={(e) => {
+                                (e as any)?.stopPropagation?.();
+                                void shareSeminar(item.published.title, item.published.action_url || "");
+                              }}
+                              style={{
+                                width: 36,
+                                height: 36,
+                                borderRadius: 18,
+                                alignItems: "center",
+                                justifyContent: "center",
+                                backgroundColor: wellness.white,
+                                borderWidth: 1,
+                                borderColor: wellness.lavenderInk,
+                              }}
+                            >
+                              <Ionicons name="share-social-outline" size={15} color={wellness.lavenderInk} />
+                            </Pressable>
+                          </View>
+                        )}
                       </View>
                     </Pressable>
                 ))}
