@@ -86,14 +86,16 @@ def build_members_router(db, current_user, admin_user):
         enrolled = await db.school_enrollments.find({'user_id': uid, 'status': 'active'}, {'level_id': 1}).to_list(1000)
         enrolled_levels = {e['level_id'] for e in enrolled}
         levels = []
+        credited_ids = set()
         for level in ['L1', 'L2', 'L3', 'L4']:
             record = await db.member_levels.find_one({'user_id': uid, 'level_id': level}, {'_id': 0}) or {'enabled': level in enrolled_levels, 'target': None, 'historical_completed': 0, 'revision': 0, 'note': ''}
+            credited_ids.update(p['id'] for p in practices if p.get('level_id') == level and p['status'] == 'reviewed' and p['id'] in record.get('credited_practice_ids', []))
             verified = sum(p.get('level_id') == level and p['status'] == 'reviewed' and p['id'] in record.get('credited_practice_ids', []) for p in practices)
             total = record['historical_completed'] + verified
             levels.append({**record, 'level_id': level, 'verified_in_app': verified, 'completed': total, 'complete': bool(record['enabled'] and record['target'] and total >= record['target'])})
         return {'id': uid, 'name': u['name'], 'bio': u.get('bio', ''), 'profile_image': u.get('profile_image', ''), 'membership_status': u.get('membership_status', 'approved'), 'instruments': u.get('instruments', []), 'levels': levels,
                 'reviewed_practices': [{'id': p['id'], 'level_id': p['level_id'], 'session_date': p['session_date'], 'practitioner_submitted': p['id'] in completed_answers, 'receiver_responses': counts.get(p['id'], 0)} for p in practices if p['status'] == 'reviewed'],
-                'stats': {'minutes': sum(p.get('duration_minutes', 0) for p in practices), 'sessions': len(practices), 'receivers': len({p.get('receiver_code') for p in practices if p.get('mode') == 'individual' and p.get('receiver_code')}), 'evaluations': len(answers)},
+                'stats': {'recorded_minutes': sum(p.get('duration_minutes', 0) for p in practices), 'approved_sessions': sum(p['status'] == 'reviewed' for p in practices), 'credited_sessions': len(credited_ids), 'credited_minutes': sum(p.get('duration_minutes', 0) for p in practices if p['id'] in credited_ids), 'historical_credited_sessions': sum(l.get('historical_completed', 0) for l in levels), 'minutes': sum(p.get('duration_minutes', 0) for p in practices), 'sessions': len(practices), 'receivers': len({p.get('receiver_code') for p in practices if p.get('mode') == 'individual' and p.get('receiver_code')}), 'evaluations': len(answers)},
                 'requests': await db.training_requests.find({'user_id': uid}, {'_id': 0}).sort('created_at', -1).to_list(100)}
 
     @router.get('/members/me')
@@ -118,6 +120,23 @@ def build_members_router(db, current_user, admin_user):
         uri = 'data:image/webp;base64,' + base64.b64encode(out.getvalue()).decode()
         await db.users.update_one({'id': user['id']}, {'$set': {'profile_image': uri}})
         return {'ok': True}
+
+    @router.get('/admin/pending')
+    async def pending(user=Depends(admin_user)):
+        from account_security import application_complete
+        registrations = await db.users.find({'role': 'student', 'membership_status': 'pending'}, {'_id': 0, 'id': 1, 'name': 1, 'application': 1, 'email_verified': 1}).sort('created_at', 1).to_list(100)
+        for row in registrations:
+            row['application_complete'] = application_complete(row)
+            row['email_verified'] = row.get('email_verified', False)
+            row.pop('application', None)
+        requests = await db.training_requests.find({'status': 'pending'}, {'_id': 0}).sort('created_at', 1).to_list(100)
+        for row in requests:
+            member = await db.users.find_one({'id': row['user_id']}, {'name': 1})
+            row['name'] = (member or {}).get('name', 'Μέλος')
+        return {'registrations': registrations, 'training_requests': requests, 'counts': {
+            'registrations': await db.users.count_documents({'role': 'student', 'membership_status': 'pending'}),
+            'training_requests': await db.training_requests.count_documents({'status': 'pending'}),
+            'practices': await db.school_practices.count_documents({'status': 'submitted'})}}
 
     @router.get('/admin/members')
     async def members(q: str = Query('', max_length=160), offset: int = Query(0, ge=0), user=Depends(admin_user)):
@@ -159,7 +178,9 @@ def build_members_router(db, current_user, admin_user):
         if not member: raise HTTPException(409, 'Η αίτηση έχει ήδη εξεταστεί.')
         if payload.decision == 'approved':
             app = member.get('application')
-            if not app: raise HTTPException(422, 'Λείπουν τα στοιχεία αίτησης.')
+            from account_security import application_complete
+            if not application_complete(member): raise HTTPException(422, 'Ο μαθητής πρέπει να συμπληρώσει όλα τα στοιχεία αίτησης.')
+            if not member.get('email_verified', member.get('membership_status') != 'pending'): raise HTTPException(422, 'Ο μαθητής πρέπει να επιβεβαιώσει το email του.')
             for i in range(1, int(app['declared_level'][1]) + 1):
                 record = await db.member_levels.find_one({'user_id': uid, 'level_id': f'L{i}'})
                 if not record or record.get('revision', 0) == 0: raise HTTPException(422, 'Επιβεβαίωσε πρώτα την πορεία κάθε δηλωμένου Level.')
@@ -228,3 +249,4 @@ def build_members_router(db, current_user, admin_user):
         await audit(user, 'chat.hide', mid)
         return {'ok': True}
     return router
+

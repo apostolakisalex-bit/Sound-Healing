@@ -193,3 +193,12 @@ async def send_receiver_feedback_invite(
         "<p style=\"font-size:13px;color:#617083\">Ο σύνδεσμος είναι προσωπικός για εσένα.</p>"
     )
     return await send_email(to=to, subject=subject, html=_wrap(inner))
+
+
+
+async def send_account_link(*, to: str, purpose: str, link: str) -> str | None:
+    title = "Επιβεβαίωση email" if purpose == "verify" else "Αλλαγή κωδικού"
+    inner = (f"<h2>{title}</h2><p>Ο σύνδεσμος ισχύει για 30 λεπτά και χρησιμοποιείται μία φορά.</p>"
+             f'<p><a href="{escape(link)}">{title}</a></p>'
+             '<p>Αν δεν ζήτησες αυτή την ενέργεια, αγνόησε αυτό το email.</p>')
+    return await send_email(to=to, subject=title + " — Sound Healing Greece", html=_wrap(inner))

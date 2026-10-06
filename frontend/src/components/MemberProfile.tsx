@@ -1,12 +1,29 @@
+import { AccountChecklist } from "./AccountAccess";
 import { wellness } from "@/src/theme";
 import { pickPhoto } from "@/src/utils/pickPhoto";
 import React, { useState } from "react";
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { api } from "@/src/api/client";
 import { useAuth } from "@/src/auth/AuthContext";
-import { Button, Choices, Field, Shell, Status, ui, palette, useLoad } from "./Wellness";
+import {
+  Button,
+  Choices,
+  Field,
+  Shell,
+  Status,
+  ui,
+  palette,
+  useLoad,
+} from "./Wellness";
 import { iconSurface } from "./AppNavigation";
 
 type Level = {
@@ -39,6 +56,11 @@ type Member = {
   instruments: string[];
   levels: Level[];
   stats: {
+    recorded_minutes?: number;
+    approved_sessions?: number;
+    credited_sessions?: number;
+    credited_minutes?: number;
+    historical_credited_sessions?: number;
     minutes: number;
     sessions: number;
     receivers: number;
@@ -108,8 +130,13 @@ export function MemberProfile({
     }
   };
   return (
-    <View style={{ gap: 20, width: "100%", maxWidth: 720, alignSelf: "center" }}>
+    <View
+      style={{ gap: 20, width: "100%", maxWidth: 720, alignSelf: "center" }}
+    >
       <Status state={state} />
+      {!staff &&
+        (user?.membership_status === "pending" ||
+          user?.email_verified === false) && <AccountChecklist />}
       <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
         <View
           style={[
@@ -176,6 +203,28 @@ export function MemberProfile({
         </View>
       </View>
       <Text style={ui.body}>{statusLabel[p.membership_status] || ""}</Text>
+      <View style={ui.card}>
+        <Text style={ui.heading}>Καταγραφή & επιβεβαιωμένη πρόοδος</Text>
+        <Text style={ui.body}>
+          Καταγεγραμμένες ώρες:{" "}
+          {((p.stats.recorded_minutes ?? p.stats.minutes) / 60).toFixed(1)}
+        </Text>
+        <Text style={ui.body}>
+          Εγκεκριμένες πρακτικές: {p.stats.approved_sessions ?? 0}
+        </Text>
+        <Text style={ui.body}>
+          Προσμετρημένες πρακτικές εφαρμογής: {p.stats.credited_sessions ?? 0} ·
+          Ώρες: {((p.stats.credited_minutes ?? 0) / 60).toFixed(1)}
+        </Text>
+        <Text style={ui.body}>
+          Αναγνωρισμένες παλαιότερες πρακτικές:{" "}
+          {p.stats.historical_credited_sessions ?? 0}
+        </Text>
+        <Text style={ui.body}>
+          Οι καταγεγραμμένες ώρες δεν αποτελούν αυτόματα πιστοποιημένη πρόοδο. Η
+          προσμέτρηση επιβεβαιώνεται από τον διαχειριστή.
+        </Text>
+      </View>
       {!!p.bio && <Text style={ui.body}>{p.bio}</Text>}
       {!staff && (
         <Button
@@ -244,7 +293,9 @@ export function MemberProfile({
                 },
               ]}
             >
-              <Text style={{ fontSize: 20, color: wellness.slate }}>{value}</Text>
+              <Text style={{ fontSize: 20, color: wellness.slate }}>
+                {value}
+              </Text>
             </View>
             <Text style={{ fontSize: 11 }}>{label}</Text>
           </View>
@@ -267,7 +318,11 @@ export function MemberProfile({
               },
             ]}
           >
-            <Ionicons name="musical-notes-outline" size={25} color={wellness.slate} />
+            <Ionicons
+              name="musical-notes-outline"
+              size={25}
+              color={wellness.slate}
+            />
           </View>
           <Text style={{ fontSize: 11 }}>Όργανα · {p.instruments.length}</Text>
         </Pressable>
@@ -725,6 +780,7 @@ export function MembersAdmin({
             }}
           />
           <Status state={state} />
+
           <View style={rosterStyles.collage}>
             {[...state.data.items]
               .sort((a, b) => a.name.localeCompare(b.name, "el"))

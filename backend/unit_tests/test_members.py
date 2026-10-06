@@ -9,7 +9,7 @@ from members import build_members_router
 def env():
     db = AsyncMongoMockClient()['members_test']
     async def seed():
-        await db.users.insert_many([{'id': 'admin', 'role': 'admin', 'name': 'Admin'}, {'id': 'student', 'role': 'student', 'name': 'Student', 'membership_status': 'pending', 'application': {'declared_level': 'L2'}}, {'id': 'other', 'role': 'student', 'name': 'Other'}])
+        await db.users.insert_many([{'id': 'admin', 'role': 'admin', 'name': 'Admin'}, {'id': 'student', 'role': 'student', 'name': 'Student', 'membership_status': 'pending', 'email_verified': True, 'application': {'declared_level': 'L2', 'first_name': 'Test', 'last_name': 'Member', 'birth_month': 1, 'birth_year': 1990, 'phone': '0000000000', 'address': 'Test address'}}, {'id': 'other', 'role': 'student', 'name': 'Other'}])
         await db.school_cohorts.insert_one({'id': 'l3', 'title': 'Level three', 'level_id': 'L3'})
     asyncio.run(seed())
     async def user(x_user: str = Header('student')):
@@ -73,3 +73,4 @@ def test_practice_credit_requires_admin_selection_and_correct_owner(env):
     assert call(c, 'put', '/admin/members/other/levels/L1', json=data).status_code == 200
     p = call(c, 'get', '/members/me', 'other').json()
     assert p['levels'][0]['complete'] and p['stats']['minutes'] == 60
+

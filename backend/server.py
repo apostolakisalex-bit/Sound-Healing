@@ -15,6 +15,7 @@ import bcrypt
 import secrets
 import httpx
 from emailer import send_receiver_feedback_invite
+from account_security import build_account_router, throttle, application_complete
 from ratelimit import limit_auth, limit_key
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr, field_validator
@@ -76,6 +77,8 @@ class UserPublic(BaseModel):
     xp: int
     stamps: List[str] = []
     unlocked_realms: List[str] = []
+    email_verified: bool = True
+    application_complete: bool = True
     membership_status: str = "approved"
     role: str = "student"
     created_at: datetime
@@ -244,6 +247,8 @@ async def get_current_user(request: Request, creds: Optional[HTTPAuthorizationCr
         raise HTTPException(status_code=401, detail="Session expired")
     if user.get('membership_status', 'approved') != 'approved' and not (request.url.path.startswith('/api/auth/') or request.url.path == '/api/members/me' or request.url.path.startswith('/api/notifications')):
         raise HTTPException(403, 'Η εγγραφή σου δεν έχει εγκριθεί ακόμη.')
+    if user.get("email_verified") is False and not (request.url.path.startswith("/api/auth/") or request.url.path == "/api/members/me" or request.url.path.startswith("/api/notifications")):
+        raise HTTPException(403, "Επιβεβαίωσε πρώτα το email σου.")
     return user
 
 
@@ -266,6 +271,8 @@ def serialize_user(user: dict) -> dict:
         "xp": user.get("xp", 0),
         "stamps": user.get("stamps", []),
         "unlocked_realms": user.get("unlocked_realms", []),
+        "email_verified": user.get("email_verified", user.get("membership_status") != "pending"),
+        "application_complete": application_complete(user),
         "role": user.get("role", "student"),
         "membership_status": user.get("membership_status", "approved"),
         "created_at": user.get("created_at", datetime.now(timezone.utc)),
@@ -457,6 +464,7 @@ async def seed_db():
 
 @app.on_event("startup")
 async def startup():
+    await db.auth_limits.create_index("expires_at", expireAfterSeconds=0)
     if os.environ.get("SEED_DEMO_CONTENT") == "true":
         await seed_db()
 
@@ -471,7 +479,7 @@ async def root():
 
 @api.post("/auth/register", response_model=TokenOut)
 async def register(payload: RegisterIn, request: Request):
-    limit_auth(request, str(payload.email), (20, 3600), (4, 3600))
+    await throttle(db, request, "register", str(payload.email), limit=3)
     existing = await db.users.find_one({"email": payload.email.lower()})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -482,6 +490,7 @@ async def register(payload: RegisterIn, request: Request):
         "name": payload.application.first_name + " " + payload.application.last_name,
         "application": payload.application.model_dump(),
         "membership_status": "pending",
+        "email_verified": False,
         "password_hash": hash_password(payload.password),
         "bio": "",
         "location": payload.location or "",
@@ -502,7 +511,7 @@ async def register(payload: RegisterIn, request: Request):
 
 @api.post("/auth/login", response_model=TokenOut)
 async def login(payload: LoginIn, request: Request):
-    limit_auth(request, str(payload.email), (60, 60), (6, 600))
+    await throttle(db, request, "login", str(payload.email), limit=10)
     user = await db.users.find_one({"email": payload.email.lower()})
     if not user or not verify_password(payload.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
@@ -514,7 +523,8 @@ EMERGENT_SESSION_URL = "https://demobackend.emergentagent.com/auth/v1/env/oauth/
 
 
 @api.post("/auth/session", response_model=TokenOut)
-async def google_session(payload: SessionIn):
+async def google_session(payload: SessionIn, request: Request):
+    await throttle(db, request, "google", limit=20)
     # Exchange the one-time Emergent session_id for the Google profile, then
     # upsert the user and mint our own app JWT. New Google users are PENDING.
     try:
@@ -562,6 +572,7 @@ async def google_session(payload: SessionIn):
             "stamps": [],
             "unlocked_realms": ["temple-of-breath"],
             "role": "student",
+            "email_verified": False,
             "auth_provider": "google",
             "created_at": datetime.now(timezone.utc),
         }
@@ -1062,4 +1073,7 @@ from members import build_members_router
 app.include_router(build_members_router(db, get_current_user, get_admin_user))
 
 from trainings import build_trainings_router
-app.include_router(build_trainings_router())
+app.include_router(build_trainings_router(db, get_admin_user))
+
+
+app.include_router(build_account_router(lambda: db, get_current_user, hash_password))

@@ -1,3 +1,4 @@
+import { PendingInbox } from "@/src/components/PendingInbox";
 import { MembersAdmin } from "@/src/components/MemberProfile";
 import { AdminCalendar } from "@/src/components/AdminCalendar";
 import { MediaLibrary } from "@/src/components/MediaLibrary";
@@ -40,6 +41,13 @@ type Draft = {
   photo_slot?: string;
   event_end_date?: string;
   event_date?: string;
+  event_start_date?: string;
+  event_price?: string;
+  event_phone?: string;
+  event_program?: string;
+  event_audience?: string;
+  event_certification?: string;
+  training_level?: number | null;
   event_time?: string;
   event_location?: string;
   image_alt?: string;
@@ -72,6 +80,7 @@ type Workspace = {
     cohort_id: string;
     cohort_title: string;
     status: string;
+    status_label?: string;
   }[];
   practices: {
     id: string;
@@ -83,6 +92,7 @@ type Workspace = {
     receiver_code: string;
     cycle_id?: string;
     status: string;
+    status_label?: string;
   }[];
 };
 const attendanceLabels: Record<string, string> = {
@@ -173,17 +183,35 @@ function WorkspaceScreen() {
   const set = (key: keyof Draft, value: any) =>
     setDraft({ ...draft, [key]: value });
   return (
-    <Shell eyebrow="ΧΩΡΟΣ ΤΗΣ ΣΧΟΛΗΣ" title="Η σχολή στα χέρια σου." notifications>
+    <Shell
+      eyebrow="ΧΩΡΟΣ ΤΗΣ ΣΧΟΛΗΣ"
+      title="Η σχολή στα χέρια σου."
+      notifications
+    >
       <Text style={ui.body}>
         Διαχείριση περιεχομένου, εκπαίδευσης και πρακτικής από έναν χώρο.
       </Text>
       {user?.role === "admin" && (
         <AdminHome
           stats={[
-            { label: "Μαθητές", value: state.data.users.filter((u: any) => u.role === "student").length },
-            { label: "Ενεργές εγγραφές", value: state.data.enrollments.filter((e: any) => e.status === "active").length },
+            {
+              label: "Μαθητές",
+              value: state.data.users.filter((u: any) => u.role === "student")
+                .length,
+            },
+            {
+              label: "Ενεργές εγγραφές",
+              value: state.data.enrollments.filter(
+                (e: any) => e.status === "active",
+              ).length,
+            },
             { label: "Τμήματα", value: state.data.cohorts.length },
-            { label: "Για έλεγχο", value: state.data.practices.filter((p: any) => p.status === "submitted").length },
+            {
+              label: "Για έλεγχο",
+              value: state.data.practices.filter(
+                (p: any) => p.status === "submitted",
+              ).length,
+            },
           ]}
         />
       )}
@@ -225,10 +253,36 @@ function WorkspaceScreen() {
           onOpen={setSection}
         />
       )}
+      {section === "Περιεχόμενο" && user?.role === "admin" && (
+        <View style={ui.card}>
+          <Text style={ui.body}>
+            Εισήγαγε τα σεμινάρια ως πρόχειρα. Έλεγξε κείμενα, ημερομηνίες,
+            τιμές και φωτογραφίες και δημοσίευσε όσα θέλεις. Οι δικές σου
+            αλλαγές υπερισχύουν του site.
+          </Text>
+          <Button
+            secondary
+            disabled={busy}
+            label="Εισαγωγή σεμιναρίων για επεξεργασία"
+            onPress={() =>
+              void run(
+                () => api.post("/admin/trainings/import"),
+                "Τα νέα σεμινάρια προστέθηκαν ως πρόχειρα. Οι υπάρχουσες αλλαγές διατηρήθηκαν.",
+              )
+            }
+          />
+        </View>
+      )}
       {section === "Φωτογραφίες" && user?.role === "admin" && <MediaLibrary />}
       {section === "Επισκόπηση" && (
         <View style={{ gap: 16 }}>
           <Text style={ui.heading}>Κέντρο διαχείρισης</Text>
+          {user?.role === "admin" && (
+            <PendingInbox
+              cohorts={state.data.cohorts}
+              onPractices={() => setSection("Αξιολογήσεις")}
+            />
+          )}
           <View style={ui.row}>
             {(user?.role === "admin"
               ? [
@@ -277,7 +331,13 @@ function WorkspaceScreen() {
                   onPress={() => setSection(target)}
                   style={({ pressed }) => [
                     ui.card,
-                    { flexGrow: 1, flexBasis: "46%", padding: 0, overflow: "hidden", opacity: pressed ? 0.85 : 1 },
+                    {
+                      flexGrow: 1,
+                      flexBasis: "46%",
+                      padding: 0,
+                      overflow: "hidden",
+                      opacity: pressed ? 0.85 : 1,
+                    },
                   ]}
                 >
                   <View
@@ -291,7 +351,9 @@ function WorkspaceScreen() {
                     }}
                   >
                     <Text style={[ui.label, { color: wellness.lavenderInk }]}>
-                      {target === "Εγγραφές" ? "ΜΑΘΗΤΕΣ & ΕΓΓΡΑΦΕΣ" : target.toUpperCase()}
+                      {target === "Εγγραφές"
+                        ? "ΜΑΘΗΤΕΣ & ΕΓΓΡΑΦΕΣ"
+                        : target.toUpperCase()}
                     </Text>
                   </View>
                   <View style={{ padding: 14 }}>
@@ -404,15 +466,42 @@ function WorkspaceScreen() {
               value={draft.kind}
               onChange={(v) => set("kind", v)}
             />
-            {draft.kind === "app_photo" && <View style={ui.card}>
-              <Text style={ui.heading}>Φωτογραφίες εφαρμογής</Text>
-              <Text style={ui.body}>Επίλεξε θέση, διάλεξε ή ανέβασε φωτογραφία στη βιβλιοθήκη, αποθήκευσε και δημοσίευσε. Για αντικατάσταση, επεξεργάσου την υπάρχουσα καταχώριση της ίδιας θέσης.</Text>
-              {[
-                ["banner", "Banner αρχικής"], ["about", "Μανώλης"], ["soundhealing", "Ηχοθεραπεία"],
-                ["L1", "Level 1"], ["L2", "Level 2"], ["L3", "Level 3"], ["L4", "Level 4"],
-                ["past_L1", "Παλαιότερο εκπαιδευτικό Level 1"], ["past_L2", "Παλαιότερο εκπαιδευτικό Level 2"],
-              ].map(([slot, label]) => <Button key={slot} secondary={draft.photo_slot !== slot} label={label} onPress={() => setDraft(d => ({...d, photo_slot: slot, section: "home", level_id: null, title: label}))} />)}
-            </View>}
+            {draft.kind === "app_photo" && (
+              <View style={ui.card}>
+                <Text style={ui.heading}>Φωτογραφίες εφαρμογής</Text>
+                <Text style={ui.body}>
+                  Επίλεξε θέση, διάλεξε ή ανέβασε φωτογραφία στη βιβλιοθήκη,
+                  αποθήκευσε και δημοσίευσε. Για αντικατάσταση, επεξεργάσου την
+                  υπάρχουσα καταχώριση της ίδιας θέσης.
+                </Text>
+                {[
+                  ["banner", "Banner αρχικής"],
+                  ["about", "Μανώλης"],
+                  ["soundhealing", "Ηχοθεραπεία"],
+                  ["L1", "Level 1"],
+                  ["L2", "Level 2"],
+                  ["L3", "Level 3"],
+                  ["L4", "Level 4"],
+                  ["past_L1", "Παλαιότερο εκπαιδευτικό Level 1"],
+                  ["past_L2", "Παλαιότερο εκπαιδευτικό Level 2"],
+                ].map(([slot, label]) => (
+                  <Button
+                    key={slot}
+                    secondary={draft.photo_slot !== slot}
+                    label={label}
+                    onPress={() =>
+                      setDraft((d) => ({
+                        ...d,
+                        photo_slot: slot,
+                        section: "home",
+                        level_id: null,
+                        title: label,
+                      }))
+                    }
+                  />
+                ))}
+              </View>
+            )}
             <Choices
               label="Δημόσια ενότητα"
               values={[
@@ -529,7 +618,7 @@ function WorkspaceScreen() {
               "testimonial",
               "partner",
               "social",
-                "app_photo",
+              "app_photo",
             ].includes(draft.kind) && (
               <>
                 {[
@@ -538,7 +627,7 @@ function WorkspaceScreen() {
                   "testimonial",
                   "partner",
                   "social",
-                "app_photo",
+                  "app_photo",
                 ].includes(draft.kind) && (
                   <>
                     {" "}
@@ -589,6 +678,49 @@ function WorkspaceScreen() {
                         value={draft.event_date || ""}
                         onChange={(v) => set("event_date", v)}
                       />
+                      {draft.section === "training" && (
+                        <>
+                          <Field
+                            label="Ημερομηνία έναρξης (YYYY-MM-DD)"
+                            value={draft.event_start_date || ""}
+                            onChange={(v) => set("event_start_date", v)}
+                          />
+                          <Choices
+                            label="Εκπαιδευτικό Level"
+                            values={["1", "2", "3", "4"]}
+                            value={String(draft.training_level || 1)}
+                            onChange={(v) => set("training_level", Number(v))}
+                          />
+                          <Field
+                            label="Κόστος / προσφορά"
+                            value={draft.event_price || ""}
+                            onChange={(v) => set("event_price", v)}
+                          />
+                          <Field
+                            label="Τηλέφωνο κρατήσεων"
+                            value={draft.event_phone || ""}
+                            onChange={(v) => set("event_phone", v)}
+                          />
+                          <Field
+                            label="Πρόγραμμα — μία ενότητα ανά γραμμή"
+                            multiline
+                            value={draft.event_program || ""}
+                            onChange={(v) => set("event_program", v)}
+                          />
+                          <Field
+                            label="Σε ποιους απευθύνεται — μία γραμμή ανά ομάδα"
+                            multiline
+                            value={draft.event_audience || ""}
+                            onChange={(v) => set("event_audience", v)}
+                          />
+                          <Field
+                            label="Πληροφορίες βεβαίωσης / πιστοποίησης"
+                            multiline
+                            value={draft.event_certification || ""}
+                            onChange={(v) => set("event_certification", v)}
+                          />
+                        </>
+                      )}
                       <Field
                         label="Ώρα (π.χ. 17:30 – 19:00)"
                         value={draft.event_time || ""}
@@ -696,7 +828,7 @@ function WorkspaceScreen() {
                             "testimonial",
                             "partner",
                             "social",
-                "app_photo",
+                            "app_photo",
                           ].includes(item.draft.kind))) &&
                 normalize(
                   item.draft.title + " " + (item.draft.section || "home"),
@@ -1007,7 +1139,7 @@ function WorkspaceScreen() {
             <View key={p.id} style={ui.card}>
               <Text style={ui.label}>
                 {p.level_id} · {p.session_date} ·{" "}
-                {practiceLabels[p.status] || p.status}
+                {p.status_label || practiceLabels[p.status] || p.status}
               </Text>
               <Text style={ui.body}>
                 {p.receiver_code} ·{" "}

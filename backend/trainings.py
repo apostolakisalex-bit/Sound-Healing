@@ -16,7 +16,7 @@ from urllib.parse import quote, urlsplit, urlunsplit
 
 import httpx
 from bs4 import BeautifulSoup
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 
 logger = logging.getLogger("shg.trainings")
 
@@ -414,23 +414,67 @@ async def get_items(force: bool = False) -> list:
         return FALLBACK
 
 
-def build_trainings_router() -> APIRouter:
-    router = APIRouter(prefix="/api")
+PAST_CATALOG = [
+            {'slug': 'sound-healing-training-seminar-level-1-1-2-august-chania', 'title': 'Level 1 · Χανιά', 'level': 1, 'url': BASE + '/sound-healing-training-seminar-level-1-1-2-august-chania/', 'date': '1–2 Αυγούστου 2026', 'start_date': '2026-08-01', 'end_date': '2026-08-02', 'image': BASE + '/wp-content/uploads/2026/05/20260510_181310-Large-650x433.jpeg'},
+            {'slug': 'sound-healing-training-seminar-level-2-3-4-august-chania-crete', 'title': 'Level 2 · Χανιά', 'level': 2, 'url': BASE + '/sound-healing-training-seminar-level-2-3-4-august-chania-crete/', 'date': '3–4 Αυγούστου 2026', 'start_date': '2026-08-03', 'end_date': '2026-08-04', 'image': BASE + '/wp-content/uploads/2026/05/IMG_0367-650x433.jpg'}]
 
-    @router.get("/trainings/active")
+def build_trainings_router(db, admin_user) -> APIRouter:
+    from school import Content, now
+    from uuid import uuid4
+    from zoneinfo import ZoneInfo
+    router = APIRouter(prefix='/api')
+
+    def slug_of(url):
+        return url.rstrip('/').rsplit('/', 1)[-1]
+
+    async def catalog():
+        items = {it['slug']: dict(it) for it in [*(await get_items()), *PAST_CATALOG]}
+        # CMS publications take precedence over imported/site values, including blank fields.
+        docs = await db.content_items.find({'$or': [{'draft.section': 'training', 'draft.kind': 'announcement'}, {'published.section': 'training', 'published.kind': 'announcement'}]}, {'_id': 0}).to_list(1000)
+        for doc in docs:
+            p = doc.get('published')
+            draft = doc.get('draft', {})
+            slug = doc.get('source_slug') or (doc['id'][8:] if doc['id'].startswith('seminar-') else slug_of((p or draft).get('action_url', '')) or doc['id'])
+            if doc.get('archived'):
+                items.pop(slug, None)
+                continue
+            if not p:
+                continue
+            items[slug] = {'slug': slug, 'url': p.get('action_url', ''), 'title': p['title'], 'full_title': p['title'], 'level': p.get('training_level'), 'image': p.get('image_url', ''), 'date': p.get('event_date', ''), 'start_date': p.get('event_start_date', ''), 'end_date': p.get('event_end_date', ''), 'time': p.get('event_time', ''), 'location': p.get('event_location', ''), 'address': p.get('event_location', ''), 'price': p.get('event_price', ''), 'phone': p.get('event_phone', ''), 'description': p.get('body') or p.get('summary', ''), 'program': p.get('event_program', '').splitlines(), 'audience': p.get('event_audience', '').splitlines(), 'certification': p.get('event_certification', ''), 'managed': True}
+        today = datetime.now(ZoneInfo('Europe/Athens')).date().isoformat()
+        for it in items.values():
+            it['active'] = bool(it.get('end_date') and it['end_date'] >= today)
+        return sorted(items.values(), key=lambda it: (not it['active'], it.get('start_date') or '9999'))
+
+    @router.get('/trainings/active')
     async def active_trainings():
-        items = await get_items()
-        return {"items": [{k: it.get(k, "") for k in SUMMARY_FIELDS} for it in items]}
+        return {'items': [it for it in await catalog() if it['active']]}
 
-    @router.get("/trainings/{slug}")
+    @router.get('/trainings/catalog')
+    async def all_trainings():
+        return {'items': await catalog()}
+
+    @router.post('/admin/trainings/import')
+    async def import_trainings(admin=Depends(admin_user)):
+        source = await get_items()
+        # Preserve the two historical cards already present in the app.
+        source = list(source) + PAST_CATALOG
+        count = 0
+        for it in source:
+            # Deterministic import id; never overwrite the administrator's edits.
+            key = 'seminar-' + it['slug']
+            if await db.content_items.find_one({'$or': [{'id': key}, {'draft.action_url': it['url']}]}):
+                continue
+            draft = Content(title=it['title'], kind='announcement', section='training', body=it.get('description', ''), image_url=it.get('image', ''), action_url=it['url'], action_label='Πληροφορίες', event_date=it.get('date', ''), event_start_date=it.get('start_date', ''), event_end_date=it.get('end_date', ''), event_time=it.get('time', ''), event_location=it.get('address') or it.get('location', ''), event_price=it.get('price', ''), event_phone=it.get('phone', ''), event_program='\n'.join(it.get('program', [])), event_audience='\n'.join(it.get('audience', [])), event_certification=it.get('certification', ''), training_level=it.get('level')).model_dump()
+            result = await db.content_items.update_one({'_id': key}, {'$setOnInsert': {'id': key, 'source_slug': it['slug'], 'draft': draft, 'revision': 1, 'published': None, 'archived': False, 'updated_at': now()}}, upsert=True)
+            count += bool(result.upserted_id)
+        await db.audit_events.insert_one({'id': str(uuid4()), 'actor_id': admin['id'], 'action': 'training.import_drafts', 'entity_id': 'catalog', 'created_at': now()})
+        return {'created': count}
+
+    @router.get('/trainings/{slug}')
     async def training_detail(slug: str):
-        items = await get_items()
-        for it in items:
-            if it["slug"] == slug:
+        for it in await catalog():
+            if it['slug'] == slug:
                 return it
-        for it in FALLBACK:
-            if it["slug"] == slug:
-                return it
-        raise HTTPException(status_code=404, detail="Το σεμινάριο δεν βρέθηκε")
-
+        raise HTTPException(status_code=404, detail='Το σεμινάριο δεν βρέθηκε')
     return router

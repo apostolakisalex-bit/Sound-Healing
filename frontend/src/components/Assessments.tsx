@@ -90,9 +90,11 @@ type Overview = {
 export function PracticeAssessments({
   practiceId,
   staff = false,
+  onChanged,
 }: {
   practiceId: string;
   staff?: boolean;
+  onChanged?: () => Promise<unknown>;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -102,16 +104,24 @@ export function PracticeAssessments({
         label={open ? "Κλείσιμο αξιολογήσεων" : "Αξιολογήσεις μαθητή & δέκτη"}
         onPress={() => setOpen(!open)}
       />
-      {open && <AssessmentPanel practiceId={practiceId} staff={staff} />}
+      {open && (
+        <AssessmentPanel
+          practiceId={practiceId}
+          staff={staff}
+          onChanged={onChanged}
+        />
+      )}
     </View>
   );
 }
 function AssessmentPanel({
   practiceId,
   staff,
+  onChanged,
 }: {
   practiceId: string;
   staff: boolean;
+  onChanged?: () => Promise<unknown>;
 }) {
   const state = useLoad<Overview>(
     `/school/practices/${practiceId}/assessments`,
@@ -132,6 +142,7 @@ function AssessmentPanel({
     try {
       await work();
       await state.reload();
+      await onChanged?.();
     } catch (e: any) {
       setMessage(
         typeof e?.response?.data?.detail === "string"

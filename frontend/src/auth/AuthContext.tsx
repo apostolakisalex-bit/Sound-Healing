@@ -30,6 +30,8 @@ export type User = {
   stamps: string[];
   unlocked_realms: string[];
   role: string;
+  email_verified?: boolean;
+  application_complete?: boolean;
   membership_status?: string;
   created_at?: string;
 };

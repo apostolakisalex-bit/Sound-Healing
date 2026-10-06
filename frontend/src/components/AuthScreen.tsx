@@ -28,8 +28,8 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
     try {
       const redirectUrl =
         Platform.OS === "web"
-          ? window.location.origin + "/"
-          : Linking.createURL("");
+          ? window.location.origin + "/profile"
+          : Linking.createURL("profile");
       const authUrl =
         "https://auth.emergentagent.com/?redirect=" +
         encodeURIComponent(redirectUrl);
@@ -37,7 +37,10 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
         window.location.href = authUrl;
         return;
       }
-      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUrl);
+      const result = await WebBrowser.openAuthSessionAsync(
+        authUrl,
+        redirectUrl,
+      );
       let sid: string | null = null;
       if (result.type === "success" && result.url) {
         const m = result.url.match(/[?#&]session_id=([^&#]+)/);
@@ -95,18 +98,23 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
       } else {
         const signedIn = await auth.login(email.trim(), password);
         router.replace(
-          ["admin", "instructor"].includes(signedIn.role)
-            ? "/admin"
-            : "/(tabs)/sanctuary",
+          signedIn.membership_status === "pending" ||
+            signedIn.email_verified === false
+            ? "/(tabs)/profile"
+            : ["admin", "instructor"].includes(signedIn.role)
+              ? "/admin"
+              : "/(tabs)/sanctuary",
         );
         return;
       }
-      router.replace("/(tabs)/sanctuary");
-    } catch {
+
+    } catch (e: any) {
       setError(
-        registering
-          ? "Δεν ολοκληρώθηκε η εγγραφή. Έλεγξε τα στοιχεία ή δοκίμασε σύνδεση."
-          : "Δεν ήταν δυνατή η σύνδεση. Έλεγξε email και κωδικό.",
+        typeof e?.response?.data?.detail === "string"
+          ? e.response.data.detail
+          : registering
+            ? "Δεν ολοκληρώθηκε η εγγραφή. Έλεγξε τα στοιχεία ή δοκίμασε σύνδεση."
+            : "Δεν ήταν δυνατή η σύνδεση. Έλεγξε email και κωδικό.",
       );
     } finally {
       setBusy(false);
@@ -191,6 +199,11 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
           label={googleBusy ? "Σύνδεση…" : "Σύνδεση με Google"}
           onPress={() => void googleSignIn()}
         />
+        {!registering && (
+          <Link href="/account-action" style={ui.body}>
+            Ξέχασα τον κωδικό μου
+          </Link>
+        )}
         <Link href={registering ? "/login" : "/register"} style={ui.body}>
           {registering
             ? "Έχεις λογαριασμό; Σύνδεση"

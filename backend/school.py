@@ -1,3 +1,4 @@
+from practice_state import decorate_practices
 """School and editorial workspace, independent of the deployment provider.
 Legacy collections are never relabelled or counted as academic evidence.
 """
@@ -38,6 +39,13 @@ class Content(Strict):
     action_url: str = Field(default='', max_length=2000)
     event_end_date: str = Field(default='', pattern=r'^(|\d{4}-\d{2}-\d{2})$')
     event_date: str = Field(default='', max_length=100)
+    event_start_date: str = Field(default='', pattern=r'^(|\d{4}-\d{2}-\d{2})$')
+    event_price: str = Field(default='', max_length=300)
+    event_phone: str = Field(default='', max_length=40)
+    event_program: str = Field(default='', max_length=10000)
+    event_audience: str = Field(default='', max_length=5000)
+    event_certification: str = Field(default='', max_length=2000)
+    training_level: int | None = Field(default=None, ge=1, le=4)
     event_time: str = Field(default='', max_length=100)
     event_location: str = Field(default='', max_length=200)
     show_testimonials: bool = True
@@ -46,7 +54,7 @@ class Content(Strict):
     navigation: list[NavigationItem] | None = Field(default=None, max_length=6)
     order: int = Field(default=0, ge=0, le=10000)
 
-    @field_validator('event_end_date')
+    @field_validator('event_end_date', 'event_start_date')
     @classmethod
     def valid_event_end(cls, value):
         if value: datetime.strptime(value, '%Y-%m-%d')
@@ -152,6 +160,7 @@ def build_school_router(db, current_user, admin_user):
         enrollments = await db.school_enrollments.find({'user_id': user['id']}, {'_id': 0}).to_list(100)
         attendance = await db.school_attendance.find({'user_id': user['id']}, {'_id': 0}).to_list(1000)
         practices = await db.school_practices.find({'user_id': user['id']}, {'_id': 0}).sort('created_at', -1).to_list(500)
+        await decorate_practices(db, practices)
         return {'enrollments': enrollments, 'attendance': attendance, 'practices': practices, 'certification_status': 'Requirements awaiting approval; no automatic certification.'}
 
     @router.get('/school/progress')
@@ -223,6 +232,7 @@ def build_school_router(db, current_user, admin_user):
         cycles = await db.practice_cycles.find({'id': {'$in': [p['cycle_id'] for p in practices if p.get('cycle_id')]}, 'cohort_id': {'$in': ids}}, {'_id': 0}).to_list(500)
         users = await db.users.find({} if user['role'] == 'admin' else {'id': {'$in': [e['user_id'] for e in enrollments]}}, {'_id': 0, 'id': 1, 'name': 1, 'email': 1, 'role': 1}).to_list(1000)
         contents = await db.content_items.find({}, {'_id': 0}).sort('updated_at', -1).to_list(500) if user['role'] == 'admin' else []
+        await decorate_practices(db, practices)
         return {'cohorts': cohorts, 'enrollments': enrollments, 'practices': practices, 'users': users, 'content': contents, 'cycles': cycles}
 
     async def validate_image(url):
@@ -453,3 +463,4 @@ def build_school_router(db, current_user, admin_user):
         return output
 
     return router
+

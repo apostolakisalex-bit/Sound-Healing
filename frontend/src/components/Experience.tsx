@@ -24,6 +24,9 @@ type Enrollment = {
   level_id: string;
   cohort_title: string;
   status: string;
+  status_label?: string;
+  practitioner_submitted?: boolean;
+  receiver_submitted?: boolean;
 };
 type Practice = {
   id: string;
@@ -31,6 +34,9 @@ type Practice = {
   session_date: string;
   duration_minutes: number;
   status: string;
+  status_label?: string;
+  practitioner_submitted?: boolean;
+  receiver_submitted?: boolean;
   review_note?: string;
   enrollment_id: string;
   mode: string;
@@ -455,19 +461,28 @@ export function PracticeScreen() {
         <View key={p.id} style={ui.card}>
           <Text style={ui.label}>
             {p.level_id} ·{" "}
-            {(
-              {
-                draft: "Πρόχειρη",
-                submitted: "Για έλεγχο",
-                changes_requested: "Για διόρθωση",
-                reviewed: "Ελεγμένη",
-              } as Record<string, string>
-            )[p.status] || p.status}
+            {p.status_label ||
+              (
+                {
+                  draft: "Πρόχειρη",
+                  submitted: "Προς έλεγχο",
+                  changes_requested: "Χρειάζεται διόρθωση",
+                  reviewed: "Εγκρίθηκε",
+                } as Record<string, string>
+              )[p.status] ||
+              p.status}
           </Text>
           <Text style={ui.heading}>
             {p.session_date} · {p.duration_minutes} λεπτά
           </Text>
-          <PracticeAssessments practiceId={p.id} />
+          {p.status === "submitted" && (
+            <Text style={ui.body}>
+              Αξιολόγηση μαθητή:{" "}
+              {p.practitioner_submitted ? "Υποβλήθηκε" : "Εκκρεμεί"} · Απάντηση
+              δέκτη: {p.receiver_submitted ? "Παραλήφθηκε" : "Εκκρεμεί"}
+            </Text>
+          )}
+          <PracticeAssessments practiceId={p.id} onChanged={state.reload} />
           {p.review_note && <Text style={ui.body}>{p.review_note}</Text>}
           {["draft", "changes_requested"].includes(p.status) && (
             <Button

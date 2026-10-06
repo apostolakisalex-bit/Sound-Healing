@@ -7,7 +7,7 @@ import { Text, View } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
 import Head from "expo-router/head";
 import { EditorialIntro } from "./EditorialIntro";
-import { BrandHero } from "./BrandHero";
+
 import { SoundHealingGuide } from "./SoundHealingGuide";
 import {
   Shell,
@@ -183,7 +183,7 @@ export function PublicExperience({ section }: { section?: string }) {
           Η διαδρομή του Μανώλη · αναλυτικό βιογραφικό ↗
         </NavLink>
       )}
-      {section === "soundhealing" && <SoundHealingGuide />}
+      {section === "soundhealing" && !intro && <SoundHealingGuide />}
       {section === "contact" && <MembersChat />}
       <Status state={state} />
       {(section === "events" || section === "training") && (

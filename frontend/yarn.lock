@@ -3354,6 +3354,11 @@ expo-blur@~57.0.3:
   resolved "https://registry.yarnpkg.com/expo-blur/-/expo-blur-57.0.3.tgz#87feb0b2e48e7ecba239b3b7a5358d1810203ccc"
   integrity sha512-uyBeJwxIuXzWXXNrnRub5pcF8VzQsiOz0VBTWDpMG2UztmaFyfAz6pI/GCwRtWpHhiOpLoJj79WLdg1GMB+9cg==
 
+expo-calendar@~57.0.5:
+  version "57.0.5"
+  resolved "https://registry.yarnpkg.com/expo-calendar/-/expo-calendar-57.0.5.tgz#ccf2fa86d814c18149b77059a129571da765eb51"
+  integrity sha512-0qGJq8kIU7JmtMouKZhA89UOoAcCmOqKmPzTl+PxeKo1a9CIVbXu1w9H+XIhmmRzoSfnGXx/l5UpIiOE5eyJjA==
+
 expo-constants@~57.0.19, expo-constants@~57.0.20:
   version "57.0.20"
   resolved "https://registry.yarnpkg.com/expo-constants/-/expo-constants-57.0.20.tgz#d8691eccf44282f230a60b5f415b2d94cf7b9be0"
