@@ -1,0 +1,29 @@
+{
+  "summary": "Verified new seminar/sound-healing features. Backend: 5/5 pytest cases passed against the external preview URL — /api/trainings/active returns {items:[...]} with 3 items (all required summary fields present); /api/trainings/{slug} for an active slug returns full depth object (program, audience, time, address, phone, description, certification); the Level-2 slug (ekpaideftiko-seminario-ixotherapeias-epipedo-2-athina-6-8-noemvriou-2026) returns level=2 and non-empty program; unknown slug returns 404; endpoints work with no Authorization header. Frontend (390x844 mobile viewport): public landing '/' renders the Εκπαιδευτικά cards with dates (e.g. '31 Οκτωβρίου & 1 Νοεμβρίου 2026', '6-8 Νοεμβρίου 2026'), €-prices and ● ΕΝΕΡΓΟ badges; tapping a card navigates to /seminar/<slug> (verified navigation to /seminar/seminario-ixotherapias-athina-31-1-noemvriou-2026); direct deep link /seminar/ekpaideftiko-seminario-ixotherapeias-epipedo-2-athina-6-8-noemvriou-2026 loads the full detail screen with hero image, LEVEL 2 + ● ΕΝΕΡΓΟ badges, all 6 infographic chips (ΗΜΕΡΟΜΗΝΙΑ/ΩΡΑ/ΚΟΣΤΟΣ/ΧΩΡΟΣ/ΘΕΣΕΙΣ/ΓΛΩΣΣΑ), the 'Κράτηση θέσης' CTA card with 'Κλήση 6945562818' and 'WhatsApp / Viber' buttons, and the 'Τι θα δούμε' bullet list (no redirect to home). /explore/soundhealing renders the full in-app Ηχοθεραπεία guide (stat cards 60% & 4–8Hz, ΤΑ ΟΦΕΛΗ chips, ΤΑ ΟΡΓΑΝΑ pills, therapy cards). Tapping 'Sound Bath' expands and shows benefits (e.g. 'Βαθιά διαλογιστική εμπειρία'). No primary external link sends the user to soundhealing.gr for the info (only a tertiary 'Επικοινώνησε' contact link exists at the bottom of the standard footer). Bottom navigation shows Αρχική / Ηχοθεραπεία / Εκπαιδευτικά / Εκδηλώσεις / Προφίλ (no English 'Home' / 'Profile'). No red-screen or runtime pageerror; only pre-existing out-of-scope dev warnings (shadow*/pointerEvents/tintColor deprecation).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_trainings.py",
+    "/app/test_reports/pytest/iteration_9.xml",
+    "/app/test_reports/iteration_9.json"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "backend/trainings.py: route order is correct — '/trainings/active' is declared before the '/trainings/{slug}' catch-all so the dynamic matcher doesn't swallow it.",
+    "FALLBACK list satisfies the >=3 items contract when the live scrape is blocked (verified in production via /api/trainings/active)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_trainings.py (new regression test file)"
+  ],
+  "success_rate": {"backend": "100% (5/5)", "frontend": "100% (all required flows pass)"},
+  "seed_data_creation": "None.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Trainings endpoints are public (no auth). The live soundhealing.gr site intermittently returns 403 to httpx; the in-memory 6h cache + baked FALLBACK ensures /api/trainings/active always returns >=3 items — do NOT consider that scrape failure a bug. Deep link /seminar/<slug> is served by expo-router through app/seminar/[slug].tsx → src/components/SeminarDetail.tsx. Ignore pre-existing dev warnings (shadow*/pointerEvents/tintColor deprecation, 'Unexpected text node').",
+  "rca_of_issue": "N/A — this iteration validated newly added features; no bugs found."
+}

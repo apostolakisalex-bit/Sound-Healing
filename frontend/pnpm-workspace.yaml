@@ -1,0 +1,4 @@
+# Use the resolver's packaged platform binaries; do not run its install script.
+# Explicitly record this decision so pnpm 11 clean installs remain noninteractive.
+allowBuilds:
+  unrs-resolver: false

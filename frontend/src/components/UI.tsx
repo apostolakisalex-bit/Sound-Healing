@@ -19,11 +19,11 @@ export function Heading({
 
 // ── Body ──────────────────────────────────────────────────────────────
 export function Body({
-  children, color, size = 'body', weight = 'regular', style, testID,
-}: { children: ReactNode; color?: string; size?: 'bodyLg' | 'body' | 'small' | 'caption'; weight?: 'regular' | 'medium' | 'semi' | 'bold'; style?: TextStyle; testID?: string }) {
+  children, color, size = 'body', weight = 'regular', style, testID, numberOfLines,
+}: { children: ReactNode; numberOfLines?: number; color?: string; size?: 'bodyLg' | 'body' | 'small' | 'caption'; weight?: 'regular' | 'medium' | 'semi' | 'bold'; style?: TextStyle; testID?: string }) {
   const family = weight === 'regular' ? fonts.body : weight === 'medium' ? fonts.bodyMed : weight === 'semi' ? fonts.bodySemi : fonts.bodyBold;
   return (
-    <Text testID={testID} style={[{ fontFamily: family, color: color || colors.text.secondary, fontSize: fontSizes[size] }, style]}>
+    <Text numberOfLines={numberOfLines} testID={testID} style={[{ fontFamily: family, color: color || colors.text.secondary, fontSize: fontSizes[size] }, style]}>
       {children}
     </Text>
   );
@@ -180,3 +180,4 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 });
+

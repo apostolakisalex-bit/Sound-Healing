@@ -4,7 +4,7 @@ import { storage } from '@/src/utils/storage';
 const BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 export const api: AxiosInstance = axios.create({
-  baseURL: `${BASE_URL}/api`,
+  baseURL: `${BASE_URL || ''}/api`,
   timeout: 30000,
 });
 
@@ -29,3 +29,4 @@ api.interceptors.request.use(async (config) => {
   }
   return config;
 });
+
