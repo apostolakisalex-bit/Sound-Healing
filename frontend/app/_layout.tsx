@@ -31,7 +31,7 @@ function AuthGate() {
     const onAuthScreen = segments[0] === "login" || segments[0] === "register";
     const isPublicFeedback =
       segments[0] === "feedback" || segments[0] === "evaluation";
-    if (isPublicFeedback || segments[0] === "explore" || segments[0] === "seminar") return;
+    if (isPublicFeedback || segments[0] === "explore" || segments[0] === "seminar" || segments[0] === "account-action") return;
 
     // Unauthenticated: protect non-public routes
     if (!user && !onLandingRoot && !onAuthScreen) {
@@ -50,7 +50,7 @@ function AuthGate() {
     }
   }, [user, loading, segments, router]);
 
-  const publicRoute = segments[0] === undefined || segments[0] === "explore" || segments[0] === "seminar";
+  const publicRoute = segments[0] === undefined || segments[0] === "explore" || segments[0] === "seminar" || segments[0] === "account-action";
   if (loading && !publicRoute) {
     return (
       <View style={styles.loader}>

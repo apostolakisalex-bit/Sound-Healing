@@ -1,0 +1,40 @@
+{
+  "summary": "Backend v2.0 release (commit f77a7b8) verified end-to-end: 29/29 pytest cases GREEN in /app/backend/tests/test_release_v2.py (10.7s) covering onboarding gating (pending user can hit /api/auth/*, /members/me, /notifications but is 403 on /school/* and /admin/*), /auth/account response shape, PUT /auth/application with 1-12 month / 1900-2100 year validation (422 on bad values), email verify DB-harness (single-use + expired both return 400), reset-password harness (new JWT required: token_version bumped, old JWT -> 401, consumed token reused -> 400, expired -> 400), admin approval guard (422 when email not verified OR application incomplete, rejected path works), GET /admin/pending shape (registrations[] with application_complete/email_verified flags + training_requests[] + counts, admin-only), DB-backed rate limits on /auth/login and /auth/forgot-password (429 with Retry-After header), trainings import drafts, /trainings/active + /catalog public, unknown slug 404, /content/public reachable, approved student /school/me access + /members/me stats splitting recorded/approved/credited/historical. Frontend (390x844 mobile): /login renders all required Greek labels (Email, Κωδικός, Σύνδεση, Σύνδεση με Google, Ξέχασα τον κωδικό μου). Admin login lands on /admin with ΔΑΣΚΑΛΟΣ badge; the admin 'Περιεχόμενο' section exposes 'Εισαγωγή σεμιναρίων για επεξεργασία' + per-item 'Δημοσίευση' and 'Αρχειοθέτηση' controls; 'Επισκόπηση' section renders PendingInbox with 'Εγγραφές' + 'Αιτήσεις'. Approved student (uitest_167043@test.gr) lands on /profile showing stats cards split into Καταγραμμένες ώρες / Εγκεκριμένες πρακτικές / Προσμετρημένες πρακτικές εφαρμογής / Αναγνωρισμένες παλαιότερες πρακτικές — matches handoff spec. Pending user profile shows 'Ολοκλήρωση εγγραφής' with '✓ Τα στοιχεία εγγραφής είναι πλήρη', 'Αναμονή email' message + 'Αποστολή email επιβεβαίωσης' / 'Έχω επιβεβαιώσει — Ανανέωση' buttons and 'Αναμονή έγκρισης' badge. Bottom nav (Αρχική/Ηχοθεραπεία/Εκπαιδευτικά/Εκδηλώσεις/Προφίλ) is visible and fixed on all tested screens. HOWEVER one HIGH-PRIORITY regression found on frontend: direct navigation to /account-action (the public page emailed to users for reset/verify) is redirected to '/' because the AuthGate in /app/frontend/app/_layout.tsx does NOT whitelist 'account-action' alongside feedback/evaluation/explore/seminar — see RCA. This blocks the real-world reset-password and verify-email email-link flows for logged-out users. No red-screen or page errors; only pre-existing dev warnings (shadow*/pointerEvents/tintColor).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Password reset / Email verify link (unauthenticated)",
+        "issue": "GET /account-action#mode=reset|verify&token=... redirects unauthenticated users to '/' because AuthGate in /app/frontend/app/_layout.tsx only whitelists feedback/evaluation/explore/seminar. The emailed link therefore never reaches AccountAccess for logged-out users (the exact audience).",
+        "affected_testIDs": []
+      }
+    ],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_release_v2.py",
+    "/app/test_reports/pytest/iteration_10.xml",
+    "/app/test_reports/iteration_10.json"
+  ],
+  "action_items": [
+    "In /app/frontend/app/_layout.tsx, add 'account-action' to the public-route whitelist in AuthGate so unauthenticated users clicking the emailed reset/verify link actually reach the AccountAccess screen. Suggested patch: extend the early-return in the useEffect and the `publicRoute` constant to include segments[0] === 'account-action'. Keep the fragment-reading logic in AccountAccess (it already uses window.location.href then history.replaceState)."
+  ],
+  "critical_code_review_comments": [
+    "/app/backend/account_security.py: issue() correctly rate-limits per email, requires HTTPS PUBLIC_WEB_URL, stores sha256 hash + 30-min expiry; endpoints always return the generic 'if an account exists' response (no email enumeration).",
+    "/app/backend/server.py (get_current_user): correctly blocks pending/unverified users from everything except /api/auth/*, /api/members/me and /api/notifications*; passes with current approved student test.",
+    "/app/backend/members.py (decide): guards approval on application_complete AND email_verified AND per-level revision>0 — matches spec; rejected path has no such guard (good).",
+    "/app/backend/members.py (profile): stats correctly separate recorded_minutes vs approved_sessions vs credited_sessions vs historical_credited_sessions; drafts excluded from the practices list via {'status': {'$ne': 'draft'}}.",
+    "Rate-limiter uses request.client.host only (NOT X-Forwarded-For) — matches handoff hardening note."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_release_v2.py (new regression test file, 29 tests)"
+  ],
+  "success_rate": {"backend": "100% (29/29)", "frontend": "~90% (all required flows render; 1 routing bug blocks /account-action for unauthenticated email-link audience)"},
+  "seed_data_creation": "Each pending_user pytest fixture registers a fresh TEST_pending_<uuid>@test.gr user and cleans it up after the test. One manual UI pending user (TEST_uipending_ab7d2@test.gr, uid 369ddcc8-e81c-4ccf-8a08-fa5e7d67079d) was created to verify the Profile pending screen and then deleted from Mongo.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Re-run /app/backend/tests/test_release_v2.py after any auth/membership change — it is self-cleaning and uses the DB harness for verify/reset. The only frontend bug is in AuthGate (app/_layout.tsx) and does NOT require re-testing the entire v2.0 suite — just reload /account-action#mode=reset&token=abc...xyz (any 30+ char dummy token) WITHOUT being logged in and confirm the ΛΟΓΑΡΙΑΣΜΟΣ / Ανάκτηση κωδικού card renders instead of redirecting to '/'. requirements.txt still has the google-genai/httpx conflict noted in the handoff; do NOT pip install -r (per agent-to-agent note).",
+  "rca_of_issue": "ROOT CAUSE of /account-action redirect: /app/frontend/app/_layout.tsx AuthGate.useEffect runs on first mount; because the user is unauthenticated and segments[0] === 'account-action' does not satisfy any whitelist (isPublicFeedback checks only 'feedback'/'evaluation'; the extra early return checks only 'explore'/'seminar'; onAuthScreen checks only 'login'/'register'), the condition `!user && !onLandingRoot && !onAuthScreen` evaluates to true and the router does `router.replace('/')` BEFORE AccountAccess has a chance to read the URL fragment. REPRODUCE: In a fresh incognito session, open https://healing-universe.preview.emergentagent.com/account-action#mode=reset&token=TESTTOKEN1234567890ABCDEFGHIJ → observe landing page '/' instead of the Ανάκτηση κωδικού card. MITIGATION: extend both the early-return in the useEffect and the `publicRoute` boolean to include segments[0] === 'account-action'. Fragment handling in AccountAccess.tsx (useEffect reads window.location.href then history.replaceState) already correctly strips the token from history after loading, so no server-side change is required."
+}

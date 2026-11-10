@@ -338,5 +338,29 @@ Ran the read-only Security Audit (verdict: CONDITIONAL PASS, no Critical/High). 
 - Audit confirmed already-solid controls: JWT HS256 + revocation, admin guards, no secret leakage, SSRF/ReDoS safe,
   CORS non-wildcard with credentials off.
 
+---
+
+## v2.0 — Integrated GitHub commit f77a7b8 (account onboarding, practice review, admin CMS) — June 2026
+Pulled `apostolakisalex-bit/Sound-Healing @ f77a7b8` (branch shg/premium-renewal) via **clean fast-forward** onto
+main (its merge-base was my own tip `70720ab`, so all prior session work is preserved as the base). Followed
+`product/RELEASE_READINESS_HANDOFF.md`. SDK 57, Google/Resend, photos and aesthetic retained.
+- New: Google/email onboarding → complete Profile application → email verification → admin approval gate;
+  password recovery (hashed single-use 30-min tokens, reset bumps `token_version` to revoke sessions);
+  DB-backed rate limiting (`auth_limits`, 429 + Retry-After); practice-review labels (Πρόχειρη / Αναμονή
+  αξιολόγησης / Προς έλεγχο / Χρειάζεται διόρθωση / Εγκρίθηκε); admin pending inbox; admin seminar
+  import-as-draft → edit/photo → publish/archive with CMS override; CMS sound-healing page override.
+  New files: `backend/account_security.py`, `backend/practice_state.py`, `frontend/app/account-action.tsx`,
+  `frontend/src/components/AccountAccess.tsx`, `frontend/src/components/PendingInbox.tsx`.
+- Config: `PUBLIC_WEB_URL` (preview origin) + `EMERGENT_EMAIL_KEY`/`EMAIL_FROM_NAME` already set in backend/.env.
+- Fix applied this session: AuthGate (`app/_layout.tsx`) now whitelists `account-action` (both the early-return and
+  `publicRoute`) so logged-out users opening emailed verify/reset links are no longer redirected to `/`.
+- Verification results: backend **51/51** unit tests + **29/29** release tests (new `backend/tests/test_release_v2.py`)
+  pass; `tsc --noEmit` clean; `expo export --platform web` = **35 routes**; frontend flows (login, pending onboarding
+  states, admin CMS/pending, student 4-way stats, account-action reset card, 320px small-screen + fixed bottom bar)
+  verified. No production deploy performed (per request).
+- KNOWN pre-deploy note: `backend/requirements.txt` (foreign pip-freeze) has a `google-genai 2.2.0` vs `httpx 0.27.2`
+  conflict (google-genai is unused by the app; running env works). A fresh `pip install -r` would fail — must be
+  repaired before deploying (remove/relax google-genai), but does not affect preview or tests.
+
 
 
