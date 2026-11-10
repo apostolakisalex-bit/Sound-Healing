@@ -362,5 +362,21 @@ main (its merge-base was my own tip `70720ab`, so all prior session work is pres
   conflict (google-genai is unused by the app; running env works). A fresh `pip install -r` would fail — must be
   repaired before deploying (remove/relax google-genai), but does not affect preview or tests.
 
+## Events/Trainings Calendar (new)
+- `frontend/src/components/EventsCalendar.tsx`: month calendar shown in BOTH «Εκδηλώσεις» and «Εκπαιδευτικά»
+  sections (wired in `PublicExperience.tsx` above the EventGrid). Pulls ALL items itself: `/api/trainings/catalog`
+  (seminars) + `/api/content/public` events. Pins past days GREY (`wellness.muted`), upcoming days PURPLE
+  (`wellness.lavenderInk`). Greek month/weekday labels (Monday-first). Tapping a pinned day opens its details
+  (`/seminar/{slug}` for trainings, `action_url` for CMS events). Initializes to the month of the nearest upcoming item.
+
+## Service detail screens with photo carousel (new)
+- `frontend/src/content/services.ts`: curated per-topic content + photo URLs sourced from soundhealing.gr for the 3
+  service cards (ergastiria-omilies, xenodocheia-spa, etairikes-ekdiloseis).
+- `frontend/src/components/PhotoCarousel.tsx`: swipeable paging carousel (dots + web chevrons).
+- `frontend/src/components/ServiceDetail.tsx` + route `app/service/[slug].tsx`: topic-specific screen (symbol, intro,
+  carousel, body, highlight chips, optional testimonial, contact CTA). Back link = «← Αρχική» (goes to `/`, no
+  intermediate Services page). `PublicHome` service cards now route to `/service/{slug}` via `serviceSlugByTitle`.
+- `service` added to AuthGate public-route whitelist in `app/_layout.tsx`.
+
 
 

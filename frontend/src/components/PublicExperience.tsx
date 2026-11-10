@@ -9,6 +9,7 @@ import Head from "expo-router/head";
 import { EditorialIntro } from "./EditorialIntro";
 
 import { SoundHealingGuide } from "./SoundHealingGuide";
+import { EventsCalendar } from "./EventsCalendar";
 import {
   Shell,
   ui,
@@ -161,18 +162,6 @@ export function PublicExperience({ section }: { section?: string }) {
         <PublicHome items={state.data} />
       )}
       {section === "training" && <TrainingLevelCards />}
-      {section === "training" && (
-        <View style={{ gap: 12 }}>
-          <Text style={ui.heading}>Εκπαιδευτικά σεμινάρια</Text>
-          <Text style={ui.body}>
-            Βρες το επόμενο σεμινάριο ή γνώρισε τα προηγούμενα εκπαιδευτικά μας.
-          </Text>
-          <NavLink href="https://www.soundhealing.gr/training-seminars/">
-            Αναλυτικό πρόγραμμα εκπαίδευσης ↗
-          </NavLink>
-          <NavLink href="/academy">Είσαι ήδη μαθητής; Μπες στη Σχολή →</NavLink>
-        </View>
-      )}
       {section === "services" && (
         <NavLink href="https://www.soundhealing.gr/el/epipleon-yphresies/">
           Αναλυτικά οι υπηρεσίες και οι συνεργασίες ↗
@@ -186,6 +175,7 @@ export function PublicExperience({ section }: { section?: string }) {
       {section === "soundhealing" && !intro && <SoundHealingGuide />}
       {section === "contact" && <MembersChat />}
       <Status state={state} />
+      {(section === "events" || section === "training") && <EventsCalendar />}
       {(section === "events" || section === "training") && (
         <EventGrid
           training={section === "training"}

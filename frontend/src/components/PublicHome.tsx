@@ -25,6 +25,7 @@ import {
 } from "@/src/content/public";
 import { ContentItem, Status, ui, useLoad } from "./Wellness";
 import { EventGrid } from "./EventGrid";
+import { serviceSlugByTitle } from "@/src/content/services";
 type LiveTraining = {
   slug: string;
   title: string;
@@ -576,7 +577,14 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           ).map((title, index) => (
             <Pressable
               key={title}
-              onPress={() => router.push("/explore/services")}
+              onPress={() => {
+                const serviceSlug = serviceSlugByTitle(title);
+                router.push(
+                  serviceSlug
+                    ? (`/service/${serviceSlug}` as any)
+                    : "/explore/services",
+                );
+              }}
               accessibilityRole="link"
               style={[
                 iconSurface,
