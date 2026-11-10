@@ -25,6 +25,7 @@ const CDN = "https://www.soundhealing.gr/wp-content/uploads";
 const CONTACT_URL = "https://www.soundhealing.gr/contact/";
 
 export const TREATMENTS_CONTACT_URL = CONTACT_URL;
+export const TREATMENTS_PHONE = "6945562818";
 
 // Content & photos curated and adapted to Greek from https://www.soundhealing.gr/treatments/
 export const TREATMENTS: TreatmentContent[] = [

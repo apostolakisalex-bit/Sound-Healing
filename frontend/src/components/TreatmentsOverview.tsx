@@ -1,11 +1,11 @@
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Linking, Pressable, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import Head from "expo-router/head";
 import { wellness } from "@/src/theme";
 import { Shell, ui } from "./Wellness";
-import { TREATMENTS } from "@/src/content/treatments";
+import { TREATMENTS, TREATMENTS_PHONE } from "@/src/content/treatments";
 
 export function TreatmentsOverview() {
   const router = useRouter();
@@ -85,11 +85,29 @@ export function TreatmentsOverview() {
                 {t.tagline}
               </Text>
             </View>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={wellness.slate}
-            />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Κλείσε ραντεβού για ${t.title} μέσω WhatsApp`}
+              hitSlop={8}
+              onPress={() =>
+                void Linking.openURL(
+                  `https://wa.me/30${TREATMENTS_PHONE}?text=${encodeURIComponent(
+                    `Γεια σας! Θα ήθελα να κλείσω ραντεβού για: ${t.title}.`,
+                  )}`,
+                )
+              }
+              style={({ pressed }) => ({
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: wellness.lavenderInk,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: pressed ? 0.8 : 1,
+              })}
+            >
+              <Ionicons name="logo-whatsapp" size={20} color={wellness.white} />
+            </Pressable>
           </Pressable>
         ))}
       </View>

@@ -6,7 +6,7 @@ import Head from "expo-router/head";
 import { wellness } from "@/src/theme";
 import { ManagedImage } from "./ManagedImage";
 import { Shell, ui } from "./Wellness";
-import { treatmentBySlug, TREATMENTS_CONTACT_URL } from "@/src/content/treatments";
+import { treatmentBySlug, TREATMENTS_PHONE } from "@/src/content/treatments";
 
 export function TreatmentDetail() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -204,15 +204,89 @@ export function TreatmentDetail() {
             </View>
           </View>
 
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => void Linking.openURL(TREATMENTS_CONTACT_URL)}
-            style={[ui.button, { alignItems: "center" }]}
+          <View
+            style={[
+              ui.card,
+              {
+                backgroundColor: wellness.lavender,
+                borderColor: wellness.lavenderInk,
+                gap: 14,
+              },
+            ]}
           >
-            <Text style={{ color: wellness.white, fontWeight: "700", fontSize: 15 }}>
-              Κλείσε συνεδρία
+            <Text style={[ui.heading, { color: wellness.ink }]}>
+              Κλείσε ραντεβού
             </Text>
-          </Pressable>
+            <Text style={[ui.body, { color: wellness.ink }]}>
+              Επικοινώνησε για διαθεσιμότητα και κράτηση της συνεδρίας.
+            </Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Κράτηση μέσω WhatsApp"
+                onPress={() =>
+                  void Linking.openURL(
+                    `https://wa.me/30${TREATMENTS_PHONE}?text=${encodeURIComponent(
+                      `Γεια σας! Θα ήθελα να κλείσω ραντεβού για: ${t.title}.`,
+                    )}`,
+                  )
+                }
+                style={({ pressed }) => ({
+                  flexGrow: 1,
+                  flexDirection: "row",
+                  gap: 8,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: wellness.lavenderInk,
+                  paddingVertical: 14,
+                  paddingHorizontal: 18,
+                  borderRadius: 24,
+                  minHeight: 48,
+                  opacity: pressed ? 0.8 : 1,
+                })}
+              >
+                <Ionicons name="logo-whatsapp" size={18} color={wellness.white} />
+                <Text
+                  style={{ color: wellness.white, fontWeight: "700", fontSize: 15 }}
+                >
+                  WhatsApp
+                </Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Κλήση ${TREATMENTS_PHONE}`}
+                onPress={() =>
+                  void Linking.openURL(`tel:+30${TREATMENTS_PHONE}`)
+                }
+                style={({ pressed }) => ({
+                  flexGrow: 1,
+                  flexDirection: "row",
+                  gap: 8,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: wellness.white,
+                  borderWidth: 1,
+                  borderColor: wellness.lavenderInk,
+                  paddingVertical: 14,
+                  paddingHorizontal: 18,
+                  borderRadius: 24,
+                  minHeight: 48,
+                  opacity: pressed ? 0.8 : 1,
+                })}
+              >
+                <Ionicons name="call-outline" size={18} color={wellness.lavenderInk} />
+                <Text
+                  style={{
+                    color: wellness.lavenderInk,
+                    fontWeight: "700",
+                    fontSize: 15,
+                  }}
+                >
+                  Κλήση
+                </Text>
+              </Pressable>
+            </View>
+          </View>
         </View>
       )}
     </Shell>

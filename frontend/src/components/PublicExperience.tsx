@@ -103,7 +103,8 @@ export function PublicExperience({ section }: { section?: string }) {
     (i) =>
       !i.published.event_end_date ||
       i.published.event_end_date >= today ||
-      (section === "training" && i.published.section === "training"),
+      ((section === "training" || section === "events") &&
+        ["training", "events"].includes(i.published.section || "")),
   );
   const settings = state.data.find(
     (i) => i.published.kind === "site_settings",

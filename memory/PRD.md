@@ -390,5 +390,20 @@ main (its merge-base was my own tip `70720ab`, so all prior session work is pres
   in `PublicHome.tsx`, matching the 3 service cards; tap → `/treatments` overview.
 - `treatment` and `treatments` added to AuthGate public-route whitelist in `app/_layout.tsx`.
 
+## Expo SDK 58 (verified)
+- Project confirmed on Expo SDK 58 (expo 58.0.23, react-native 0.88.1, react 19.3.0). `expo install --fix`
+  reports deps up to date; `@expo/vector-icons@15` is the SDK-58 bundled version (kept, not migrated).
+- `expo-doctor` → 20/20 after: removing stray `pnpm-lock.yaml` (yarn is the package manager) and cropping
+  `assets/images/icon.png` + `adaptive-icon.png` from 512x513 to square 512x512.
+- `app/+html.tsx` SDK 58 web-document fix preserved.
+
+## Events/Training — active list + archive (new)
+- `EventGrid.tsx`: below the calendar now shows only ACTIVE items (event_end_date >= today / no end date);
+  past items collapse under an «Αρχείο (n)» toggle rendering the same cards. Applies to both «Εκπαιδευτικά»
+  and «Εκδηλώσεις». `PublicExperience.tsx` visibleItems now also retains past `events` items (not only
+  `training`) so the events archive has data. NOTE: CMS `content/public` currently has 0 training/events
+  items — live seminars surface via the trainings catalog (calendar + TrainingLevelCards); the EventGrid
+  archive populates only when CMS training/events entries exist.
+
 
 
