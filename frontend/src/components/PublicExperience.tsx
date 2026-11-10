@@ -194,16 +194,6 @@ export function PublicExperience({ section }: { section?: string }) {
         .map((item) => (
           <ContentCard key={item.id} item={item} />
         ))}
-      {(section === "events" ||
-        section === "journal" ||
-        section === "training") &&
-        !state.loading &&
-        !state.error &&
-        !entries.filter((item) => item.id !== intro?.id).length && (
-          <Text style={ui.body}>
-            Δεν υπάρχουν ακόμη δημοσιεύσεις σε αυτή την ενότητα της εφαρμογής.
-          </Text>
-        )}
       {section === "events" && (
         <NavLink href="https://www.soundhealing.gr/soundhealing-events/">
           Δες το πρόγραμμα στο soundhealing.gr ↗
