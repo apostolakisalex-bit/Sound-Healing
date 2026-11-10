@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Head from "expo-router/head";
 import { wellness } from "@/src/theme";
 import { Shell, ui } from "./Wellness";
+import { ManagedImage } from "./ManagedImage";
 import { TREATMENTS, TREATMENTS_PHONE } from "@/src/content/treatments";
 
 export function TreatmentsOverview() {
@@ -59,18 +60,17 @@ export function TreatmentsOverview() {
               },
             ]}
           >
-            <View
+            <ManagedImage
+              source={{ uri: t.hero }}
+              accessibilityLabel={t.title}
+              resizeMode="cover"
               style={{
-                width: 52,
-                height: 52,
-                borderRadius: 26,
+                width: 60,
+                height: 60,
+                borderRadius: 12,
                 backgroundColor: wellness.lavender,
-                alignItems: "center",
-                justifyContent: "center",
               }}
-            >
-              <Ionicons name={t.icon} size={26} color={wellness.lavenderInk} />
-            </View>
+            />
             <View style={{ flex: 1, gap: 4 }}>
               <Text
                 style={{

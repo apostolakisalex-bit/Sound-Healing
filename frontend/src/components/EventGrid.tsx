@@ -27,8 +27,9 @@ export function EventGrid({
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
-  const isPast = (p: ContentItem["published"]) =>
-    !!p.event_end_date && p.event_end_date < today;
+  const isPast = (it: ContentItem) =>
+    it.completed ??
+    (!!it.published.event_end_date && it.published.event_end_date < today);
   const matches = items.filter(({ published: p }) =>
     [p.title, p.event_location, p.event_date]
       .join(" ")
@@ -36,14 +37,14 @@ export function EventGrid({
       .includes(search.trim().toLocaleLowerCase("el")),
   );
   const activeItems = matches
-    .filter((m) => !isPast(m.published))
+    .filter((m) => !isPast(m))
     .sort((a, b) =>
       (a.published.event_end_date || "9999").localeCompare(
         b.published.event_end_date || "9999",
       ),
     );
   const pastItems = matches
-    .filter((m) => isPast(m.published))
+    .filter((m) => isPast(m))
     .sort((a, b) =>
       (b.published.event_end_date || "").localeCompare(
         a.published.event_end_date || "",
@@ -58,7 +59,10 @@ export function EventGrid({
     alignItems: "stretch",
   } as const;
 
-  const renderCard = ({ id, published: p }: ContentItem) => (
+  const renderCard = (item: ContentItem) => {
+    const { id, published: p } = item;
+    const past = isPast(item);
+    return (
     <View
       key={id}
       style={{
@@ -100,7 +104,7 @@ export function EventGrid({
       )}
       <View style={{ height: 1, backgroundColor: wellness.sand }} />
       <View style={{ padding: 14, gap: 12, flex: 1 }}>
-        {isPast(p) && (
+        {past && (
           <Text style={[ui.label, { color: wellness.muted, fontSize: 11 }]}>
             {training ? "Παλαιότερο εκπαιδευτικό" : "Ολοκληρωμένη εκδήλωση"}
           </Text>
@@ -172,7 +176,7 @@ export function EventGrid({
               },
             ]}
           >
-            {isPast(p)
+            {past
               ? training
                 ? "Πληροφορίες εκπαιδευτικού"
                 : "Πληροφορίες εκδήλωσης"
@@ -185,7 +189,8 @@ export function EventGrid({
         )}
       </View>
     </View>
-  );
+    );
+  };
 
   // Compact (home preview): single grid, no search / archive.
   if (compact) {

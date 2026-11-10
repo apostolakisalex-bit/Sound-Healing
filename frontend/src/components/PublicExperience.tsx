@@ -68,6 +68,16 @@ const sections = {
   },
 };
 type Section = keyof typeof sections;
+type LiveSeminar = {
+  slug: string;
+  title: string;
+  image?: string;
+  date?: string;
+  time?: string;
+  end_date?: string;
+  location?: string;
+  active?: boolean;
+};
 function NavLink({
   href,
   children,
@@ -93,6 +103,9 @@ function NavLink({
 }
 export function PublicExperience({ section }: { section?: string }) {
   const state = useLoad<ContentItem[]>("/content/public", []);
+  const seminars = useLoad<{ items: LiveSeminar[] }>("/trainings/catalog", {
+    items: [],
+  });
   const today = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Athens",
     year: "numeric",
@@ -123,6 +136,34 @@ export function PublicExperience({ section }: { section?: string }) {
   );
   const intro = entries.find((i) => i.published.kind === "page");
   const title = intro?.published.title || page?.title;
+  // Live seminars from the catalog → cards under the training calendar.
+  // Completed seminars (curated `active:false` or past end date) fall into the archive.
+  const seminarItems: ContentItem[] =
+    section === "training"
+      ? seminars.data.items.map((t) => ({
+          id: "seminar-" + t.slug,
+          completed:
+            typeof t.active === "boolean"
+              ? !t.active
+              : !!t.end_date && t.end_date < today,
+          published: {
+            title: t.title,
+            summary: "",
+            body: "",
+            kind: "event",
+            section: "training",
+            image_url: t.image,
+            event_date: t.date,
+            event_time: t.time,
+            event_location: t.location,
+            event_end_date: t.end_date,
+            action_url: `/seminar/${t.slug}`,
+            action_label: "Πληροφορίες & εγγραφή",
+            level_id: null,
+            media_url: "",
+          },
+        }))
+      : [];
   return (
     <Shell
       publicPage
@@ -183,7 +224,10 @@ export function PublicExperience({ section }: { section?: string }) {
       {(section === "events" || section === "training") && (
         <EventGrid
           training={section === "training"}
-          items={entries.filter((item) => item.id !== intro?.id)}
+          items={[
+            ...entries.filter((item) => item.id !== intro?.id),
+            ...seminarItems,
+          ]}
         />
       )}
       {(section === "events" || section === "training") && (
