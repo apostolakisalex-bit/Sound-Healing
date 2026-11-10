@@ -1,21 +1,25 @@
 import React, { useState } from "react";
 import { Text, View } from "react-native";
-import { Button, Status, ui, useLoad } from "./Wellness";
+import { Button, Status, ui } from "./Wellness";
 import { MemberProfile } from "./MemberProfile";
 export function PendingInbox({
+  state,
   cohorts,
   onPractices,
 }: {
+  state: {
+    data: { counts?: any; registrations?: any[]; training_requests?: any[] };
+    loading: boolean;
+    error: string;
+    reload: () => void | Promise<void>;
+  };
   cohorts: { id: string; title: string; level_id: string }[];
   onPractices: () => void;
 }) {
-  const state = useLoad<any>("/admin/pending", {
-    counts: {},
-    registrations: [],
-    training_requests: [],
-  });
   const [member, setMember] = useState("");
-  const c = state.data.counts;
+  const c = state.data.counts || {};
+  const registrations = state.data.registrations || [];
+  const training_requests = state.data.training_requests || [];
   return (
     <View style={ui.card}>
       <Text style={ui.heading}>Εκκρεμότητες</Text>
@@ -34,7 +38,7 @@ export function PendingInbox({
         label="Ανανέωση εκκρεμοτήτων"
         onPress={() => void state.reload()}
       />
-      {state.data.registrations.map((m: any) => (
+      {registrations.map((m: any) => (
         <Button
           secondary
           key={m.id}
@@ -42,7 +46,7 @@ export function PendingInbox({
           onPress={() => setMember(m.id)}
         />
       ))}
-      {state.data.training_requests.map((m: any) => (
+      {training_requests.map((m: any) => (
         <Button
           secondary
           key={m.id}

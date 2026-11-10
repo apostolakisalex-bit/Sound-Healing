@@ -407,3 +407,18 @@ main (its merge-base was my own tip `70720ab`, so all prior session work is pres
 
 
 
+
+## v2.2 — Events archive, universal seminar share, clickable admin stat circles
+- **Events archive (BlogList.tsx)**: In «Εκδηλώσεις»/«Εκπαιδευτικά», section-specific blog posts
+  (category === section) are split by publish date vs Europe/Athens "today". Past ones collapse into a
+  tappable «Αρχείο εκδηλώσεων» / «Αρχείο εκπαιδευτικών»; general sound-healing articles stay visible.
+  Source: GET /api/blog?section=events|training (WordPress-backed, classified in backend/blog.py).
+- **Seminar share (SeminarDetail.tsx)**: The «Μοιράσου» button now renders for EVERY seminar (active and
+  archived). «Ημερολόγιο» stays active-only. Uses existing shareSeminar() helper (src/utils/seminarActions.ts).
+- **Admin stat circles (AdminHome.tsx + new AdminOverview.tsx)**: The 4 overview circles (Μαθητές,
+  Ενεργές εγγραφές, Τμήματα, Για έλεγχο) are now tappable CTAs with chevron + active (filled) state.
+  Tapping one expands a detail list below. «Εκκρεμότητες» (PendingInbox) now lives INSIDE the «Για έλεγχο»
+  circle; its value = total pending (registrations + training_requests + practices from /admin/pending).
+  PendingInbox refactored to receive its useLoad state as a prop (fetched once in AdminOverview). The old
+  always-visible PendingInbox panel in «Κέντρο διαχείρισης» was removed.
+

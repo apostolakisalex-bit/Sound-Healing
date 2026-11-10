@@ -1,4 +1,3 @@
-import { PendingInbox } from "@/src/components/PendingInbox";
 import { MembersAdmin } from "@/src/components/MemberProfile";
 import { AdminCalendar } from "@/src/components/AdminCalendar";
 import { MediaLibrary } from "@/src/components/MediaLibrary";
@@ -15,7 +14,7 @@ import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { wellness } from "@/src/theme";
-import { AdminHome } from "@/src/components/AdminHome";
+import { AdminOverview } from "@/src/components/AdminOverview";
 import { ResourcesSection } from "@/src/components/ResourcesSection";
 import { api } from "@/src/api/client";
 import { useAuth } from "@/src/auth/AuthContext";
@@ -219,27 +218,10 @@ function WorkspaceScreen() {
         </Text>
       )}
       {section === "Επισκόπηση" && user?.role === "admin" && (
-        <AdminHome
-          stats={[
-            {
-              label: "Μαθητές",
-              value: state.data.users.filter((u: any) => u.role === "student")
-                .length,
-            },
-            {
-              label: "Ενεργές εγγραφές",
-              value: state.data.enrollments.filter(
-                (e: any) => e.status === "active",
-              ).length,
-            },
-            { label: "Τμήματα", value: state.data.cohorts.length },
-            {
-              label: "Για έλεγχο",
-              value: state.data.practices.filter(
-                (p: any) => p.status === "submitted",
-              ).length,
-            },
-          ]}
+        <AdminOverview
+          workspace={state.data}
+          cohorts={state.data.cohorts}
+          onPractices={() => setSection("Αξιολογήσεις")}
         />
       )}
       <Status state={state} />
@@ -277,12 +259,6 @@ function WorkspaceScreen() {
       {section === "Επισκόπηση" && (
         <View style={{ gap: 16 }}>
           <Text style={ui.heading}>Κέντρο διαχείρισης</Text>
-          {user?.role === "admin" && (
-            <PendingInbox
-              cohorts={state.data.cohorts}
-              onPractices={() => setSection("Αξιολογήσεις")}
-            />
-          )}
           <View style={ui.row}>
             {(user?.role === "admin"
               ? [

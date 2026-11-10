@@ -8,11 +8,19 @@ import { useAuth } from "@/src/auth/AuthContext";
 import { ui, useLoad } from "./Wellness";
 import { iconSurface } from "./AppNavigation";
 
-type Stat = { label: string; value: number };
+type Stat = { key?: string; label: string; value: number };
 
 // Admin home header — mirrors the student profile header (avatar circle + name)
 // but shows a "Δάσκαλος" badge instead of Level bars, with school stats in circles.
-export function AdminHome({ stats }: { stats: Stat[] }) {
+export function AdminHome({
+  stats,
+  activeKey,
+  onStat,
+}: {
+  stats: Stat[];
+  activeKey?: string | null;
+  onStat?: (key: string) => void;
+}) {
   const { user } = useAuth();
   const me = useLoad<{ name: string; profile_image?: string }>("/members/me", {
     name: user?.name || "",
@@ -74,16 +82,45 @@ export function AdminHome({ stats }: { stats: Stat[] }) {
         </View>
       </View>
       <View style={styles.statsRow}>
-        {stats.map((s) => (
-          <View key={s.label} style={styles.statWrap}>
-            <View style={styles.statCircle}>
-              <Text style={styles.statValue}>{s.value}</Text>
-            </View>
-            <Text style={styles.statLabel} numberOfLines={2}>
-              {s.label}
-            </Text>
-          </View>
-        ))}
+        {stats.map((s) => {
+          const tappable = !!(onStat && s.key);
+          const selected = !!s.key && activeKey === s.key;
+          const Wrap: any = tappable ? Pressable : View;
+          return (
+            <Wrap
+              key={s.label}
+              style={styles.statWrap}
+              {...(tappable
+                ? {
+                    accessibilityRole: "button",
+                    accessibilityLabel: `${s.label}: ${s.value}. Προβολή λεπτομερειών`,
+                    accessibilityState: { selected },
+                    onPress: () => onStat!(s.key!),
+                  }
+                : {})}
+            >
+              <View
+                style={[styles.statCircle, selected && styles.statCircleActive]}
+              >
+                <Text
+                  style={[styles.statValue, selected && styles.statValueActive]}
+                >
+                  {s.value}
+                </Text>
+              </View>
+              <Text style={styles.statLabel} numberOfLines={2}>
+                {s.label}
+              </Text>
+              {tappable && (
+                <Ionicons
+                  name={selected ? "chevron-up" : "chevron-down"}
+                  size={14}
+                  color={wellness.lavenderInk}
+                />
+              )}
+            </Wrap>
+          );
+        })}
       </View>
     </View>
   );
@@ -120,10 +157,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  statCircleActive: {
+    backgroundColor: wellness.lavenderInk,
+  },
   statValue: {
     fontSize: 22,
     fontWeight: "700",
     color: wellness.lavenderInk,
+  },
+  statValueActive: {
+    color: "#FFFFFF",
   },
   statLabel: {
     fontSize: 11,

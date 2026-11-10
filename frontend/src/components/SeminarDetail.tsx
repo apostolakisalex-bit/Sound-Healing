@@ -292,8 +292,8 @@ export function SeminarDetail() {
               ))}
           </View>
 
-          {t.active && (
-            <View style={{ flexDirection: "row", gap: 10 }}>
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            {t.active && (
               <Pressable
                 accessibilityRole="button"
                 onPress={addToCalendar}
@@ -329,6 +329,7 @@ export function SeminarDetail() {
                   Ημερολόγιο
                 </Text>
               </Pressable>
+            )}
               <Pressable
                 accessibilityRole="button"
                 onPress={() => shareSeminar(t.full_title || t.title, t.url)}
@@ -364,8 +365,7 @@ export function SeminarDetail() {
                   Μοιράσου
                 </Text>
               </Pressable>
-            </View>
-          )}
+          </View>
           {/* Booking CTA */}
           {!!phone && t.active && (
             <>
