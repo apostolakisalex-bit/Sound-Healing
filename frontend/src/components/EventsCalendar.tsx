@@ -58,7 +58,7 @@ const longDate = (iso: string) => {
   }).format(new Date(y, m - 1, d));
 };
 
-export function EventsCalendar() {
+export function EventsCalendar({ mode }: { mode?: "training" | "events" }) {
   const router = useRouter();
   const trainings = useLoad<{ items: LiveTraining[] }>("/trainings/catalog", {
     items: [],
@@ -69,42 +69,44 @@ export function EventsCalendar() {
   const events = useMemo<CalEvent[]>(() => {
     const out: CalEvent[] = [];
     // Εκπαιδευτικά σεμινάρια
-    for (const t of trainings.data.items) {
-      const dateISO = isISO(t.start_date) || isISO(t.end_date);
-      if (!dateISO) continue;
-      const endISO = isISO(t.end_date) || dateISO;
-      out.push({
-        key: "t-" + t.slug,
-        title: t.title,
-        dateISO,
-        dateText: t.date,
-        location: t.location,
-        image: t.image,
-        past: typeof t.active === "boolean" ? !t.active : endISO < today,
-        open: () => router.push(`/seminar/${t.slug}` as any),
-      });
-    }
+    if (mode !== "events")
+      for (const t of trainings.data.items) {
+        const dateISO = isISO(t.start_date) || isISO(t.end_date);
+        if (!dateISO) continue;
+        const endISO = isISO(t.end_date) || dateISO;
+        out.push({
+          key: "t-" + t.slug,
+          title: t.title,
+          dateISO,
+          dateText: t.date,
+          location: t.location,
+          image: t.image,
+          past: typeof t.active === "boolean" ? !t.active : endISO < today,
+          open: () => router.push(`/seminar/${t.slug}` as any),
+        });
+      }
     // Εκδηλώσεις / sound baths από το CMS
-    for (const item of content.data) {
-      const p = item.published;
-      if (p.section !== "events") continue;
-      const dateISO = isISO(p.event_date) || isISO(p.event_end_date);
-      if (!dateISO) continue;
-      const endISO = isISO(p.event_end_date) || dateISO;
-      const url = p.action_url;
-      out.push({
-        key: "e-" + item.id,
-        title: p.title,
-        dateISO,
-        dateText: p.event_date,
-        location: p.event_location,
-        image: p.image_url,
-        past: endISO < today,
-        open: url ? () => void Linking.openURL(url) : () => {},
-      });
-    }
+    if (mode !== "training")
+      for (const item of content.data) {
+        const p = item.published;
+        if (p.section !== "events") continue;
+        const dateISO = isISO(p.event_date) || isISO(p.event_end_date);
+        if (!dateISO) continue;
+        const endISO = isISO(p.event_end_date) || dateISO;
+        const url = p.action_url;
+        out.push({
+          key: "e-" + item.id,
+          title: p.title,
+          dateISO,
+          dateText: p.event_date,
+          location: p.event_location,
+          image: p.image_url,
+          past: endISO < today,
+          open: url ? () => void Linking.openURL(url) : () => {},
+        });
+      }
     return out;
-  }, [trainings.data, content.data, today, router]);
+  }, [trainings.data, content.data, today, router, mode]);
 
   const byDay = useMemo(() => {
     const map: Record<string, CalEvent[]> = {};
@@ -153,7 +155,9 @@ export function EventsCalendar() {
 
   return (
     <View style={{ gap: 16 }}>
-      <Text style={ui.heading}>Ημερολόγιο εκδηλώσεων</Text>
+      <Text style={ui.heading}>
+        {mode === "training" ? "Ημερολόγιο εκπαιδευτικών" : "Ημερολόγιο εκδηλώσεων"}
+      </Text>
       <View
         style={[ui.card, { maxWidth: 460, width: "100%", alignSelf: "center", gap: 14 }]}
       >

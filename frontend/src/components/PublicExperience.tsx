@@ -10,6 +10,7 @@ import { EditorialIntro } from "./EditorialIntro";
 
 import { SoundHealingGuide } from "./SoundHealingGuide";
 import { EventsCalendar } from "./EventsCalendar";
+import { BlogList } from "./BlogList";
 import {
   Shell,
   ui,
@@ -175,12 +176,17 @@ export function PublicExperience({ section }: { section?: string }) {
       {section === "soundhealing" && !intro && <SoundHealingGuide />}
       {section === "contact" && <MembersChat />}
       <Status state={state} />
-      {(section === "events" || section === "training") && <EventsCalendar />}
+      {(section === "events" || section === "training") && (
+        <EventsCalendar mode={section === "training" ? "training" : "events"} />
+      )}
       {(section === "events" || section === "training") && (
         <EventGrid
           training={section === "training"}
           items={entries.filter((item) => item.id !== intro?.id)}
         />
+      )}
+      {(section === "events" || section === "training") && (
+        <BlogList section={section === "training" ? "training" : "events"} />
       )}
       {entries
         .filter(

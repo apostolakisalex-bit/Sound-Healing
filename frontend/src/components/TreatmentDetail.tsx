@@ -1,0 +1,222 @@
+import React from "react";
+import { Linking, Pressable, Text, View } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import Head from "expo-router/head";
+import { wellness } from "@/src/theme";
+import { ManagedImage } from "./ManagedImage";
+import { Shell, ui } from "./Wellness";
+import { treatmentBySlug, TREATMENTS_CONTACT_URL } from "@/src/content/treatments";
+
+export function TreatmentDetail() {
+  const { slug } = useLocalSearchParams<{ slug: string }>();
+  const router = useRouter();
+  const t = treatmentBySlug(slug);
+
+  return (
+    <Shell publicPage eyebrow="" title="">
+      <Head>
+        <title>{(t?.title || "Treatment") + " · Sound Healing Greece"}</title>
+        <meta name="description" content={t?.intro || ""} />
+      </Head>
+
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel="Πίσω στα Treatments"
+        onPress={() => router.push("/treatments")}
+        style={{ minHeight: 44, justifyContent: "center", paddingVertical: 6 }}
+      >
+        <Text style={[ui.body, { color: wellness.lavenderInk, fontWeight: "700" }]}>
+          ← Treatments
+        </Text>
+      </Pressable>
+
+      {!t ? (
+        <Text style={ui.body}>Η θεραπεία δεν βρέθηκε.</Text>
+      ) : (
+        <View style={{ gap: 22 }}>
+          <View style={{ gap: 12, alignItems: "center" }}>
+            <View
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 32,
+                backgroundColor: wellness.lavender,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Ionicons name={t.icon} size={32} color={wellness.lavenderInk} />
+            </View>
+            <Text style={[ui.title, { textAlign: "center" }]}>{t.title}</Text>
+            <Text
+              style={[ui.label, { textAlign: "center", color: wellness.slate }]}
+            >
+              {t.tagline}
+            </Text>
+          </View>
+
+          <ManagedImage
+            source={{ uri: t.hero }}
+            accessibilityLabel={t.title}
+            resizeMode="cover"
+            style={{ width: "100%", height: 200, borderRadius: 18 }}
+          />
+
+          <Text
+            style={[
+              ui.body,
+              { fontSize: 15, color: wellness.ink, textAlign: "center" },
+            ]}
+          >
+            {t.intro}
+          </Text>
+
+          {/* Infographic — βασικά στοιχεία συνεδρίας */}
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            {t.stats.map((s, i) => (
+              <View
+                key={i}
+                style={{
+                  flex: 1,
+                  backgroundColor: wellness.white,
+                  borderRadius: 16,
+                  borderWidth: 1,
+                  borderColor: wellness.line,
+                  paddingVertical: 16,
+                  paddingHorizontal: 8,
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <Ionicons name={s.icon} size={20} color={wellness.lavenderInk} />
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: "800",
+                    color: wellness.ink,
+                    textAlign: "center",
+                  }}
+                >
+                  {s.value}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: 0.6,
+                    textTransform: "uppercase",
+                    color: wellness.slate,
+                    textAlign: "center",
+                  }}
+                >
+                  {s.label}
+                </Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={{ gap: 10 }}>
+            <Text style={ui.heading}>Τι είναι</Text>
+            {t.body.map((p, i) => (
+              <Text key={i} style={[ui.body, { fontSize: 15 }]}>
+                {p}
+              </Text>
+            ))}
+          </View>
+
+          {/* Infographic — οφέλη ως checklist */}
+          <View style={{ gap: 12 }}>
+            <Text style={ui.heading}>Οφέλη</Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+              {t.benefits.map((b, i) => (
+                <View
+                  key={i}
+                  style={{
+                    flexGrow: 1,
+                    flexBasis: "47%",
+                    flexDirection: "row",
+                    gap: 8,
+                    alignItems: "flex-start",
+                    backgroundColor: wellness.ice,
+                    borderRadius: 14,
+                    padding: 12,
+                  }}
+                >
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={18}
+                    color={wellness.lavenderInk}
+                  />
+                  <Text
+                    style={[ui.body, { flex: 1, fontSize: 13, color: wellness.ink }]}
+                  >
+                    {b}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Infographic — τι να περιμένεις ως αριθμημένα βήματα */}
+          <View style={{ gap: 12 }}>
+            <Text style={ui.heading}>Τι να περιμένεις</Text>
+            <View style={{ gap: 2 }}>
+              {t.expect.map((step, i) => (
+                <View key={i} style={{ flexDirection: "row", gap: 12 }}>
+                  <View style={{ alignItems: "center", width: 28 }}>
+                    <View
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: 14,
+                        backgroundColor: wellness.lavenderInk,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Text
+                        style={{ color: wellness.white, fontWeight: "800", fontSize: 13 }}
+                      >
+                        {i + 1}
+                      </Text>
+                    </View>
+                    {i < t.expect.length - 1 && (
+                      <View
+                        style={{
+                          flex: 1,
+                          width: 2,
+                          backgroundColor: wellness.line,
+                          marginVertical: 2,
+                        }}
+                      />
+                    )}
+                  </View>
+                  <Text
+                    style={[
+                      ui.body,
+                      { flex: 1, fontSize: 14, paddingBottom: 16, color: wellness.ink },
+                    ]}
+                  >
+                    {step}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => void Linking.openURL(TREATMENTS_CONTACT_URL)}
+            style={[ui.button, { alignItems: "center" }]}
+          >
+            <Text style={{ color: wellness.white, fontWeight: "700", fontSize: 15 }}>
+              Κλείσε συνεδρία
+            </Text>
+          </Pressable>
+        </View>
+      )}
+    </Shell>
+  );
+}
+
+export default TreatmentDetail;

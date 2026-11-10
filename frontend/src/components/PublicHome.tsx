@@ -618,6 +618,41 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
               </Text>
             </Pressable>
           ))}
+          <Pressable
+            onPress={() => router.push("/treatments" as any)}
+            accessibilityRole="link"
+            accessibilityLabel="Treatments. Δείτε τις θεραπείες"
+            style={[
+              iconSurface,
+              {
+                width: compactScreen ? "46%" : 160,
+                minHeight: compactScreen ? 116 : 140,
+                padding: 12,
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 12,
+                borderWidth: 1,
+                borderColor: wellness.line,
+              },
+            ]}
+          >
+            <ManagedImage
+              source={{ uri: SERVICE_SYMBOLS[1] }}
+              accessibilityLabel="Treatments"
+              resizeMode="contain"
+              style={{ width: 42, height: 42, tintColor: wellness.slate }}
+            />
+            <Text
+              style={{
+                fontSize: 11,
+                lineHeight: 16,
+                textAlign: "center",
+                color: wellness.ink,
+              }}
+            >
+              Treatments
+            </Text>
+          </Pressable>
         </View>
       </View>
       <View style={ui.row}>

@@ -13,6 +13,7 @@ import { Progress } from "@/src/components/Progress";
 import { Activity } from "@/src/components/Activity";
 import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { wellness } from "@/src/theme";
 import { AdminHome } from "@/src/components/AdminHome";
 import { ResourcesSection } from "@/src/components/ResourcesSection";
@@ -188,10 +189,36 @@ function WorkspaceScreen() {
       title="Η σχολή στα χέρια σου."
       notifications
     >
-      <Text style={ui.body}>
-        Διαχείριση περιεχομένου, εκπαίδευσης και πρακτικής από έναν χώρο.
-      </Text>
-      {user?.role === "admin" && (
+      {section !== "Επισκόπηση" && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Πίσω στις ενότητες"
+          onPress={() => {
+            setSection("Επισκόπηση");
+            setSearch("");
+            setMessage("");
+          }}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 6,
+            paddingVertical: 8,
+          }}
+        >
+          <Ionicons name="chevron-back" size={18} color={wellness.lavenderInk} />
+          <Text
+            style={[ui.body, { color: wellness.lavenderInk, fontWeight: "700" }]}
+          >
+            Πίσω στις ενότητες
+          </Text>
+        </Pressable>
+      )}
+      {section === "Επισκόπηση" && (
+        <Text style={ui.body}>
+          Διαχείριση περιεχομένου, εκπαίδευσης και πρακτικής από έναν χώρο.
+        </Text>
+      )}
+      {section === "Επισκόπηση" && user?.role === "admin" && (
         <AdminHome
           stats={[
             {
@@ -215,33 +242,6 @@ function WorkspaceScreen() {
           ]}
         />
       )}
-      <Choices
-        label="Ενότητα"
-        values={
-          user?.role === "admin"
-            ? [
-                "Επισκόπηση",
-                "Μέλη",
-                "Ημερολόγιο",
-                "Φωτογραφίες",
-                "Περιεχόμενο",
-                "Φόρμες",
-                "Τμήματα",
-                "Εγγραφές",
-                "Παρουσίες",
-                "Πρόοδος",
-                "Ιστορικό",
-                "Αξιολογήσεις",
-              ]
-            : ["Επισκόπηση", "Παρουσίες", "Πρόοδος", "Αξιολογήσεις"]
-        }
-        value={section}
-        onChange={(value) => {
-          setSection(value);
-          setSearch("");
-          setMessage("");
-        }}
-      />
       <Status state={state} />
       {section === "Μέλη" && user?.role === "admin" && (
         <MembersAdmin cohorts={state.data.cohorts} />
@@ -289,23 +289,43 @@ function WorkspaceScreen() {
                   [
                     "Μέλη",
                     "Αιτήσεις εγγραφής, προφίλ, όργανα και επιβεβαίωση πορείας ανά Level.",
+                    "people-outline",
                   ],
                   [
                     "Ημερολόγιο",
                     "Πρόγραμμα, ενάρξεις τμημάτων, παρουσίες και πρακτικές.",
+                    "calendar-outline",
                   ],
                   [
                     "Φωτογραφίες",
                     "Μεταφόρτωση και επιλογή εικόνων για το περιεχόμενο.",
+                    "images-outline",
                   ],
-                  ["Εγγραφές", "Μαθητές και εγγραφές στα τμήματα."],
+                  [
+                    "Εγγραφές",
+                    "Μαθητές και εγγραφές στα τμήματα.",
+                    "person-add-outline",
+                  ],
                   [
                     "Περιεχόμενο",
                     "Κείμενα, εικόνες, εκπαιδευτικά, εκδηλώσεις, υπηρεσίες και δημόσιο μενού.",
+                    "document-text-outline",
                   ],
-                  ["Τμήματα", "Levels, ημερομηνίες έναρξης και εκπαιδευτές."],
-                  ["Φόρμες", "Φόρμες αξιολόγησης μαθητών και δεκτών."],
-                  ["Ιστορικό", "Ιστορικό ενεργειών διαχείρισης."],
+                  [
+                    "Τμήματα",
+                    "Levels, ημερομηνίες έναρξης και εκπαιδευτές.",
+                    "layers-outline",
+                  ],
+                  [
+                    "Φόρμες",
+                    "Φόρμες αξιολόγησης μαθητών και δεκτών.",
+                    "clipboard-outline",
+                  ],
+                  [
+                    "Ιστορικό",
+                    "Ιστορικό ενεργειών διαχείρισης.",
+                    "time-outline",
+                  ],
                 ]
               : []
             )
@@ -313,17 +333,20 @@ function WorkspaceScreen() {
                 [
                   "Αξιολογήσεις",
                   "Έλεγχος πρακτικών, απαντήσεις αξιολογήσεων και διορθώσεις.",
+                  "checkmark-done-outline",
                 ],
                 [
                   "Πρόοδος",
                   "Ώρες πρακτικής και παρακολούθησης ανά μαθητή και Level.",
+                  "trending-up-outline",
                 ],
                 [
                   "Παρουσίες",
                   "Καταγραφή ημερομηνίας, παρουσίας και λεπτών παρακολούθησης.",
+                  "checkbox-outline",
                 ],
               ])
-              .map(([target, description]) => (
+              .map(([target, description, icon]) => (
                 <Pressable
                   key={target}
                   accessibilityRole="button"
@@ -346,11 +369,23 @@ function WorkspaceScreen() {
                       backgroundColor: wellness.lavender,
                       borderBottomWidth: 1,
                       borderColor: wellness.lavenderInk,
-                      justifyContent: "center",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 10,
                       paddingHorizontal: 14,
                     }}
                   >
-                    <Text style={[ui.label, { color: wellness.lavenderInk }]}>
+                    <Ionicons
+                      name={icon as keyof typeof Ionicons.glyphMap}
+                      size={20}
+                      color={wellness.lavenderInk}
+                    />
+                    <Text
+                      style={[
+                        ui.label,
+                        { color: wellness.lavenderInk, flex: 1 },
+                      ]}
+                    >
                       {target === "Εγγραφές"
                         ? "ΜΑΘΗΤΕΣ & ΕΓΓΡΑΦΕΣ"
                         : target.toUpperCase()}

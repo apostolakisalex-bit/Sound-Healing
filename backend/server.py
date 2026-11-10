@@ -1075,5 +1075,8 @@ app.include_router(build_members_router(db, get_current_user, get_admin_user))
 from trainings import build_trainings_router
 app.include_router(build_trainings_router(db, get_admin_user))
 
+from blog import build_blog_router
+app.include_router(build_blog_router())
+
 
 app.include_router(build_account_router(lambda: db, get_current_user, hash_password))

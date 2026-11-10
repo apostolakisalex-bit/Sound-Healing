@@ -378,5 +378,17 @@ main (its merge-base was my own tip `70720ab`, so all prior session work is pres
   intermediate Services page). `PublicHome` service cards now route to `/service/{slug}` via `serviceSlugByTitle`.
 - `service` added to AuthGate public-route whitelist in `app/_layout.tsx`.
 
+## Treatments (new)
+- Source/content adapted to Greek from https://www.soundhealing.gr/treatments/.
+- `frontend/src/content/treatments.ts`: 6 treatments (slug/title/tagline/icon/hero/intro/stats/body/benefits/expect).
+- `frontend/src/components/TreatmentDetail.tsx` + route `app/treatment/[slug].tsx`: infographic-style detail
+  (symbol header, hero image, stat chips, "Τι είναι", benefits checklist, numbered "Τι να περιμένεις", contact CTA).
+  Back link = «← Treatments» → `/treatments`.
+- `frontend/src/components/TreatmentsOverview.tsx` + route `app/treatments/index.tsx`: list of all 6 treatments
+  (icon + title + tagline + chevron); tapping a row opens `/treatment/{slug}`. Back link = «← Αρχική».
+- Entry point: a 4th card titled "Treatments" (flower-of-life sacred symbol) inside the Home «Υπηρεσίες» section
+  in `PublicHome.tsx`, matching the 3 service cards; tap → `/treatments` overview.
+- `treatment` and `treatments` added to AuthGate public-route whitelist in `app/_layout.tsx`.
+
 
 

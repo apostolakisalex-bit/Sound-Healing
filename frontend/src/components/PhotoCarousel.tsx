@@ -14,7 +14,7 @@ export function PhotoCarousel({
 }) {
   const [width, setWidth] = useState(0);
   const [index, setIndex] = useState(0);
-  const ref = useRef<ScrollView>(null);
+  const ref = useRef<React.ComponentRef<typeof ScrollView>>(null);
   if (!photos.length) return null;
 
   const go = (i: number) => {

@@ -1,10 +1,13 @@
 // @ts-nocheck
-import { ScrollViewStyleReset } from "expo-router/html";
+import { ScrollViewStyleReset, useServerDocumentContext } from "expo-router/html";
 import type { PropsWithChildren } from "react";
 
 export default function Root({ children }: PropsWithChildren) {
+  // SDK 58: headNodes/bodyNodes carry the RNW style element + JS bundle scripts.
+  const { htmlAttributes, bodyAttributes, headNodes, bodyNodes } =
+    useServerDocumentContext();
   return (
-    <html lang="el" style={{ height: "100%" }}>
+    <html {...htmlAttributes} lang="el" style={{ height: "100%" }}>
       <head>
         <meta charSet="utf-8" />
         <title>Sound Healing Greece</title>
@@ -29,8 +32,10 @@ export default function Root({ children }: PropsWithChildren) {
             `,
           }}
         />
+        {headNodes}
       </head>
       <body
+        {...bodyAttributes}
         style={{
           margin: 0,
           height: "100%",
@@ -40,6 +45,7 @@ export default function Root({ children }: PropsWithChildren) {
         }}
       >
         {children}
+        {bodyNodes}
       </body>
     </html>
   );

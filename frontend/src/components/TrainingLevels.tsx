@@ -1,10 +1,27 @@
 import { wellness } from "@/src/theme";
-import React, { useState } from "react";
-import { Pressable, Text, View } from "react-native";
-import { useLocalSearchParams, useRouter, Link } from "expo-router";
+import React from "react";
+import { Linking, Pressable, Text, View } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import Head from "expo-router/head";
+import { Ionicons } from "@expo/vector-icons";
+import { ManagedImage } from "./ManagedImage";
+import { PhotoCarousel } from "./PhotoCarousel";
 import Svg, { Circle, Ellipse, G, Path } from "react-native-svg";
-import { Shell, ui } from "./Wellness";
+import { Shell, Status, ui, useLoad } from "./Wellness";
+
+type Training = {
+  slug: string;
+  title: string;
+  full_title?: string;
+  level?: number | null;
+  location?: string;
+  date?: string;
+  image?: string;
+  price?: string;
+  active?: boolean;
+};
+
+type Photo = { uri: string; alt: string; level?: number | null };
 
 // Editorial summaries of soundhealing.gr/el/ekpaideftika-seminaria/.
 // Practice targets and certification rules remain managed by the school.
@@ -160,76 +177,250 @@ export function TrainingLevelCards() {
   );
 }
 
-export default function TrainingLevelsPage() {
-  const { level } = useLocalSearchParams<{ level?: string }>();
-  const selected = Number(level);
-  const [open, setOpen] = useState<number[]>(
-    [1, 2, 3, 4].includes(selected) ? [selected] : [1],
-  );
+function MetaRow({
+  icon,
+  text,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  text: string;
+}) {
   return (
-    <Shell publicPage title="Η εκπαιδευτική διαδρομή" eyebrow="ΤΕΣΣΕΡΑ ΕΠΙΠΕΔΑ">
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+      <Ionicons name={icon} size={15} color={wellness.slate} />
+      <Text style={[ui.body, { fontSize: 13, color: wellness.ink }]}>{text}</Text>
+    </View>
+  );
+}
+
+export default function TrainingLevelsPage() {
+  const router = useRouter();
+  const { level } = useLocalSearchParams<{ level?: string }>();
+  const selected = [1, 2, 3, 4].includes(Number(level)) ? Number(level) : 1;
+  const item = levels[selected - 1];
+  const state = useLoad<{ items: Training[] }>("/trainings/catalog", {
+    items: [],
+  });
+  const photoState = useLoad<{ photos: Photo[] }>("/trainings/gallery", {
+    photos: [],
+  });
+  const scheduled = state.data.items.filter(
+    (t) => t.active && t.level === selected,
+  );
+  const photos = photoState.data.photos;
+  const gallery = [
+    ...photos.filter((p) => p.level === selected),
+    ...photos.filter((p) => p.level == null),
+  ].map((p) => ({ uri: p.uri, alt: p.alt }));
+
+  return (
+    <Shell publicPage title="" eyebrow="">
       <Head>
-        <title>Τα 4 Levels · Sound Healing Greece</title>
+        <title>{`Level ${selected} · ${item.title} · Sound Healing Greece`}</title>
       </Head>
-      <Link href="/" style={[ui.body, { color: wellness.slate }]}>
-        ← Αρχική
-      </Link>
-      <Text style={ui.body}>
-        Από την πρώτη επαφή με τα singing bowls μέχρι την εμβάθυνση στην
-        επαγγελματική πρακτική. Γνώρισε το περιεχόμενο κάθε επιπέδου.
-      </Text>
-      {levels.map((item, index) => {
-        const number = index + 1,
-          expanded = open.includes(number);
-        return (
-          <View
-            key={number}
-            style={[ui.card, { borderRadius: 18, padding: 18 }]}
-          >
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ expanded }}
-              accessibilityLabel={`Level ${number}: ${item.title}`}
-              onPress={() =>
-                setOpen((previous) =>
-                  expanded
-                    ? previous.filter((value) => value !== number)
-                    : [...previous, number],
-                )
-              }
-              style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
-            >
-              <LevelSymbol level={number} />
-              <View style={{ flex: 1, gap: 4 }}>
-                <Text style={ui.label}>LEVEL {number}</Text>
-                <Text style={[ui.body, { fontSize: 16, fontWeight: "600" }]}>
-                  {item.title}
-                </Text>
-              </View>
-              <Text style={ui.body}>{expanded ? "−" : "+"}</Text>
-            </Pressable>
-            {expanded && (
-              <View style={{ gap: 12, paddingTop: 16 }}>
-                <Text style={[ui.body, { fontWeight: "600" }]}>
-                  {item.audience}
-                </Text>
-                <Text style={ui.body}>{item.body}</Text>
-                <Text style={ui.label}>Η ΠΡΑΚΤΙΚΗ ΣΟΥ</Text>
-                <Text style={ui.body}>{item.practice}</Text>
-              </View>
-            )}
-          </View>
-        );
-      })}
-      <Link href="/explore/training" style={[ui.body, { color: wellness.slate }]}>
-        Δες τα εκπαιδευτικά σεμινάρια →
-      </Link>
-      <Link
-        href="https://www.soundhealing.gr/el/ekpaideftika-seminaria/"
-        style={[ui.body, { color: wellness.slate }]}
+
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel="Πίσω στα Εκπαιδευτικά"
+        onPress={() => router.push("/explore/training")}
+        style={{ minHeight: 44, justifyContent: "center", paddingVertical: 6 }}
       >
-        Αναλυτικό πρόγραμμα της σχολής ↗
-      </Link>
+        <Text
+          style={[ui.body, { color: wellness.lavenderInk, fontWeight: "700" }]}
+        >
+          ← Εκπαιδευτικά
+        </Text>
+      </Pressable>
+
+      {/* Level switcher — μόνο ένα επίπεδο κάθε φορά */}
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+        {levels.map((lv, i) => {
+          const n = i + 1;
+          const on = n === selected;
+          return (
+            <Pressable
+              key={n}
+              accessibilityRole="button"
+              accessibilityState={{ selected: on }}
+              accessibilityLabel={`Level ${n}: ${lv.title}`}
+              onPress={() => router.setParams({ level: String(n) })}
+              style={{
+                paddingHorizontal: 16,
+                minHeight: 44,
+                justifyContent: "center",
+                borderRadius: 999,
+                backgroundColor: on ? wellness.lavenderInk : wellness.ice,
+                borderWidth: 1,
+                borderColor: on ? wellness.lavenderInk : wellness.line,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: "700",
+                  letterSpacing: 0.5,
+                  color: on ? "#FFFFFF" : wellness.slate,
+                }}
+              >
+                Level {n}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {/* Περιεχόμενο μόνο του επιλεγμένου επιπέδου */}
+      <View style={[ui.card, { borderRadius: 18, padding: 20, gap: 14 }]}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <LevelSymbol level={selected} />
+          <View style={{ flex: 1, gap: 4 }}>
+            <Text style={ui.label}>LEVEL {selected}</Text>
+            <Text
+              style={[
+                ui.body,
+                { fontSize: 18, fontWeight: "700", color: wellness.ink },
+              ]}
+            >
+              {item.title}
+            </Text>
+            <Text style={[ui.body, { fontSize: 13 }]}>{item.subtitle}</Text>
+          </View>
+        </View>
+        <Text style={[ui.body, { fontWeight: "600", color: wellness.ink }]}>
+          {item.audience}
+        </Text>
+        <Text style={ui.body}>{item.body}</Text>
+        <View style={{ height: 1, backgroundColor: wellness.line }} />
+        <Text style={ui.label}>Η ΠΡΑΚΤΙΚΗ ΣΟΥ</Text>
+        <Text style={ui.body}>{item.practice}</Text>
+      </View>
+
+      {/* Ενδεχόμενο προγραμματισμένο σεμινάριο αυτού του επιπέδου */}
+      <Text style={ui.heading}>Προγραμματισμένο σεμινάριο</Text>
+      <Status state={state} />
+      {!state.loading &&
+        !state.error &&
+        (scheduled.length ? (
+          scheduled.map((t) => (
+            <Pressable
+              key={t.slug}
+              accessibilityRole="link"
+              accessibilityLabel={`${t.full_title || t.title}. Πληροφορίες και κράτηση`}
+              onPress={() => router.push(`/seminar/${t.slug}` as any)}
+              style={({ pressed }) => [
+                ui.card,
+                {
+                  borderRadius: 18,
+                  padding: 0,
+                  overflow: "hidden",
+                  backgroundColor: pressed ? wellness.blueSelected : wellness.white,
+                },
+              ]}
+            >
+              {!!t.image && (
+                <ManagedImage
+                  source={{ uri: t.image }}
+                  accessibilityLabel={t.full_title || t.title}
+                  resizeMode="cover"
+                  style={{ width: "100%", height: 160 }}
+                />
+              )}
+              <View style={{ padding: 18, gap: 8 }}>
+                <View
+                  style={{
+                    alignSelf: "flex-start",
+                    backgroundColor: wellness.lavender,
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderRadius: 999,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      fontWeight: "800",
+                      letterSpacing: 1,
+                      color: wellness.lavenderInk,
+                    }}
+                  >
+                    ● ΕΝΕΡΓΟ · LEVEL {selected}
+                  </Text>
+                </View>
+                <Text
+                  style={[
+                    ui.body,
+                    { fontSize: 16, fontWeight: "700", color: wellness.ink },
+                  ]}
+                >
+                  {t.full_title || t.title}
+                </Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 14,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {!!t.date && <MetaRow icon="calendar-outline" text={t.date} />}
+                  {!!t.location && (
+                    <MetaRow icon="location-outline" text={t.location} />
+                  )}
+                  {!!t.price && <MetaRow icon="cash-outline" text={t.price} />}
+                </View>
+                <Text
+                  style={[
+                    ui.body,
+                    { color: wellness.lavenderInk, fontWeight: "700" },
+                  ]}
+                >
+                  Πληροφορίες & κράτηση →
+                </Text>
+              </View>
+            </Pressable>
+          ))
+        ) : (
+          <View style={[ui.card, { backgroundColor: wellness.ice, gap: 10 }]}>
+            <Text style={[ui.body, { color: wellness.ink }]}>
+              Δεν υπάρχει αυτή τη στιγμή προγραμματισμένο σεμινάριο για το Level{" "}
+              {selected}. Δες όλα τα εκπαιδευτικά ή επικοινώνησε μαζί μας για το
+              επόμενο.
+            </Text>
+            <Pressable
+              accessibilityRole="link"
+              onPress={() => router.push("/explore/training")}
+            >
+              <Text
+                style={[
+                  ui.body,
+                  { color: wellness.lavenderInk, fontWeight: "700" },
+                ]}
+              >
+                Όλα τα εκπαιδευτικά σεμινάρια →
+              </Text>
+            </Pressable>
+          </View>
+        ))}
+
+      {/* Καρουζέλ με φωτογραφίες από παλιότερα σεμινάρια */}
+      {gallery.length > 0 && (
+        <View style={{ gap: 12 }}>
+          <Text style={ui.heading}>Στιγμές από προηγούμενα σεμινάρια</Text>
+          <PhotoCarousel photos={gallery} />
+        </View>
+      )}
+
+      <Pressable
+        accessibilityRole="link"
+        onPress={() =>
+          void Linking.openURL(
+            "https://www.soundhealing.gr/el/ekpaideftika-seminaria/",
+          )
+        }
+      >
+        <Text style={[ui.body, { color: wellness.slate }]}>
+          Αναλυτικό πρόγραμμα της σχολής ↗
+        </Text>
+      </Pressable>
     </Shell>
   );
 }

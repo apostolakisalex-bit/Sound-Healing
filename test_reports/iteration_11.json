@@ -1,0 +1,52 @@
+{
+  "summary": "Tested the Training Levels redesign (/explore/levels) and the /api/trainings/catalog API. One CRITICAL blocker came from the SDK 58 upgrade and is now FIXED: the custom /app/frontend/app/+html.tsx did not render headNodes/bodyNodes from useServerDocumentContext(). Because of that, the dev server HTML had no JS bundle <script> and no RNW stylesheet. Every web page was a static SSR snapshot that never hydrated: nothing could be tapped, styles were missing, the bottom nav was stacked vertically and data stayed on a spinner. This was the real cause of the 'perpetual spinner in headless tool' that E1 saw. After the fix every requested flow passes on a 390x844 viewport. The 4 level cards on /explore/training each open /explore/levels?level=N. Level 1 shows the eyebrow 'ΕΠΙΠΕΔΟ 1', the '← Εκπαιδευτικά' control, 4 pills with Level 1 highlighted and ONE content card with only Level 1 content. Tapping the Level 3 pill updates the same page (URL ?level=3, title 'Ομαδικά Sound Baths', Level 1 content gone, document title updated). The scheduled seminar card for Level 1 shows the image, title, '28 & 29 Νοεμβρίου 2026 / Αθήνα / €350' and 'Πληροφορίες & κράτηση →', and tapping it opens /seminar/ekpaideftiko-seminario-ixotherapias-level1-28-29-noemvriou-athina. Levels 2, 3 and 4 show the no-seminar message, and its link opens /explore/training. The carousel shows for all 4 levels; the L3/L4 fallback has 2 photos and the next/prev arrows and dots work. '← Εκπαιδευτικά' goes to /explore/training. An invalid level or no param falls back to Level 1. No page errors. tsc is clean. Backend: catalog shape OK, 1 active Level 1 item, 2 past items with images.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/trainings/catalog", "issue": "The PAST_CATALOG items (trainings.py, lines ~417-419) have no 'location' or 'price' keys, so the review spec 'each item has slug,title,level,active,date,location,price,image' is not met for past items. The UI does not break because of this."},
+      {"endpoint": "GET /api/trainings/active (test_trainings.py)", "issue": "Two older regression tests are stale because the live site changed: they expect >=3 active items (now 1) and use a hard-coded Level 2 Nov-2026 slug that now returns 404. This is not a code bug; the tests need updating."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "app/+html.tsx (SDK 58)", "issue": "FIXED by the testing agent. The root HTML did not render headNodes/bodyNodes from useServerDocumentContext(), so no JS bundle or RNW styles were injected and the whole web app was non-interactive.", "testID": "n/a", "priority": "CRITICAL"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "/explore/levels", "issues": [
+        "The 'carousel' for Level 1 and Level 2 has only ONE photo, because only 2 past seminars with images exist (Level 1 Chania and Level 2 Chania). There are no arrows or dots, so it looks like a single static image. Consider adding more past-seminar gallery photos from soundhealing.gr per level.",
+        "Touch targets are below 44px: the '← Εκπαιδευτικά' control is 31px tall and the Level pills are 74x32px.",
+        "The '← Εκπαιδευτικά' back control sits below the eyebrow and title, not at the top of the page like a usual back affordance. Minor.",
+        "Level pills use accessibilityState={{selected}} on role=button; RN-web does not output aria-selected, so screen readers cannot tell which pill is selected. Use accessibilityRole='tab' or add aria-pressed. Minor."
+      ]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_training_levels_catalog.py",
+    "/app/test_reports/pytest/iteration_11.xml"
+  ],
+  "action_items": [
+    "Keep the +html.tsx fix (useServerDocumentContext with headNodes in <head>, bodyNodes and bodyAttributes in <body>). Re-check the other screens you verified with the headless tool, since every web page was un-hydrated before this fix.",
+    "Optional: add more past-seminar photos per level (e.g. gallery images scraped from the past seminar pages) so that Level 1 and Level 2 show a real multi-photo carousel.",
+    "Raise the touch targets of the back control and the level pills to at least 44px (e.g. paddingVertical 12 or minHeight 44).",
+    "Add location and price to the PAST_CATALOG entries, or relax the spec.",
+    "Update the stale tests in /app/backend/tests/test_trainings.py (>=3 active items, hard-coded Level 2 slug)."
+  ],
+  "critical_code_review_comments": [
+    "TrainingLevels.tsx: switching level with router.setParams keeps the same screen. This is correct and matches the request.",
+    "TrainingLevels.tsx: the gallery falls back to all past photos when the level has none. Level 1 and Level 2 each have exactly one same-level photo, so they never fall back to the larger pool.",
+    "PhotoCarousel.tsx: the early return `if (!photos.length) return null` comes after the hooks, which is fine. go() uses the measured width; arrows only show on web, and on native the user swipes.",
+    "trainings.py: PAST_CATALOG is hard-coded and only shows if the seminar's end_date is in the past. The server date is Nov 2026, so the Aug 2026 Chania seminars count as past."
+  ],
+  "updated_files": [
+    "/app/frontend/app/+html.tsx (SDK 58: injects headNodes/bodyNodes/htmlAttributes/bodyAttributes from useServerDocumentContext)",
+    "/app/backend/tests/test_training_levels_catalog.py (new)"
+  ],
+  "success_rate": {"backend": "100% of the new catalog tests except the field-shape test (past items missing location/price); 2 stale older tests in test_trainings.py fail due to changed live data", "frontend": "100% of requested flows (after the +html.tsx fix)"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "SDK 58 static web output needs +html.tsx to render useServerDocumentContext().headNodes and bodyNodes; without them the HTML has no entry.bundle script. A quick check: curl localhost:3000/explore/training | grep entry.bundle. Catalog data comes from a live scrape of soundhealing.gr plus PAST_CATALOG; active/past depends on the server date (Nov 2026).",
+  "rca_of_issue": "Symptom: the web preview showed static, unstyled pages, nothing responded to taps, and useLoad sections stayed on a spinner. Reproduction: curl the page HTML; it has no <script src=...entry.bundle>. Root cause: in Expo Router 58, getStreamingContent passes the JS/CSS asset nodes through ServerDocumentContext (headNodes/bodyNodes), and the custom app/+html.tsx did not render them. Fix: destructure useServerDocumentContext() in Root and render {headNodes} in <head> and {bodyNodes} after {children} in <body>."
+}

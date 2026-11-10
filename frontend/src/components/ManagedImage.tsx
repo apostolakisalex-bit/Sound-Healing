@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Image, ImageProps } from "react-native";
+import { Image, ImageProps, ImageURISource } from "react-native";
 import { api } from "@/src/api/client";
 import { useAuth } from "@/src/auth/AuthContext";
 
@@ -10,7 +10,7 @@ export function ManagedImage(props: ImageProps) {
     props.source &&
     !Array.isArray(props.source) &&
     typeof props.source !== "number"
-      ? props.source.uri
+      ? (props.source as ImageURISource).uri
       : undefined;
   const managed = original?.startsWith("/api/media/");
   const [preview, setPreview] = useState<{ key: string; uri: string } | null>(

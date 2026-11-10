@@ -482,3 +482,34 @@ agent_communication:
       PLEASE TEST BOTH: backend trainings endpoints (active/detail/404) AND public frontend flows above. No auth
       needed for these. Credentials if needed: student uitest_167043@test.gr/TestPass12345, admin
       admin@soundhealing.gr/temple2026. Ignore pre-existing web-only warnings (shadow*/resizeMode).
+
+  run_ui: true
+    -agent: "main"
+    -message: >
+      NEW FEATURE to validate — EDUCATIONAL LEVEL DETAIL PAGE (public, no login).
+      File: src/components/TrainingLevels.tsx (default export TrainingLevelsPage), route /explore/levels?level=N.
+      Context: tapping "Εκπαιδευτικά" shows 4 level cards (TrainingLevelCards, unchanged). Tapping a card now opens
+      /explore/levels?level=N which was REDESIGNED. Before it showed an accordion of ALL 4 levels; now it shows
+      ONLY the selected level plus data-driven sections.
+      WHAT TO VERIFY (web preview, no auth):
+      (1) Open /explore/levels?level=1 directly. Expect: eyebrow "ΕΠΙΠΕΔΟ 1", a back control labeled "← Εκπαιδευτικά"
+          (NOT "← Αρχική") that navigates to /explore/training; a row of 4 pills "Level 1..4" with Level 1 selected
+          (highlighted); ONE content card with only Level 1 info (title "Τα θεμέλια", subtitle, audience, body,
+          "Η ΠΡΑΚΤΙΚΗ ΣΟΥ"). Tapping pill "Level 3" updates the page to show only Level 3 (eyebrow ΕΠΙΠΕΔΟ 3, title
+          "Ομαδικά Sound Baths") without full navigation.
+      (2) Section heading "Προγραμματισμένο σεμινάριο". For level=1 the backend catalog has an ACTIVE level-1 seminar,
+          so a seminar CARD must render (image + title + date/location/price meta + "Πληροφορίες & κράτηση →"); tapping
+          it opens /seminar/<slug>. For level=3 (no active seminar) a message card appears: "Δεν υπάρχει αυτή τη στιγμή
+          προγραμματισμένο σεμινάριο για το Level 3..." with a "Όλα τα εκπαιδευτικά σεμινάρια →" link to /explore/training.
+      (3) Section heading "Στιγμές από προηγούμενα σεμινάρια" with a PhotoCarousel of photos from past seminars
+          (prefers same-level past photos, falls back to all past photos). Should show at least one image for every level.
+      (4) The back control "← Εκπαιδευτικά" goes to /explore/training (the training section), confirming the arrow
+          returns to Εκπαιδευτικά, not Αρχική.
+      Data source: GET /api/trainings/catalog (public) — items have slug,title,full_title,level,active,date,location,
+      price,image. Quick backend sanity: catalog returns items with level and active fields (currently 1 active level-1,
+      plus past level-1 and level-2 items with images).
+      Note: the headless screenshot tool cannot resolve useLoad (IndexedDB unavailable there, affects ALL data pages
+      incl. existing /seminar); use your normal browser automation which resolves it. tsc --noEmit clean, lint clean.
+      Scope: FRONTEND flow above + the one backend catalog sanity check. Ignore pre-existing web-only warnings
+      (shadow*/resizeMode/pointerEvents deprecation).
+  run_ui: true

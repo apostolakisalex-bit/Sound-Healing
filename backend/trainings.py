@@ -418,6 +418,21 @@ PAST_CATALOG = [
             {'slug': 'sound-healing-training-seminar-level-1-1-2-august-chania', 'title': 'Level 1 · Χανιά', 'level': 1, 'url': BASE + '/sound-healing-training-seminar-level-1-1-2-august-chania/', 'date': '1–2 Αυγούστου 2026', 'start_date': '2026-08-01', 'end_date': '2026-08-02', 'image': BASE + '/wp-content/uploads/2026/05/20260510_181310-Large-650x433.jpeg'},
             {'slug': 'sound-healing-training-seminar-level-2-3-4-august-chania-crete', 'title': 'Level 2 · Χανιά', 'level': 2, 'url': BASE + '/sound-healing-training-seminar-level-2-3-4-august-chania-crete/', 'date': '3–4 Αυγούστου 2026', 'start_date': '2026-08-03', 'end_date': '2026-08-04', 'image': BASE + '/wp-content/uploads/2026/05/IMG_0367-650x433.jpg'}]
 
+# Curated photo gallery from past Sound Healing seminars (sourced from soundhealing.gr).
+# `level` prioritises same-level photos on a level page; `None` = general moment shown on every level.
+GALLERY = [
+            {'uri': BASE + '/wp-content/uploads/2026/05/20260510_181310-Large-650x433.jpeg', 'alt': 'Εκπαιδευτικό σεμινάριο Level 1 στα Χανιά', 'level': 1},
+            {'uri': BASE + '/wp-content/uploads/2026/05/IMG_0367-650x433.jpg', 'alt': 'Εκπαιδευτικό σεμινάριο Level 2 στα Χανιά', 'level': 2},
+            {'uri': BASE + '/wp-content/uploads/2024/10/Seminar-Athens-3-650x433.jpg', 'alt': 'Σεμινάριο ηχοθεραπείας στην Αθήνα', 'level': None},
+            {'uri': BASE + '/wp-content/uploads/2024/10/IMG_5308-Medium-480x433.jpeg', 'alt': 'Ομαδική πρακτική με γκονγκ και μπολ', 'level': None},
+            {'uri': BASE + '/wp-content/uploads/2024/10/IMG_5333-650x433.jpg', 'alt': 'Στιγμή από εκπαιδευτικό σεμινάριο', 'level': None},
+            {'uri': BASE + '/wp-content/uploads/2024/12/IMG_5724-Large-650x433.jpeg', 'alt': 'Sound bath σε ομάδα', 'level': None},
+            {'uri': BASE + '/wp-content/uploads/2024/12/IMG_5794-Large-650x433.jpeg', 'alt': 'Πρακτική με θεραπευτικά όργανα ήχου', 'level': None},
+            {'uri': BASE + '/wp-content/uploads/2023/11/348647332_1494036784488302_8056776047035864848_n-650x433.jpg', 'alt': 'Εκπαίδευση ηχοθεραπείας — ομάδα', 'level': None},
+            {'uri': BASE + '/wp-content/uploads/2023/11/348846227_550603047279062_3444804177702507608_n-650x433.jpg', 'alt': 'Στιγμή από σεμινάριο ηχοθεραπείας', 'level': None},
+            {'uri': BASE + '/wp-content/uploads/2023/04/Yoga-Class-Seminar-4-650x433.jpg', 'alt': 'Ομαδικό σεμινάριο ήχου', 'level': None}]
+
+
 def build_trainings_router(db, admin_user) -> APIRouter:
     from school import Content, now
     from uuid import uuid4
@@ -453,6 +468,10 @@ def build_trainings_router(db, admin_user) -> APIRouter:
     @router.get('/trainings/catalog')
     async def all_trainings():
         return {'items': await catalog()}
+
+    @router.get('/trainings/gallery')
+    async def trainings_gallery():
+        return {'photos': GALLERY}
 
     @router.post('/admin/trainings/import')
     async def import_trainings(admin=Depends(admin_user)):
