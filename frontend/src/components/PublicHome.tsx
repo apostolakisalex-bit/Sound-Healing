@@ -2,8 +2,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SCHOOL_PHOTOS } from "@/src/content/schoolGallery";
 import Svg, { Path } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";
-import { wellness } from "@/src/theme";
-import { iconSurface } from "./AppNavigation";
+import { useTheme } from "@/src/theme/ThemeContext";
+import { useIconSurface, useLanguage } from "./AppNavigation";
 import { ManagedImage } from "./ManagedImage";
 import React from "react";
 import {
@@ -23,7 +23,7 @@ import {
   SOCIAL_LINKS,
 
 } from "@/src/content/public";
-import { ContentItem, Status, ui, useLoad } from "./Wellness";
+import { ContentItem, Status, useUi, useLoad } from "./Wellness";
 import { EventGrid } from "./EventGrid";
 import { serviceSlugByTitle } from "@/src/content/services";
 type LiveTraining = {
@@ -55,6 +55,10 @@ const SERVICE_SYMBOLS = [
 ];
 export function PublicHome({ items }: { items: ContentItem[] }) {
   const router = useRouter();
+  const { wellness } = useTheme();
+  const ui = useUi();
+  const { t } = useLanguage();
+  const iconSurface = useIconSurface();
   const { width, fontScale } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const compactScreen = width < 600;
@@ -237,27 +241,27 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
         </Svg>
       </View>
       <Text style={[ui.heading, { fontWeight: "600" }]}>
-        Γνώρισε τη σχολή και τα 4 Levels
+        {t("Γνώρισε τη σχολή και τα 4 Levels", "Meet the school and the 4 Levels")}
       </Text>
       <View style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
         {[
           [
             {
               title: "Μανώλης Ζωγραφάκης",
-              label: "ΣΧΕΤΙΚΑ",
+              label: t("ΣΧΕΤΙΚΑ", "ABOUT"),
               image: photo("about", page("about")?.image_url || FOUNDER.photo),
               route: "/explore/about",
               ratio: 0.68,
             },
             {
-              title: "Τα θεμέλια",
+              title: t("Τα θεμέλια", "The foundations"),
               label: "LEVEL 1",
               image: photo("L1", SCHOOL_PHOTOS[0]),
               route: "/explore/levels?level=1",
               ratio: 1.35,
             },
             {
-              title: "Ομαδικά Sound Baths",
+              title: t("Ομαδικά Sound Baths", "Group Sound Baths"),
               label: "LEVEL 3",
               image: photo("L3", SCHOOL_PHOTOS[3]),
               route: "/explore/levels?level=3",
@@ -266,8 +270,8 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           ],
           [
             {
-              title: "Ηχοθεραπεία",
-              label: "Η ΕΜΠΕΙΡΙΑ",
+              title: t("Ηχοθεραπεία", "Sound Healing"),
+              label: t("Η ΕΜΠΕΙΡΙΑ", "THE EXPERIENCE"),
               image: photo(
                 "soundhealing",
                 page("soundhealing")?.image_url || SCHOOL_PHOTOS[4],
@@ -276,14 +280,14 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
               ratio: 0.68,
             },
             {
-              title: "Εμβάθυνση",
+              title: t("Εμβάθυνση", "Going deeper"),
               label: "LEVEL 2",
               image: photo("L2", SCHOOL_PHOTOS[1]),
               route: "/explore/levels?level=2",
               ratio: 1.35,
             },
             {
-              title: "Επαγγελματική ανάπτυξη",
+              title: t("Επαγγελματική ανάπτυξη", "Professional development"),
               label: "LEVEL 4",
               image: photo("L4", SCHOOL_PHOTOS[2]),
               route: "/explore/levels?level=4",
@@ -363,9 +367,9 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       </View>
       {(
         [
-          ["training", "Εκπαιδευτικά"],
-          ["events", "Ενεργές εκδηλώσεις"],
-        ] as const
+          ["training", t("Εκπαιδευτικά", "Training")],
+          ["events", t("Ενεργές εκδηλώσεις", "Active events")],
+        ] as [string, string][]
       ).map(([section, title]) => (
         <View
           key={section}
@@ -379,13 +383,19 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           <View style={[ui.row, { justifyContent: "space-between" }]}>
             <Text style={[ui.heading, { fontWeight: "600" }]}>{title}</Text>
             <Link href={`/explore/${section}` as any} style={ui.body}>
-              Δες όλα →
+              {t("Δες όλα →", "See all →")}
             </Link>
           </View>
           <Text style={ui.body}>
             {section === "training"
-              ? "Επόμενες συναντήσεις και στιγμές από προηγούμενα εκπαιδευτικά."
-              : "Αυτοτελείς εμπειρίες ήχου με τον Μανώλη."}
+              ? t(
+                  "Επόμενες συναντήσεις και στιγμές από προηγούμενα εκπαιδευτικά.",
+                  "Upcoming sessions and moments from past trainings.",
+                )
+              : t(
+                  "Αυτοτελείς εμπειρίες ήχου με τον Μανώλη.",
+                  "Stand-alone sound experiences with Manolis.",
+                )}
           </Text>
           {programmes(section).length ? (
             section === "training" ? (
@@ -463,7 +473,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                       {item.published.event_end_date &&
                       item.published.event_end_date < today ? (
                         <Text style={{ fontSize: 10, color: wellness.muted }}>
-                          Ολοκληρώθηκε
+                          {t("Ολοκληρώθηκε", "Completed")}
                         </Text>
                       ) : (
                         <Text
@@ -474,11 +484,11 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                             letterSpacing: 1,
                           }}
                         >
-                          ● ΕΝΕΡΓΟ
+                          {t("● ΕΝΕΡΓΟ", "● ACTIVE")}
                         </Text>
                       )}
                       <Text style={{ fontSize: 12, color: wellness.slate }}>
-                        Περισσότερα →
+                        {t("Περισσότερα →", "More →")}
                       </Text>
                       {!(
                         item.published.event_end_date &&
@@ -518,7 +528,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                                 color: wellness.lavenderInk,
                               }}
                             >
-                              Ημερολόγιο
+                              {t("Ημερολόγιο", "Calendar")}
                             </Text>
                           </Pressable>
                           <Pressable
@@ -557,7 +567,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
               <EventGrid items={programmes(section)} compact />
             )
           ) : (
-            <Text style={ui.body}>Το νέο πρόγραμμα θα ανακοινωθεί εδώ.</Text>
+            <Text style={ui.body}>{t("Το νέο πρόγραμμα θα ανακοινωθεί εδώ.", "The new programme will be announced here.")}</Text>
           )}
         </View>
       ))}
@@ -569,7 +579,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           borderColor: wellness.line,
         }}
       >
-        <Text style={ui.heading}>Υπηρεσίες</Text>
+        <Text style={ui.heading}>{t("Υπηρεσίες", "Services")}</Text>
         <View style={[ui.row, { alignItems: "stretch" }]}>
           {(services.length
             ? services.map((i) => i.published.title)
@@ -657,15 +667,15 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       </View>
       <View style={ui.row}>
         <Link href="/explore/about" style={ui.body}>
-          Σχετικά
+          {t("Σχετικά", "About")}
         </Link>
         <Link href="/explore/contact" style={ui.body}>
-          Επικοινωνία & Chat →
+          {t("Επικοινωνία & Chat →", "Contact & Chat →")}
         </Link>
       </View>
       {settings?.show_testimonials !== false && (
         <View style={{ gap: 18 }}>
-          <Text style={ui.heading}>Οι εμπειρίες των μαθητών</Text>
+          <Text style={ui.heading}>{t("Οι εμπειρίες των μαθητών", "Student experiences")}</Text>
           <View style={[ui.row, { alignItems: "stretch" }]}>
             {testimonials.length ? (
               testimonials.map((i) => (
@@ -677,7 +687,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                   <Text style={ui.label}>{i.published.title}</Text>
                   {!!i.published.action_url && (
                     <Link href={i.published.action_url as any} style={ui.body}>
-                      Πηγή ↗
+                      {t("Πηγή ↗", "Source ↗")}
                     </Link>
                   )}
                 </View>
@@ -685,14 +695,14 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
             ) : (
               <View style={[ui.card, { maxWidth: 620 }]}>
                 <Text style={ui.body}>
-                  «Ήταν πολλά παραπάνω από ένα εκπαιδευτικό!»
+                  {t("«Ήταν πολλά παραπάνω από ένα εκπαιδευτικό!»", "\u201cIt was so much more than a training!\u201d")}
                 </Text>
                 <Text style={ui.label}>Eleni Z.</Text>
                 <Link
                   href="https://www.soundhealing.gr/training-seminars/"
                   style={ui.body}
                 >
-                  Διάβασε την εμπειρία της ↗
+                  {t("Διάβασε την εμπειρία της ↗", "Read her experience ↗")}
                 </Link>
               </View>
             )}
@@ -701,7 +711,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       )}
       {settings?.show_partners !== false && !!partners.length && (
         <View style={{ gap: 18 }}>
-          <Text style={ui.label}>ΣΥΝΕΡΓΑΣΙΕΣ</Text>
+          <Text style={ui.label}>{t("ΣΥΝΕΡΓΑΣΙΕΣ", "PARTNERS")}</Text>
           <View style={ui.row}>
             {partners.map((i) => (
               <View key={i.id} style={{ padding: 12 }}>
@@ -737,7 +747,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
             borderColor: wellness.line,
           }}
         >
-          <Text style={ui.heading}>Ας μείνουμε σε επαφή.</Text>
+          <Text style={ui.heading}>{t("Ας μείνουμε σε επαφή.", "Let's stay in touch.")}</Text>
           <View style={ui.row}>
             {(socials.length
               ? socials.map((i) => ({

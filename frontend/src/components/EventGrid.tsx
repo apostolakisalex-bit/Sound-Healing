@@ -1,10 +1,10 @@
-import { wellness } from "@/src/theme";
+import { useTheme } from "@/src/theme/ThemeContext";
 import { ManagedImage } from "./ManagedImage";
 import React, { useState } from "react";
 import { Pressable, Text, View, useWindowDimensions } from "react-native";
 import { Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { ContentItem, Field, ui } from "./Wellness";
+import { ContentItem, Field, useUi } from "./Wellness";
 
 /** Photo-led cards based on soundhealing.gr, with CMS-owned event details. */
 export function EventGrid({
@@ -16,6 +16,8 @@ export function EventGrid({
   training?: boolean;
   compact?: boolean;
 }) {
+  const { wellness } = useTheme();
+  const ui = useUi();
   const { width } = useWindowDimensions();
   const [search, setSearch] = useState("");
   const [archiveOpen, setArchiveOpen] = useState(false);
@@ -69,7 +71,7 @@ export function EventGrid({
         width: cardWidth,
         borderRadius: 12,
         overflow: "hidden",
-        backgroundColor: "#fff",
+        backgroundColor: wellness.white,
         borderWidth: 1,
         borderColor: wellness.line,
         shadowColor: "#24211B",
@@ -102,7 +104,7 @@ export function EventGrid({
           />
         </View>
       )}
-      <View style={{ height: 1, backgroundColor: wellness.sand }} />
+      <View style={{ height: 1, backgroundColor: wellness.line }} />
       <View style={{ padding: 14, gap: 12, flex: 1 }}>
         {past && (
           <Text style={[ui.label, { color: wellness.muted, fontSize: 11 }]}>

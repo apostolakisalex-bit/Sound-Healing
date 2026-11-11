@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, View } from "react-native";
-import { Button, Field, ui } from "./Wellness";
+import { Button, Field, useUi } from "./Wellness";
 export type NavigationItem = {
   section: string;
   label: string;
@@ -24,6 +24,7 @@ export function NavigationEditor({
   value?: NavigationItem[] | null;
   onChange: (value: NavigationItem[] | null) => void;
 }) {
+  const ui = useUi();
   const items = value?.some((i) => i.section === "soundhealing")
     ? value
     : defaults;

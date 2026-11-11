@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Text, View } from "react-native";
-import { Button, Choices, Status, ui, useLoad } from "./Wellness";
+import { Button, Choices, Status, useUi, useLoad } from "./Wellness";
 
 type Metric = { count: number; minutes: number };
 type Row = {
@@ -19,6 +19,7 @@ const labels: Record<string, string> = {
   reviewed: "Ελεγμένες",
 };
 export function Progress({ staff = false }: { staff?: boolean }) {
+  const ui = useUi();
   const [offset, setOffset] = useState(0);
   const [level, setLevel] = useState("Όλα");
   const [status, setStatus] = useState("Όλες");

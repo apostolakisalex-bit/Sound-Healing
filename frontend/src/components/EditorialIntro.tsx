@@ -1,9 +1,9 @@
-import { wellness } from "@/src/theme";
+import { useTheme } from "@/src/theme/ThemeContext";
 import { ManagedImage } from "./ManagedImage";
 import React, { useState, useEffect } from "react";
 import { Image, Text, View } from "react-native";
 import { Link } from "expo-router";
-import { ui } from "./Wellness";
+import { useUi } from "./Wellness";
 
 export function EditorialIntro({
   title,
@@ -24,6 +24,8 @@ export function EditorialIntro({
   actionUrl?: string;
   preview?: boolean;
 }) {
+  const ui = useUi();
+  const { wellness } = useTheme();
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [imageUrl]);
   const image = (imageUrl?.startsWith("https://") || imageUrl?.startsWith("/api/media/")) && !failed;

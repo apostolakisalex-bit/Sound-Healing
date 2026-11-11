@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Text, View } from "react-native";
 import { api } from "@/src/api/client";
-import { Button, Field, Status, ui, useLoad } from "./Wellness";
+import { Button, Field, Status, useUi, useLoad } from "./Wellness";
 type Cycle = {
   id: string;
   enrollment_id: string;
@@ -21,6 +21,7 @@ export function CyclePicker({
   value: string;
   onSelect: (id: string, code: string) => void;
 }) {
+  const ui = useUi();
   const state = useLoad<Cycle[]>("/school/cycles", []);
   const [code, setCode] = useState(""),
     [focus, setFocus] = useState(""),

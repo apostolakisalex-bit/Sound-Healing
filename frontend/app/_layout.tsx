@@ -18,9 +18,11 @@ import {
 } from "@expo-google-fonts/raleway";
 import { AuthProvider, useAuth } from "@/src/auth/AuthContext";
 import { colors } from "@/src/theme";
+import { ThemeProvider, useTheme } from "@/src/theme/ThemeContext";
 
 function AuthGate() {
   const { user, loading } = useAuth();
+  const { colors } = useTheme();
   const segments = useSegments();
   const router = useRouter();
   const initialRouteHandled = useRef(false);
@@ -85,6 +87,11 @@ function AuthGate() {
   );
 }
 
+function ThemedStatusBar() {
+  const { mode } = useTheme();
+  return <StatusBar style={mode === "dark" ? "light" : "dark"} />;
+}
+
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     CormorantGaramond_400Regular_Italic,
@@ -105,12 +112,14 @@ export default function RootLayout() {
   }
 
   return (
-    <LanguageProvider>
-      <AuthProvider>
-        <StatusBar style="dark" />
-        <AuthGate />
-      </AuthProvider>
-    </LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <ThemedStatusBar />
+          <AuthGate />
+        </AuthProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 

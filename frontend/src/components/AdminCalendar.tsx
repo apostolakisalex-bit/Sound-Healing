@@ -5,9 +5,9 @@ import {
   Button,
   Choices,
   Field,
-  palette,
+  usePalette,
   Status,
-  ui,
+  useUi,
   useLoad,
 } from "./Wellness";
 
@@ -59,6 +59,8 @@ export function AdminCalendar({
   }[];
   onOpen: (section: string) => void;
 }) {
+  const ui = useUi();
+  const palette = usePalette();
   const today = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Athens",
     year: "numeric",

@@ -8,8 +8,8 @@ import { useAuth } from "@/src/auth/AuthContext";
 import { api } from "@/src/api/client";
 import {
   Shell,
-  ui,
-  palette,
+  useUi,
+  usePalette,
   Button,
   Field,
   Choices,
@@ -56,6 +56,8 @@ type School = {
 const empty: School = { enrollments: [], practices: [], attendance: [] };
 export function Home() {
   const { user } = useAuth();
+  const ui = useUi();
+  const palette = usePalette();
   const router = useRouter();
   const state = useLoad<School>("/school/me", empty);
   return (
@@ -163,6 +165,8 @@ export function Home() {
   );
 }
 export function SchoolScreen() {
+  const ui = useUi();
+  const palette = usePalette();
   const catalog = useLoad<
     { id: string; title: string; description: string; is_enrolled: boolean }[]
   >("/school/catalog", []);
@@ -212,6 +216,8 @@ export function SchoolScreen() {
   );
 }
 export function JourneyScreen() {
+  const ui = useUi();
+  const palette = usePalette();
   const state = useLoad<ContentItem[]>("/content/library", []);
   return (
     <Shell eyebrow="ΤΑΞΙΔΙ" title="Λίγος χρόνος για εσένα.">
@@ -238,6 +244,7 @@ export function JourneyScreen() {
   );
 }
 export function PracticeScreen() {
+  const ui = useUi();
   const state = useLoad<School>("/school/me", empty);
   const [enrollment, setEnrollment] = useState(""),
     [date, setDate] = useState(new Date().toISOString().slice(0, 10)),

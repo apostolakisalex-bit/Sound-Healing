@@ -13,14 +13,14 @@ import { Activity } from "@/src/components/Activity";
 import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { wellness } from "@/src/theme";
+import { useTheme } from "@/src/theme/ThemeContext";
 import { AdminOverview } from "@/src/components/AdminOverview";
 import { ResourcesSection } from "@/src/components/ResourcesSection";
 import { api } from "@/src/api/client";
 import { useAuth } from "@/src/auth/AuthContext";
 import {
   Shell,
-  ui,
+  useUi,
   Button,
   Field,
   Choices,
@@ -122,6 +122,7 @@ const fresh: Draft = {
 };
 export default function Admin() {
   const { user } = useAuth();
+  const ui = useUi();
   if (!user || !["admin", "instructor"].includes(user.role))
     return (
       <Shell eyebrow="ΧΩΡΟΣ ΕΡΓΑΣΙΑΣ" title="Περιορισμένη πρόσβαση">
@@ -134,6 +135,8 @@ export default function Admin() {
 }
 function WorkspaceScreen() {
   const { user } = useAuth();
+  const { wellness } = useTheme();
+  const ui = useUi();
   const state = useLoad<Workspace>("/admin/workspace", {
     content: [],
     cycles: [],

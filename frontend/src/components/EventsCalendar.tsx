@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Linking, Pressable, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { wellness } from "@/src/theme";
-import { ContentItem, ui, useLoad, Status } from "./Wellness";
+import { useTheme } from "@/src/theme/ThemeContext";
+import { ContentItem, useUi, useLoad, Status } from "./Wellness";
 import { ManagedImage } from "./ManagedImage";
 
 /** A single dated happening placed on the calendar grid. */
@@ -30,8 +30,6 @@ type LiveTraining = {
 };
 
 const WEEKDAYS = ["Δε", "Τρ", "Τε", "Πε", "Πα", "Σα", "Κυ"];
-const PURPLE = wellness.lavenderInk; // επερχόμενες
-const GREY = wellness.muted; // ολοκληρωμένες
 
 const p2 = (n: number) => String(n).padStart(2, "0");
 const isISO = (s?: string) => (s && /^\d{4}-\d{2}-\d{2}/.test(s) ? s.slice(0, 10) : "");
@@ -60,6 +58,10 @@ const longDate = (iso: string) => {
 
 export function EventsCalendar({ mode }: { mode?: "training" | "events" }) {
   const router = useRouter();
+  const { wellness } = useTheme();
+  const ui = useUi();
+  const PURPLE = wellness.lavenderInk; // επερχόμενες
+  const GREY = wellness.muted; // ολοκληρωμένες
   const trainings = useLoad<{ items: LiveTraining[] }>("/trainings/catalog", {
     items: [],
   });
@@ -350,6 +352,7 @@ export function EventsCalendar({ mode }: { mode?: "training" | "events" }) {
 }
 
 function Legend({ color, label }: { color: string; label: string }) {
+  const ui = useUi();
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 7 }}>
       <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />

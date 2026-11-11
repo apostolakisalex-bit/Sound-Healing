@@ -422,3 +422,24 @@ main (its merge-base was my own tip `70720ab`, so all prior session work is pres
   PendingInbox refactored to receive its useLoad state as a prop (fetched once in AdminOverview). The old
   always-visible PendingInbox panel in «Κέντρο διαχείρισης» was removed.
 
+
+## Dark mode + Language (EL/EN) — COMPLETED (public surfaces)
+- Theme: `src/theme/ThemeContext.tsx` (system-aware + persisted "themePreference" + toggle). ALL components
+  migrated from static light-only `ui`/`palette` (Wellness) to runtime hooks `useUi()`/`usePalette()`.
+  ~19 files migrated this pass (MediaLibrary, AuthScreen, Progress, RetiredNotice, Activity, MembersChat,
+  AccountAccess, FormWorkspace, NavigationEditor, PendingInbox, Assessments, CyclePicker, app/evaluation,
+  Experience, AdminCalendar, PublicExperience + earlier batch). No static ui/palette importers remain.
+- Language: Language context (in AppNavigation.tsx) now persists "languagePreference" (AsyncStorage) and
+  exposes `t(el,en)`. ROOT CAUSE of user complaint "δεν βλέπω το σύμβολο αγγλικών": the EL/EN button was
+  never rendered. Fixed via new `HeaderControls` (🌐 EN/ΕΛ + ☀️/🌙) shown in AppHeader on every screen and
+  FLOATING top-right in Shell when hideHeader (the landing). Verified in preview: EN switches landing + nav
+  tabs to English; theme toggle flips light/dark app-wide.
+- EN coverage so far: public landing (PublicHome) + public section pages (PublicExperience nav/CTAs) + bottom
+  nav tabs. REMAINING: member/admin internal screens still Greek; CMS/blog content stored Greek in DB (no EN
+  source — soundhealing.gr has no /en mirror). Extend on request.
+
+## NEXT (user-chosen order): after dark mode & language -> large SECURITY/RELIABILITY package
+  (exposed admin credential cleanup, restricted-seminar public access in trainings.py, Google sign-in
+  account-claim in server.py, CI fix emergentintegrations optional + yarn, assessment draft-lock + invite
+  link, duplicate-enrollment unification). Not started. GitHub Actions link/commit SHA need user push;
+  prod credential rotation + duplicate-enrollment migration need user action on live data.

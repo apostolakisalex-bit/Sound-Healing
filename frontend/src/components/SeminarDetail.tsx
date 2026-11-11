@@ -2,9 +2,9 @@ import React from "react";
 import { Linking, Pressable, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { wellness } from "@/src/theme";
+import { useTheme } from "@/src/theme/ThemeContext";
 import { ManagedImage } from "./ManagedImage";
-import { Shell, ui, Status, useLoad } from "./Wellness";
+import { Shell, useUi, Status, useLoad } from "./Wellness";
 import { addToDeviceCalendar, shareSeminar } from "@/src/utils/seminarActions";
 
 type Training = {
@@ -34,13 +34,6 @@ type Training = {
 
 const EMPTY = {} as Training;
 
-const LEVEL_TONE: Record<number, { bg: string; ink: string }> = {
-  1: { bg: wellness.lavender, ink: wellness.lavenderInk },
-  2: { bg: wellness.sage, ink: wellness.sageInk },
-  3: { bg: wellness.champagne, ink: wellness.champagneInk },
-  4: { bg: wellness.blueMist, ink: wellness.slate },
-};
-
 function Fact({
   icon,
   label,
@@ -52,6 +45,7 @@ function Fact({
   value: string;
   tint: string;
 }) {
+  const { wellness } = useTheme();
   return (
     <View
       style={{
@@ -103,6 +97,8 @@ function BulletList({
   icon: keyof typeof Ionicons.glyphMap;
   tint: string;
 }) {
+  const { wellness } = useTheme();
+  const ui = useUi();
   return (
     <View style={{ gap: 10 }}>
       {items.map((it, i) => (
@@ -123,6 +119,14 @@ function BulletList({
 export function SeminarDetail() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
+  const { wellness } = useTheme();
+  const ui = useUi();
+  const LEVEL_TONE: Record<number, { bg: string; ink: string }> = {
+    1: { bg: wellness.lavender, ink: wellness.lavenderInk },
+    2: { bg: wellness.sage, ink: wellness.sageInk },
+    3: { bg: wellness.champagne, ink: wellness.champagneInk },
+    4: { bg: wellness.blueMist, ink: wellness.slate },
+  };
   const state = useLoad<Training>(`/trainings/${slug}`, EMPTY);
   const t = state.data;
   const tone = LEVEL_TONE[t.level || 0] || LEVEL_TONE[4];

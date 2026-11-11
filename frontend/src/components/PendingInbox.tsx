@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Text, View } from "react-native";
-import { Button, Status, ui } from "./Wellness";
+import { Button, Status, useUi } from "./Wellness";
 import { MemberProfile } from "./MemberProfile";
 export function PendingInbox({
   state,
@@ -17,6 +17,7 @@ export function PendingInbox({
   onPractices: () => void;
 }) {
   const [member, setMember] = useState("");
+  const ui = useUi();
   const c = state.data.counts || {};
   const registrations = state.data.registrations || [];
   const training_requests = state.data.training_requests || [];

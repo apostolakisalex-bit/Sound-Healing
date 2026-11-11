@@ -7,8 +7,9 @@ import {
   AssessmentQuestion,
   AnswerValues,
 } from "@/src/components/Assessments";
-import { Button, ui } from "@/src/components/Wellness";
+import { Button, useUi } from "@/src/components/Wellness";
 export default function Evaluation() {
+  const ui = useUi();
   const [token, setToken] = useState(""),
     [questions, setQuestions] = useState<AssessmentQuestion[]>([]),
     [answers, setAnswers] = useState<AnswerValues>({}),

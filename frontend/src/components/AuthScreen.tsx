@@ -4,10 +4,11 @@ import { Link, useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import { useAuth } from "@/src/auth/AuthContext";
-import { Shell, ui, Button, Field, Choices } from "@/src/components/Wellness";
+import { Shell, useUi, Button, Field, Choices } from "@/src/components/Wellness";
 
 WebBrowser.maybeCompleteAuthSession();
 export function AuthScreen({ registering = false }: { registering?: boolean }) {
+  const ui = useUi();
   const auth = useAuth(),
     router = useRouter();
   const [name, setName] = useState(""),

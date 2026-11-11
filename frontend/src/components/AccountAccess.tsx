@@ -4,13 +4,14 @@ import { Link } from "expo-router";
 import * as Linking from "expo-linking";
 import { api } from "@/src/api/client";
 import { useAuth } from "@/src/auth/AuthContext";
-import { Button, Choices, Field, Shell, Status, ui, useLoad } from "./Wellness";
+import { Button, Choices, Field, Shell, Status, useUi, useLoad } from "./Wellness";
 const messageOf = (e: any) =>
   typeof e?.response?.data?.detail === "string"
     ? e.response.data.detail
     : "Έλεγξε όλα τα στοιχεία και δοκίμασε ξανά.";
 export function AccountChecklist() {
   const { refresh } = useAuth();
+  const ui = useUi();
   const state = useLoad<any>("/auth/account", {});
   const [draft, setDraft] = useState<Record<string, any> | null>(null);
   const [message, setMessage] = useState("");
@@ -123,6 +124,7 @@ export function AccountChecklist() {
   );
 }
 export function AccountAction() {
+  const ui = useUi();
   const [mode, setMode] = useState("forgot");
   const [token, setToken] = useState("");
   const [email, setEmail] = useState("");

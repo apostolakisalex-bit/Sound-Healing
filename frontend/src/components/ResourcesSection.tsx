@@ -1,6 +1,6 @@
 // Shared upload + resource list for Sound Healing Greece.
 // Used in: Level detail, Realm detail, and Admin resources screen.
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -18,7 +18,8 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { Body, Overline, GlowCard, AuraButton } from "@/src/components/UI";
 import { useAuth } from "@/src/auth/AuthContext";
 import { api } from "@/src/api/client";
-import { colors, spacing, radii } from "@/src/theme";
+import { spacing, radii, type Colors } from "@/src/theme";
+import { useTheme } from "@/src/theme/ThemeContext";
 
 export type ParentType =
   | "academy_level"
@@ -71,6 +72,8 @@ export function ResourcesSection({
   title?: string;
 }) {
   const { user } = useAuth();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [resources, setResources] = useState<Resource[]>([]);
   const [uploading, setUploading] = useState(false);
   const [downloading, setDownloading] = useState<string | null>(null);
@@ -361,7 +364,8 @@ export function ResourcesSection({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) =>
+  StyleSheet.create({
   headRow: {
     flexDirection: "row",
     alignItems: "flex-end",
@@ -402,3 +406,4 @@ const styles = StyleSheet.create({
   },
   delBtn: { padding: 6 },
 });
+

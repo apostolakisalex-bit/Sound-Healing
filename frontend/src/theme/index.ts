@@ -1,44 +1,57 @@
 // Modern wellness: white, ice grey and pale blue, with the owner's reference palette.
-export const wellness = {
+export const lightWellness = {
   lavender: '#E9E3F3', lavenderInk: '#69577F', sage: '#E8F0E9', sageInk: '#4F6D59', champagne: '#D9CDB5', champagneInk: '#78613D',
   white: '#FFFFFF', ice: '#F3F6F8', blueMist: '#E8F1F7', blueSelected: '#DCEAF4',
   slate: '#545F7A', ink: '#293344', muted: '#617083', line: '#DCE3E9',
   rust: '#8F3D20', clay: '#CB865E', earth: '#522113', taupe: '#C2A9A5',
   sand: '#9A7F59', oat: '#D9CDB5', stone: '#E5E5E5', cream: '#E7DDD1',
 };
+export type Wellness = typeof lightWellness;
 
-export const colors = {
+// Calm, spa-like night palette. "white" = card surface, "ink" = primary (light) text.
+export const darkWellness: Wellness = {
+  lavender: '#2E2A40', lavenderInk: '#BCAEDB', sage: '#20302A', sageInk: '#8FBF9E', champagne: '#33302A', champagneInk: '#D8C39A',
+  white: '#1C2030', ice: '#141824', blueMist: '#1F2636', blueSelected: '#2A3344',
+  slate: '#9FB0CE', ink: '#EDEFF5', muted: '#9AA6B8', line: '#2E3648',
+  rust: '#C96A47', clay: '#D79A74', earth: '#6B3A28', taupe: '#C2A9A5',
+  sand: '#C2A878', oat: '#D9CDB5', stone: '#3A3F4D', cream: '#2A2A30',
+};
+
+// Back-compat default (light) for any module-scope usage not yet themed.
+export const wellness = lightWellness;
+
+export const lightColors = {
   bg: {
-    primary: wellness.white,     // clean white — main background
+    primary: lightWellness.white,     // clean white — main background
     secondary: '#FFFFFF',   // pure white — cards
-    tertiary: wellness.ice,    // ice grey — input chrome
+    tertiary: lightWellness.ice,    // ice grey — input chrome
     elevated: '#FFFFFF',
     overlay: 'rgba(20, 22, 24, 0.55)',
     dark: '#141618',        // dark sections / hero overlays
     darkSoft: '#1F2124',    // softer dark
   },
   text: {
-    primary: wellness.ink,     // headings, deep charcoal
-    secondary: wellness.ink,   // body — warm dark grey
-    muted: wellness.muted,       // captions
-    accent: wellness.slate,      // slate blue
-    inverse: wellness.white,     // text on dark surfaces
+    primary: lightWellness.ink,     // headings, deep charcoal
+    secondary: lightWellness.ink,   // body — warm dark grey
+    muted: lightWellness.muted,       // captions
+    accent: lightWellness.slate,      // slate blue
+    inverse: lightWellness.white,     // text on dark surfaces
     inverseSecondary: 'rgba(252,251,249,0.78)',
   },
   accent: {
-    gold: wellness.slate,        // legacy key; primary slate accent
-    goldDeep: wellness.slate,
-    goldSoft: wellness.blueSelected,
-    bronze: wellness.sand,
+    gold: lightWellness.slate,        // legacy key; primary slate accent
+    goldDeep: lightWellness.slate,
+    goldSoft: lightWellness.blueSelected,
+    bronze: lightWellness.sand,
     cyan: '#3D8B9C',        // muted teal — refined complement
-    purple: wellness.lavenderInk,      // soft heather
-    coral: wellness.clay,       // earthy clay
+    purple: lightWellness.lavenderInk,      // soft heather
+    coral: lightWellness.clay,       // earthy clay
     turquoise: '#4A9CA8',
-    lavender: wellness.lavender,
+    lavender: lightWellness.lavender,
     indigo: '#2C2A4A',
   },
   border: {
-    default: wellness.line,
+    default: lightWellness.line,
     subtle: 'rgba(21, 21, 21, 0.08)',
     strong: 'rgba(21, 21, 21, 0.18)',
     glow: 'rgba(84, 95, 122, 0.25)',
@@ -49,6 +62,59 @@ export const colors = {
     danger: '#B8553F',
   },
 };
+export type Colors = typeof lightColors;
+
+export const darkColors: Colors = {
+  bg: {
+    primary: darkWellness.ice,       // deep page background
+    secondary: darkWellness.white,   // cards
+    tertiary: darkWellness.blueMist, // input chrome
+    elevated: '#232838',
+    overlay: 'rgba(0, 0, 0, 0.6)',
+    dark: '#0E1018',
+    darkSoft: '#141824',
+  },
+  text: {
+    primary: darkWellness.ink,
+    secondary: '#D5DAE4',
+    muted: darkWellness.muted,
+    accent: darkWellness.slate,
+    inverse: darkWellness.ice,
+    inverseSecondary: 'rgba(20,24,36,0.78)',
+  },
+  accent: {
+    gold: darkWellness.slate,
+    goldDeep: darkWellness.slate,
+    goldSoft: darkWellness.blueSelected,
+    bronze: darkWellness.sand,
+    cyan: '#59A6B6',
+    purple: darkWellness.lavenderInk,
+    coral: darkWellness.clay,
+    turquoise: '#5FB2BE',
+    lavender: darkWellness.lavender,
+    indigo: '#C7C4E8',
+  },
+  border: {
+    default: darkWellness.line,
+    subtle: 'rgba(255, 255, 255, 0.08)',
+    strong: 'rgba(255, 255, 255, 0.18)',
+    glow: 'rgba(159, 176, 206, 0.28)',
+  },
+  status: {
+    success: '#6FB071',
+    warning: '#D9A94F',
+    danger: '#D4745C',
+  },
+};
+
+// Back-compat default (light).
+export const colors = lightColors;
+
+export const themes = {
+  light: { wellness: lightWellness, colors: lightColors },
+  dark: { wellness: darkWellness, colors: darkColors },
+};
+export type ThemeMode = keyof typeof themes;
 
 export const spacing = {
   xs: 4,
@@ -91,4 +157,3 @@ export const fontSizes = {
   caption: 11,
   overline: 10,
 };
-

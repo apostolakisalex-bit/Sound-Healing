@@ -1,8 +1,8 @@
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { AppHeader, BottomNavigation } from "./AppNavigation";
+import { AppHeader, BottomNavigation, HeaderControls } from "./AppNavigation";
 import { GoldenDust } from "./GoldenDust";
 import { ManagedImage } from "./ManagedImage";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -21,7 +21,15 @@ import { Link, usePathname, useRouter } from "expo-router";
 import { useAuth } from "@/src/auth/AuthContext";
 import { ResourcesSection } from "@/src/components/ResourcesSection";
 import { api } from "@/src/api/client";
-import { colors, fonts, wellness } from "@/src/theme";
+import {
+  fonts,
+  lightWellness,
+  lightColors,
+  darkColors,
+  type Wellness as WellnessPalette,
+  type Colors,
+} from "@/src/theme";
+import { useTheme } from "@/src/theme/ThemeContext";
 
 // Reuse the existing Emergent brand instead of introducing a parallel theme.
 const brandFont = (name: string, serif = false) =>
@@ -29,91 +37,120 @@ const brandFont = (name: string, serif = false) =>
     ? `${name}, ${serif ? "Georgia, serif" : "Arial, sans-serif"}`
     : name;
 
-export const palette = {
-  ink: colors.text.primary,
-  muted: colors.text.secondary,
-  paper: colors.bg.primary,
-  sage: colors.bg.tertiary,
-  peach: colors.bg.tertiary,
-  line: colors.border.default,
-  white: colors.bg.secondary,
-};
-export const ui = StyleSheet.create({
-  page: { flex: 1, backgroundColor: palette.paper },
-  wrap: {
-    width: "100%",
-    maxWidth: 1120,
-    alignSelf: "center",
-    padding: 24,
-    gap: 20,
-    paddingBottom: 64,
-  },
-  row: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    alignItems: "center",
-  },
-  card: {
-    backgroundColor: palette.white,
-    borderRadius: 14,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: palette.line,
-    boxShadow: "0 1px 2px rgba(45,38,66,0.06), 0 14px 28px rgba(45,38,66,0.12)",
-    gap: 12,
-  },
-  title: {
-    fontFamily: brandFont(fonts.title),
-    fontSize: 26,
-    lineHeight: 34,
-    color: palette.ink,
-    fontWeight: "400",
-    letterSpacing: -0.3,
-  },
-  heading: {
-    fontFamily: brandFont(fonts.title),
-    fontSize: 20,
-    color: palette.ink,
-    fontWeight: "400",
-  },
-  body: {
-    fontFamily: brandFont(fonts.body),
-    fontSize: 14,
-    lineHeight: 23,
-    color: palette.muted,
-  },
-  label: {
-    fontFamily: brandFont(fonts.bodySemi),
-    fontSize: 12,
-    letterSpacing: 1.6,
-    fontWeight: "700",
-    color: palette.ink,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: palette.line,
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 16,
-    fontFamily: brandFont(fonts.body),
-    color: palette.ink,
-    backgroundColor: palette.white,
-    minHeight: 48,
-  },
-  button: {
-    backgroundColor: wellness.lavenderInk,
-    borderWidth: 1,
-    borderColor: wellness.lavenderInk,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderRadius: 24,
-    minHeight: 48,
-    justifyContent: "center",
-  },
-  secondary: { backgroundColor: palette.sage },
-  error: { backgroundColor: "#FCE5DE", padding: 16, borderRadius: 12 },
-});
+export function makePalette(colors: Colors) {
+  return {
+    ink: colors.text.primary,
+    muted: colors.text.secondary,
+    paper: colors.bg.primary,
+    sage: colors.bg.tertiary,
+    peach: colors.bg.tertiary,
+    line: colors.border.default,
+    white: colors.bg.secondary,
+  };
+}
+
+export function makeUi(wellness: WellnessPalette, colors: Colors) {
+  const palette = makePalette(colors);
+  const isDark = colors === darkColors;
+  return StyleSheet.create({
+    page: { flex: 1, backgroundColor: palette.paper },
+    wrap: {
+      width: "100%",
+      maxWidth: 1120,
+      alignSelf: "center",
+      padding: 24,
+      gap: 20,
+      paddingBottom: 64,
+    },
+    row: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 12,
+      alignItems: "center",
+    },
+    card: {
+      backgroundColor: palette.white,
+      borderRadius: 14,
+      padding: 20,
+      borderWidth: 1,
+      borderColor: palette.line,
+      boxShadow: isDark
+        ? "0 1px 2px rgba(0,0,0,0.3), 0 14px 28px rgba(0,0,0,0.4)"
+        : "0 1px 2px rgba(45,38,66,0.06), 0 14px 28px rgba(45,38,66,0.12)",
+      gap: 12,
+    },
+    title: {
+      fontFamily: brandFont(fonts.title),
+      fontSize: 26,
+      lineHeight: 34,
+      color: palette.ink,
+      fontWeight: "400",
+      letterSpacing: -0.3,
+    },
+    heading: {
+      fontFamily: brandFont(fonts.title),
+      fontSize: 20,
+      color: palette.ink,
+      fontWeight: "400",
+    },
+    body: {
+      fontFamily: brandFont(fonts.body),
+      fontSize: 14,
+      lineHeight: 23,
+      color: palette.muted,
+    },
+    label: {
+      fontFamily: brandFont(fonts.bodySemi),
+      fontSize: 12,
+      letterSpacing: 1.6,
+      fontWeight: "700",
+      color: palette.ink,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.line,
+      borderRadius: 12,
+      padding: 14,
+      fontSize: 16,
+      fontFamily: brandFont(fonts.body),
+      color: palette.ink,
+      backgroundColor: palette.white,
+      minHeight: 48,
+    },
+    button: {
+      backgroundColor: isDark ? "#7A68A0" : wellness.lavenderInk,
+      borderWidth: 1,
+      borderColor: isDark ? "#7A68A0" : wellness.lavenderInk,
+      paddingHorizontal: 20,
+      paddingVertical: 14,
+      borderRadius: 24,
+      minHeight: 48,
+      justifyContent: "center",
+    },
+    secondary: {
+      backgroundColor: palette.sage,
+      borderColor: palette.line,
+    },
+    error: {
+      backgroundColor: isDark ? "rgba(212,116,92,0.18)" : "#FCE5DE",
+      padding: 16,
+      borderRadius: 12,
+    },
+  });
+}
+
+// Back-compat static light exports (module-scope usage not yet themed).
+export const palette = makePalette(lightColors);
+export const ui = makeUi(lightWellness, lightColors);
+
+export function usePalette() {
+  const { colors } = useTheme();
+  return useMemo(() => makePalette(colors), [colors]);
+}
+export function useUi() {
+  const { wellness, colors } = useTheme();
+  return useMemo(() => makeUi(wellness, colors), [wellness, colors]);
+}
 export function Button({
   label,
   onPress,
@@ -125,6 +162,8 @@ export function Button({
   secondary?: boolean;
   disabled?: boolean;
 }) {
+  const ui = useUi();
+  const palette = usePalette();
   return (
     <Pressable
       accessibilityRole="button"
@@ -161,6 +200,7 @@ export function Field({
   onChange: (s: string) => void;
   multiline?: boolean;
 }) {
+  const ui = useUi();
   return (
     <View style={{ gap: 6 }}>
       <Text style={ui.body}>{label}</Text>
@@ -188,6 +228,7 @@ export function Choices({
   value: string;
   onChange: (s: string) => void;
 }) {
+  const ui = useUi();
   return (
     <View style={{ gap: 8 }}>
       <Text style={ui.body}>{label}</Text>
@@ -238,6 +279,8 @@ export function Status({
 }: {
   state: { loading: boolean; error: string; reload: () => void };
 }) {
+  const ui = useUi();
+  const palette = usePalette();
   return state.loading ? (
     <ActivityIndicator color={palette.ink} />
   ) : state.error ? (
@@ -267,10 +310,12 @@ export function Shell({
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
+  const ui = useUi();
   const staff = !!user && ["admin", "instructor"].includes(user.role);
   return (
     <KeyboardAvoidingView style={[ui.page, { paddingLeft: insets.left, paddingRight: insets.right }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <GoldenDust />
+      {hideHeader && <HeaderControls floating />}
       <ScrollView style={[ui.page, { backgroundColor: "transparent" }]} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
         <View style={[ui.wrap, { paddingBottom: 110 + insets.bottom, paddingTop: hideHeader ? 0 : 24 + insets.top }]}>
           {!hideHeader && <AppHeader notifications={notifications} />}
@@ -348,6 +393,8 @@ export function ContentCard({
     setMessage("");
   }, [item.id, item.completed]);
   const p = item.published;
+  const ui = useUi();
+  const { colors } = useTheme();
   return (
     <View style={ui.card}>
       {!!p.image_url && (

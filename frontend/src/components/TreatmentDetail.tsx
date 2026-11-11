@@ -3,15 +3,17 @@ import { Linking, Pressable, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import Head from "expo-router/head";
-import { wellness } from "@/src/theme";
+import { useTheme } from "@/src/theme/ThemeContext";
 import { ManagedImage } from "./ManagedImage";
-import { Shell, ui } from "./Wellness";
+import { Shell, useUi } from "./Wellness";
 import { treatmentBySlug, TREATMENTS_PHONE } from "@/src/content/treatments";
 
 export function TreatmentDetail() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
   const t = treatmentBySlug(slug);
+  const ui = useUi();
+  const { wellness } = useTheme();
 
   return (
     <Shell publicPage eyebrow="" title="">

@@ -13,13 +13,14 @@ import { EventsCalendar } from "./EventsCalendar";
 import { BlogList } from "./BlogList";
 import {
   Shell,
-  ui,
+  useUi,
   ContentCard,
   ContentItem,
   Status,
   useLoad,
 } from "./Wellness";
 import { FOUNDER } from "@/src/content/public";
+import { useLanguage } from "./AppNavigation";
 
 const sections = {
   soundhealing: {
@@ -85,6 +86,7 @@ function NavLink({
   href: string;
   children: React.ReactNode;
 }) {
+  const ui = useUi();
   return (
     <Link
       href={href as any}
@@ -102,6 +104,8 @@ function NavLink({
   );
 }
 export function PublicExperience({ section }: { section?: string }) {
+  const ui = useUi();
+  const { t } = useLanguage();
   const state = useLoad<ContentItem[]>("/content/public", []);
   const seminars = useLoad<{ items: LiveSeminar[] }>("/trainings/catalog", {
     items: [],
@@ -125,7 +129,8 @@ export function PublicExperience({ section }: { section?: string }) {
   const contactUrl =
     settings?.action_url || "https://www.soundhealing.gr/el/epikoinwnia/";
   const contactLabel =
-    settings?.action_label || "Επικοινώνησε με το Sound Healing Greece";
+    settings?.action_label ||
+    t("Επικοινώνησε με το Sound Healing Greece", "Contact Sound Healing Greece");
   const valid =
     !section || Object.prototype.hasOwnProperty.call(sections, section);
   const page = valid && section ? sections[section as Section] : null;
@@ -170,7 +175,7 @@ export function PublicExperience({ section }: { section?: string }) {
       hideHeader={!section}
       siteSettings={settings}
       eyebrow={page?.label || ""}
-      title={valid ? "" : "Η σελίδα δεν βρέθηκε"}
+      title={valid ? "" : t("Η σελίδα δεν βρέθηκε", "Page not found")}
     >
       <Head>
         <title>{page?.label || "Καλώς ήρθες"} · Sound Healing Greece</title>
@@ -183,7 +188,7 @@ export function PublicExperience({ section }: { section?: string }) {
           }
         />
       </Head>
-      {!!section && <NavLink href="/">← Αρχική</NavLink>}
+      {!!section && <NavLink href="/">{t("← Αρχική", "← Home")}</NavLink>}
       {page && (
         <EditorialIntro
           title={title || page.title}
@@ -207,12 +212,12 @@ export function PublicExperience({ section }: { section?: string }) {
       {section === "training" && <TrainingLevelCards />}
       {section === "services" && (
         <NavLink href="https://www.soundhealing.gr/el/epipleon-yphresies/">
-          Αναλυτικά οι υπηρεσίες και οι συνεργασίες ↗
+          {t("Αναλυτικά οι υπηρεσίες και οι συνεργασίες ↗", "All services and collaborations in detail ↗")}
         </NavLink>
       )}
       {section === "about" && (
         <NavLink href="https://www.soundhealing.gr/el/about-me/">
-          Η διαδρομή του Μανώλη · αναλυτικό βιογραφικό ↗
+          {t("Η διαδρομή του Μανώλη · αναλυτικό βιογραφικό ↗", "Manolis' journey · full biography ↗")}
         </NavLink>
       )}
       {section === "soundhealing" && !intro && <SoundHealingGuide />}
@@ -247,21 +252,21 @@ export function PublicExperience({ section }: { section?: string }) {
         ))}
       {section === "events" && (
         <NavLink href="https://www.soundhealing.gr/soundhealing-events/">
-          Δες το πρόγραμμα στο soundhealing.gr ↗
+          {t("Δες το πρόγραμμα στο soundhealing.gr ↗", "See the programme on soundhealing.gr ↗")}
         </NavLink>
       )}
       {section === "journal" && (
         <NavLink href="https://www.soundhealing.gr/">
-          Επισκέψου τον επίσημο ιστότοπο ↗
+          {t("Επισκέψου τον επίσημο ιστότοπο ↗", "Visit the official website ↗")}
         </NavLink>
       )}
       {valid && !!section && (
         <View style={ui.card}>
           <Text style={ui.heading}>
-            Το επόμενο βήμα ξεκινά με μια συζήτηση.
+            {t("Το επόμενο βήμα ξεκινά με μια συζήτηση.", "The next step starts with a conversation.")}
           </Text>
           <NavLink href={contactUrl}>{contactLabel} ↗</NavLink>
-          <NavLink href="/login">Έχεις ήδη λογαριασμό; Σύνδεση →</NavLink>
+          <NavLink href="/login">{t("Έχεις ήδη λογαριασμό; Σύνδεση →", "Already have an account? Sign in →")}</NavLink>
         </View>
       )}
     </Shell>

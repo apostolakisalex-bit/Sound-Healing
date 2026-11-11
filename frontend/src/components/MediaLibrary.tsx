@@ -3,7 +3,7 @@ import { Platform, Text, View } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system/legacy";
 import { api } from "@/src/api/client";
-import { Button, Field, Status, ui, useLoad } from "./Wellness";
+import { Button, Field, Status, useUi, useLoad } from "./Wellness";
 import { ManagedImage } from "./ManagedImage";
 
 type Photo = {
@@ -21,6 +21,7 @@ export function MediaLibrary({
 }: {
   onSelect?: (photo: Photo) => void;
 }) {
+  const ui = useUi();
   const [query, setQuery] = useState("");
   const [offset, setOffset] = useState(0);
   const state = useLoad<{ items: Photo[]; total: number }>(

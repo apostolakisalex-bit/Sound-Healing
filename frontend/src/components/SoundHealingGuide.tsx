@@ -2,15 +2,8 @@ import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { wellness } from "@/src/theme";
-import { ui } from "./Wellness";
-
-const TONES = [
-  { bg: wellness.lavender, ink: wellness.lavenderInk },
-  { bg: wellness.sage, ink: wellness.sageInk },
-  { bg: wellness.champagne, ink: wellness.champagneInk },
-  { bg: wellness.blueMist, ink: wellness.slate },
-];
+import { useTheme } from "@/src/theme/ThemeContext";
+import { useUi } from "./Wellness";
 
 const STATS = [
   { value: "60%", label: "νερό στο σώμα", caption: "Άριστος αγωγός του ήχου — φτάνει σε κυτταρικό επίπεδο." },
@@ -101,6 +94,8 @@ const EXPECT = [
 ];
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
+  const ui = useUi();
+  const { wellness } = useTheme();
   return (
     <Text style={[ui.label, { color: wellness.lavenderInk, letterSpacing: 1.6 }]}>
       {children}
@@ -110,6 +105,8 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
 
 function TherapyCard({ t, tone }: { t: Therapy; tone: { bg: string; ink: string } }) {
   const [open, setOpen] = useState(false);
+  const ui = useUi();
+  const { wellness } = useTheme();
   return (
     <Pressable
       accessibilityRole="button"
@@ -163,6 +160,14 @@ function TherapyCard({ t, tone }: { t: Therapy; tone: { bg: string; ink: string 
 
 export function SoundHealingGuide() {
   const router = useRouter();
+  const ui = useUi();
+  const { wellness } = useTheme();
+  const TONES = [
+    { bg: wellness.lavender, ink: wellness.lavenderInk },
+    { bg: wellness.sage, ink: wellness.sageInk },
+    { bg: wellness.champagne, ink: wellness.champagneInk },
+    { bg: wellness.blueMist, ink: wellness.slate },
+  ];
   return (
     <View style={{ gap: 32, paddingTop: 8 }}>
       {/* What is it */}

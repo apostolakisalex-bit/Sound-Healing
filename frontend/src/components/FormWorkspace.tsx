@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Text, View } from "react-native";
 import { api } from "@/src/api/client";
-import { Button, Choices, Field, Status, ui, useLoad } from "./Wellness";
+import { Button, Choices, Field, Status, useUi, useLoad } from "./Wellness";
 type Question = {
   key: string;
   label: string;
@@ -31,6 +31,7 @@ const blank = (): Question => ({
   options: [],
 });
 export function FormWorkspace() {
+  const ui = useUi();
   const state = useLoad<{
     catalog: Catalog[];
     versions: Version[];

@@ -3,9 +3,10 @@ import { Text, View } from "react-native";
 import { Link } from "expo-router";
 import { useAuth } from "@/src/auth/AuthContext";
 import { api } from "@/src/api/client";
-import { Button, Field, Status, ui, useLoad } from "./Wellness";
+import { Button, Field, Status, useUi, useLoad } from "./Wellness";
 export function MembersChat() {
   const { user } = useAuth();
+  const ui = useUi();
   if (!user)
     return (
       <View style={ui.card}>
@@ -25,6 +26,7 @@ export function MembersChat() {
 }
 function Chat() {
   const { user } = useAuth();
+  const ui = useUi();
   const [cursor, setCursor] = useState("");
   const state = useLoad<
     {

@@ -1,7 +1,8 @@
 import { AccountChecklist } from "./AccountAccess";
-import { wellness } from "@/src/theme";
+import { type Wellness } from "@/src/theme";
+import { useTheme } from "@/src/theme/ThemeContext";
 import { pickPhoto } from "@/src/utils/pickPhoto";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Image,
   Pressable,
@@ -20,11 +21,10 @@ import {
   Field,
   Shell,
   Status,
-  ui,
-  palette,
+  useUi,
   useLoad,
 } from "./Wellness";
-import { iconSurface } from "./AppNavigation";
+import { useIconSurface } from "./AppNavigation";
 
 type Level = {
   cohort_id?: string | null;
@@ -94,6 +94,9 @@ export function MemberProfile({
   cohorts?: { id: string; title: string; level_id: string }[];
 }) {
   const { user, updateProfile, logout, refresh } = useAuth();
+  const { wellness } = useTheme();
+  const ui = useUi();
+  const iconSurface = useIconSurface();
   const router = useRouter();
   const staff = !!memberId;
   const state = useLoad<Member>(
@@ -613,6 +616,8 @@ function LevelEditor({
   practices: Reviewed[];
   done: () => Promise<void>;
 }) {
+  const { wellness } = useTheme();
+  const ui = useUi();
   const [cohort, setCohort] = useState(l.cohort_id || "");
   const [credited, setCredited] = useState(l.credited_practice_ids || []);
   const [target, setTarget] = useState(l.target ? String(l.target) : "");
@@ -738,6 +743,9 @@ export function MembersAdmin({
 }: {
   cohorts: { id: string; title: string; level_id: string }[];
 }) {
+  const ui = useUi();
+  const { wellness } = useTheme();
+  const rosterStyles = useMemo(() => makeRosterStyles(wellness), [wellness]);
   const [query, setQuery] = useState("");
   const [offset, setOffset] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
@@ -834,6 +842,9 @@ function RosterCard({
   };
   onPress: () => void;
 }) {
+  const ui = useUi();
+  const { wellness } = useTheme();
+  const rosterStyles = useMemo(() => makeRosterStyles(wellness), [wellness]);
   const level = member.level || "L1";
   const scale = LEVEL_SCALE[level] ?? 1;
   const avatar = Math.round(52 * scale);
@@ -881,7 +892,8 @@ function RosterCard({
   );
 }
 
-const rosterStyles = StyleSheet.create({
+const makeRosterStyles = (wellness: Wellness) =>
+  StyleSheet.create({
   collage: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -889,9 +901,9 @@ const rosterStyles = StyleSheet.create({
     alignItems: "flex-start",
   },
   card: {
-    backgroundColor: palette.white,
+    backgroundColor: wellness.white,
     borderWidth: 1,
-    borderColor: palette.line,
+    borderColor: wellness.line,
     borderRadius: 16,
     boxShadow: "0 2px 4px rgba(45,38,66,0.08), 0 14px 26px rgba(45,38,66,0.14)",
     paddingVertical: 14,
@@ -921,7 +933,7 @@ const rosterStyles = StyleSheet.create({
     borderRadius: 999,
   },
   badgeText: {
-    color: palette.white,
+    color: wellness.white,
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 1,

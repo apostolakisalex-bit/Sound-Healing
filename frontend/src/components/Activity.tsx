@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Text, View } from "react-native";
-import { Button, Status, ui, useLoad } from "./Wellness";
+import { Button, Status, useUi, useLoad } from "./Wellness";
 const labels: Record<string, string> = {
   "content.create": "Δημιουργία περιεχομένου",
   "content.edit": "Επεξεργασία προχείρου",
@@ -23,6 +23,7 @@ type Event = {
   created_at: string;
 };
 export function Activity() {
+  const ui = useUi();
   const [offset, setOffset] = useState(0);
   const state = useLoad<{ items: Event[]; total: number }>(
     `/admin/activity?offset=${offset}&limit=20`,

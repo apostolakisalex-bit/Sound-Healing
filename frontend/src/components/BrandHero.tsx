@@ -9,12 +9,14 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { HERO_IMAGES } from "@/src/content/public";
-import { colors } from "@/src/theme";
-import { Button, ui, ContentItem } from "./Wellness";
+import { useTheme } from "@/src/theme/ThemeContext";
+import { Button, useUi, ContentItem } from "./Wellness";
 
 // Preserve the original Emergent hero asset and dark/gold composition.
 export function BrandHero({ item }: { item?: ContentItem }) {
   const router = useRouter();
+  const { colors } = useTheme();
+  const ui = useUi();
   const { width } = useWindowDimensions();
   const compact = width < 600;
   return (

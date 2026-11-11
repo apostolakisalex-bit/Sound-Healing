@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Platform, Pressable, ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { wellness } from "@/src/theme";
+import { useTheme } from "@/src/theme/ThemeContext";
 import { ManagedImage } from "./ManagedImage";
 
 /** Swipeable photo carousel with dots (and chevrons on web). */
@@ -15,6 +15,7 @@ export function PhotoCarousel({
   const [width, setWidth] = useState(0);
   const [index, setIndex] = useState(0);
   const ref = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const { wellness } = useTheme();
   if (!photos.length) return null;
 
   const go = (i: number) => {
@@ -99,6 +100,7 @@ function Arrow({
   side: "left" | "right";
   onPress: () => void;
 }) {
+  const { wellness } = useTheme();
   return (
     <Pressable
       onPress={onPress}

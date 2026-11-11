@@ -3,13 +3,15 @@ import { Linking, Pressable, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import Head from "expo-router/head";
-import { wellness } from "@/src/theme";
-import { Shell, ui } from "./Wellness";
+import { useTheme } from "@/src/theme/ThemeContext";
+import { Shell, useUi } from "./Wellness";
 import { ManagedImage } from "./ManagedImage";
 import { TREATMENTS, TREATMENTS_PHONE } from "@/src/content/treatments";
 
 export function TreatmentsOverview() {
   const router = useRouter();
+  const ui = useUi();
+  const { wellness } = useTheme();
 
   return (
     <Shell publicPage eyebrow="" title="">

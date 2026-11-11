@@ -1,12 +1,13 @@
 import React from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { wellness } from "@/src/theme";
+import { darkWellness, type Wellness } from "@/src/theme";
+import { useTheme } from "@/src/theme/ThemeContext";
 import { pickPhoto } from "@/src/utils/pickPhoto";
 import { api } from "@/src/api/client";
 import { useAuth } from "@/src/auth/AuthContext";
-import { ui, useLoad } from "./Wellness";
-import { iconSurface } from "./AppNavigation";
+import { useUi, useLoad } from "./Wellness";
+import { useIconSurface } from "./AppNavigation";
 
 type Stat = { key?: string; label: string; value: number };
 
@@ -22,6 +23,10 @@ export function AdminHome({
   onStat?: (key: string) => void;
 }) {
   const { user } = useAuth();
+  const { wellness } = useTheme();
+  const ui = useUi();
+  const iconSurface = useIconSurface();
+  const styles = React.useMemo(() => makeStyles(wellness), [wellness]);
   const me = useLoad<{ name: string; profile_image?: string }>("/members/me", {
     name: user?.name || "",
     profile_image: "",
@@ -126,10 +131,13 @@ export function AdminHome({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (wellness: Wellness) => {
+  const isDark = wellness === darkWellness;
+  const strong = isDark ? "#7A68A0" : wellness.lavenderInk;
+  return StyleSheet.create({
   teacherBadge: {
     alignSelf: "flex-start",
-    backgroundColor: wellness.lavenderInk,
+    backgroundColor: strong,
     paddingHorizontal: 14,
     paddingVertical: 5,
     borderRadius: 999,
@@ -158,7 +166,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   statCircleActive: {
-    backgroundColor: wellness.lavenderInk,
+    backgroundColor: strong,
+    borderColor: strong,
   },
   statValue: {
     fontSize: 22,
@@ -173,4 +182,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: wellness.muted,
   },
-});
+  });
+};

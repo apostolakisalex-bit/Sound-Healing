@@ -1,4 +1,5 @@
-import { wellness } from "@/src/theme";
+import { wellness as staticWellness } from "@/src/theme";
+import { useTheme } from "@/src/theme/ThemeContext";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Image, Platform, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,6 +8,7 @@ import { usePathname, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/src/auth/AuthContext";
 import { api } from "@/src/api/client";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Elegant wellness wordmark (Cormorant Garamond) for the brand logotype.
 const BRAND_WORDMARK =
@@ -14,23 +16,36 @@ const BRAND_WORDMARK =
     ? "CormorantGaramond_600SemiBold, Georgia, serif"
     : "CormorantGaramond_600SemiBold";
 
-const Language = createContext({ language: "el", toggle: () => {} });
+export type Lang = "el" | "en";
+const LANG_KEY = "languagePreference";
+const Language = createContext<{
+  language: Lang;
+  toggle: () => void;
+  setLanguage: (l: Lang) => void;
+  t: (el: string, en: string) => string;
+}>({ language: "el", toggle: () => {}, setLanguage: () => {}, t: (el) => el });
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState("el");
+  const [language, setLanguageState] = useState<Lang>("el");
+  useEffect(() => {
+    AsyncStorage.getItem(LANG_KEY).then((v) => {
+      if (v === "el" || v === "en") setLanguageState(v);
+    });
+  }, []);
+  const setLanguage = (l: Lang) => {
+    setLanguageState(l);
+    void AsyncStorage.setItem(LANG_KEY, l);
+  };
+  const toggle = () => setLanguage(language === "el" ? "en" : "el");
+  const t = (el: string, en: string) => (language === "en" ? en : el);
   return (
-    <Language.Provider
-      value={{
-        language,
-        toggle: () => setLanguage((v) => (v === "el" ? "en" : "el")),
-      }}
-    >
+    <Language.Provider value={{ language, toggle, setLanguage, t }}>
       {children}
     </Language.Provider>
   );
 }
 export const useLanguage = () => useContext(Language);
 export const iconSurface = {
-  backgroundColor: wellness.ice,
+  backgroundColor: staticWellness.ice,
   borderRadius: 15,
   shadowColor: "#655A42",
   shadowOpacity: 0.12,
@@ -38,6 +53,83 @@ export const iconSurface = {
   shadowOffset: { width: 0, height: 3 },
   elevation: 2,
 };
+export function useIconSurface() {
+  const { wellness } = useTheme();
+  return { ...iconSurface, backgroundColor: wellness.ice };
+}
+
+export function HeaderControls({ floating = false }: { floating?: boolean }) {
+  const { wellness, mode, toggle: toggleTheme } = useTheme();
+  const { language, toggle: toggleLang } = useLanguage();
+  const insets = useSafeAreaInsets();
+  const btn = {
+    minHeight: 40,
+    minWidth: 40,
+    paddingHorizontal: 10,
+    borderRadius: 14,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    flexDirection: "row" as const,
+    gap: 5,
+    backgroundColor: floating ? wellness.white : "transparent",
+    borderWidth: floating ? 1 : 0,
+    borderColor: wellness.line,
+  };
+  return (
+    <View
+      style={[
+        { flexDirection: "row", alignItems: "center", gap: 8 },
+        floating && {
+          position: "absolute",
+          top: insets.top + 12,
+          right: 20,
+          zIndex: 50,
+        },
+      ]}
+    >
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={
+          language === "el" ? "Switch to English" : "Αλλαγή στα Ελληνικά"
+        }
+        onPress={toggleLang}
+        style={btn}
+      >
+        <Ionicons name="globe-outline" size={18} color={wellness.ink} />
+        <Text
+          style={{
+            fontSize: 12,
+            fontWeight: "700",
+            color: wellness.ink,
+            letterSpacing: 0.5,
+          }}
+        >
+          {language === "el" ? "EN" : "ΕΛ"}
+        </Text>
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={
+          mode === "dark"
+            ? language === "el"
+              ? "Ημερήσιο θέμα"
+              : "Light mode"
+            : language === "el"
+              ? "Νυχτερινό θέμα"
+              : "Dark mode"
+        }
+        onPress={toggleTheme}
+        style={btn}
+      >
+        <Ionicons
+          name={mode === "dark" ? "sunny-outline" : "moon-outline"}
+          size={19}
+          color={wellness.ink}
+        />
+      </Pressable>
+    </View>
+  );
+}
 
 export function AppHeader({
   hideBrand = false,
@@ -47,7 +139,8 @@ export function AppHeader({
   notifications?: boolean;
 }) {
   const { user } = useAuth();
-  const { language, toggle } = useLanguage();
+  const { language } = useLanguage();
+  const { wellness } = useTheme();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [rows, setRows] = useState<
@@ -105,6 +198,8 @@ export function AppHeader({
           </Text>
         </Pressable>}
         {hideBrand && <View style={{ flex: 1 }} />}
+
+        <HeaderControls />
 
         {showNotifications && (
           <Pressable
@@ -193,6 +288,7 @@ export function AppHeader({
 export function BottomNavigation() {
   const { user } = useAuth();
   const { language } = useLanguage();
+  const { wellness } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
   const insets = useSafeAreaInsets();

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Platform, Text, View } from "react-native";
 import { api } from "@/src/api/client";
-import { Button, Field, Status, ui, useLoad } from "./Wellness";
+import { Button, Field, Status, useUi, useLoad } from "./Wellness";
 export type AssessmentQuestion = {
   key: string;
   label: string;
@@ -19,6 +19,7 @@ export function AssessmentFields({
   answers: AnswerValues;
   onChange: (a: AnswerValues) => void;
 }) {
+  const ui = useUi();
   return (
     <View style={{ gap: 24 }}>
       {questions.map((q) => (
@@ -123,6 +124,7 @@ function AssessmentPanel({
   staff: boolean;
   onChanged?: () => Promise<unknown>;
 }) {
+  const ui = useUi();
   const state = useLoad<Overview>(
     `/school/practices/${practiceId}/assessments`,
     {
@@ -314,6 +316,7 @@ function AnswerReview({
   form: Form;
   answers: AnswerValues;
 }) {
+  const ui = useUi();
   return (
     <View style={{ gap: 12 }}>
       {form.questions.map((q) => (

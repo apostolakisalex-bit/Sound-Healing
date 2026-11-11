@@ -1,10 +1,10 @@
-import { wellness } from "@/src/theme";
+import { useTheme } from "@/src/theme/ThemeContext";
 import React, { useState } from "react";
 import { Pressable, Text, View, useWindowDimensions } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { ManagedImage } from "./ManagedImage";
-import { ui, useLoad, Status } from "./Wellness";
+import { useUi, useLoad, Status } from "./Wellness";
 
 export type BlogPost = {
   id: number;
@@ -38,6 +38,8 @@ const formatDate = (iso: string) => {
 /** Live articles from the soundhealing.gr blog, opened in an in-app reader. */
 export function BlogList({ section }: { section: "training" | "events" }) {
   const router = useRouter();
+  const { wellness } = useTheme();
+  const ui = useUi();
   const { width } = useWindowDimensions();
   const state = useLoad<BlogPost[]>(`/blog?section=${section}`, []);
   const [archiveOpen, setArchiveOpen] = useState(false);

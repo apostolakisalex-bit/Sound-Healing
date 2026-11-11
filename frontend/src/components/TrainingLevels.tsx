@@ -1,4 +1,4 @@
-import { wellness } from "@/src/theme";
+import { useTheme } from "@/src/theme/ThemeContext";
 import React from "react";
 import { Linking, Pressable, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -7,7 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { ManagedImage } from "./ManagedImage";
 import { PhotoCarousel } from "./PhotoCarousel";
 import Svg, { Circle, Ellipse, G, Path } from "react-native-svg";
-import { Shell, Status, ui, useLoad } from "./Wellness";
+import { Shell, Status, useUi, useLoad } from "./Wellness";
 
 type Training = {
   slug: string;
@@ -67,6 +67,7 @@ export function LevelSymbol({
   level: number;
   size?: number;
 }) {
+  const { wellness } = useTheme();
   const bowl = (
     <G>
       <Ellipse cx="24" cy="35" rx="17" ry="4" fill={wellness.blueMist} />
@@ -134,6 +135,8 @@ export function LevelSymbol({
 
 export function TrainingLevelCards() {
   const router = useRouter();
+  const { wellness } = useTheme();
+  const ui = useUi();
   return (
     <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
       {levels.map((level, index) => (
@@ -184,6 +187,8 @@ function MetaRow({
   icon: keyof typeof Ionicons.glyphMap;
   text: string;
 }) {
+  const { wellness } = useTheme();
+  const ui = useUi();
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
       <Ionicons name={icon} size={15} color={wellness.slate} />
@@ -194,6 +199,8 @@ function MetaRow({
 
 export default function TrainingLevelsPage() {
   const router = useRouter();
+  const { wellness } = useTheme();
+  const ui = useUi();
   const { level } = useLocalSearchParams<{ level?: string }>();
   const selected = [1, 2, 3, 4].includes(Number(level)) ? Number(level) : 1;
   const item = levels[selected - 1];

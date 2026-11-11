@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Text, View } from "react-native";
-import { wellness } from "@/src/theme";
+import { useTheme } from "@/src/theme/ThemeContext";
 import { AdminHome } from "./AdminHome";
 import { PendingInbox } from "./PendingInbox";
-import { ui, useLoad } from "./Wellness";
+import { useUi, useLoad } from "./Wellness";
 
 type Workspace = {
   users: { id: string; name: string; email: string; role: string }[];
@@ -29,6 +29,8 @@ function DetailCard({
   rows: Row[];
   empty: string;
 }) {
+  const ui = useUi();
+  const { wellness } = useTheme();
   return (
     <View style={ui.card}>
       <Text style={ui.heading}>{title}</Text>
