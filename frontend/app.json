@@ -12,7 +12,8 @@
       "bundleIdentifier": "com.emergent.healinguniverse.vqljow",
       "infoPlist": {
         "NSCalendarsUsageDescription": "Αποθήκευσε σεμινάρια στο ημερολόγιό σου",
-        "NSCalendarsWriteOnlyAccessUsageDescription": "Αποθήκευσε σεμινάρια στο ημερολόγιό σου"
+        "NSCalendarsWriteOnlyAccessUsageDescription": "Αποθήκευσε σεμινάρια στο ημερολόγιό σου",
+        "NSPhotoLibraryUsageDescription": "Επίλεξε φωτογραφία προφίλ από τη συλλογή σου"
       }
     },
     "android": {
