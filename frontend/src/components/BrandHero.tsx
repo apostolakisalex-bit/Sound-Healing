@@ -11,12 +11,14 @@ import { useRouter } from "expo-router";
 import { HERO_IMAGES } from "@/src/content/public";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { Button, useUi, ContentItem } from "./Wellness";
+import { useLanguage } from "./AppNavigation";
 
 // Preserve the original Emergent hero asset and dark/gold composition.
 export function BrandHero({ item }: { item?: ContentItem }) {
   const router = useRouter();
   const { colors } = useTheme();
   const ui = useUi();
+  const { t } = useLanguage();
   const { width } = useWindowDimensions();
   const compact = width < 600;
   return (
@@ -67,7 +69,7 @@ export function BrandHero({ item }: { item?: ContentItem }) {
               },
             ]}
           >
-            {item?.published.title || "Κάνε χώρο\nγια τον ήχο."}
+            {item?.published.title || t("Κάνε χώρο\nγια τον ήχο.", "Make space\nfor sound.")}
           </Text>
           <Text
             style={[
@@ -76,23 +78,26 @@ export function BrandHero({ item }: { item?: ContentItem }) {
             ]}
           >
             {item?.published.summary ||
-              "Εκπαίδευση στην ηχοθεραπεία, προσωπική πρακτική και σύνδεση με την κοινότητα. Μια νέα σχέση με την ακρόαση."}
+              t(
+                "Εκπαίδευση στην ηχοθεραπεία, προσωπική πρακτική και σύνδεση με την κοινότητα. Μια νέα σχέση με την ακρόαση.",
+                "Training in sound healing, personal practice and connection with the community. A new relationship with listening.",
+              )}
           </Text>
         </View>
         <View style={{ gap: 24 }}>
           <View style={ui.row}>
             <Button
-              label="Μπες στον χώρο σου"
+              label={t("Μπες στον χώρο σου", "Enter your space")}
               onPress={() => router.push("/login")}
             />
             <Button
               secondary
-              label="Δημιουργία λογαριασμού"
+              label={t("Δημιουργία λογαριασμού", "Create account")}
               onPress={() => router.push("/register")}
             />
           </View>
           <Text style={[ui.label, { color: colors.text.inverseSecondary }]}>
-            ΧΑΝΙΑ · ΑΘΗΝΑ · ONLINE
+            {t("ΧΑΝΙΑ · ΑΘΗΝΑ · ONLINE", "CHANIA · ATHENS · ONLINE")}
           </Text>
         </View>
       </View>

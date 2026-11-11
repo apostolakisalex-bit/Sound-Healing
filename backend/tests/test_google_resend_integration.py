@@ -19,14 +19,16 @@ import requests
 BASE_URL = os.environ.get("EXPO_PUBLIC_BACKEND_URL", "https://healing-universe.preview.emergentagent.com").rstrip("/")
 API = BASE_URL + "/api"
 
-ADMIN_EMAIL = "admin@soundhealing.gr"
-ADMIN_PASSWORD = "temple2026"
+ADMIN_EMAIL = os.environ.get("SHG_TEST_ADMIN_EMAIL", "admin@soundhealing.gr")
+ADMIN_PASSWORD = os.environ.get("SHG_TEST_ADMIN_PASSWORD", "")
 STUDENT_EMAIL = "uitest_167043@test.gr"
 STUDENT_PASSWORD = "TestPass12345"
 
 
 @pytest.fixture(scope="module")
 def admin_token():
+    if not ADMIN_PASSWORD:
+        pytest.skip("Set SHG_TEST_ADMIN_PASSWORD to run admin-authenticated tests.")
     r = requests.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}, timeout=15)
     assert r.status_code == 200, f"admin login failed: {r.status_code} {r.text}"
     return r.json()["token"]
@@ -64,6 +66,8 @@ class TestGoogleSession:
 # ----- Regression: email/password login -----
 class TestLoginRegression:
     def test_admin_login(self):
+        if not ADMIN_PASSWORD:
+            pytest.skip("Set SHG_TEST_ADMIN_PASSWORD to run this test.")
         r = requests.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}, timeout=15)
         assert r.status_code == 200, r.text
         data = r.json()

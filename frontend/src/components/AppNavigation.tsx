@@ -44,6 +44,22 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   );
 }
 export const useLanguage = () => useContext(Language);
+/** Locks everything in its subtree to Greek — used to keep the admin workspace
+ *  Greek regardless of the app-wide language toggle. */
+export function ForceGreekLanguage({ children }: { children: React.ReactNode }) {
+  return (
+    <Language.Provider
+      value={{
+        language: "el",
+        toggle: () => {},
+        setLanguage: () => {},
+        t: (el) => el,
+      }}
+    >
+      {children}
+    </Language.Provider>
+  );
+}
 export const iconSurface = {
   backgroundColor: staticWellness.ice,
   borderRadius: 15,
@@ -63,8 +79,8 @@ export function HeaderControls({ floating = false }: { floating?: boolean }) {
   const { language, toggle: toggleLang } = useLanguage();
   const insets = useSafeAreaInsets();
   const btn = {
-    minHeight: 40,
-    minWidth: 40,
+    minHeight: 44,
+    minWidth: 44,
     paddingHorizontal: 10,
     borderRadius: 14,
     alignItems: "center" as const,
@@ -93,6 +109,7 @@ export function HeaderControls({ floating = false }: { floating?: boolean }) {
           language === "el" ? "Switch to English" : "Αλλαγή στα Ελληνικά"
         }
         onPress={toggleLang}
+        testID="language-toggle"
         style={btn}
       >
         <Ionicons name="globe-outline" size={18} color={wellness.ink} />
@@ -119,6 +136,7 @@ export function HeaderControls({ floating = false }: { floating?: boolean }) {
               : "Dark mode"
         }
         onPress={toggleTheme}
+        testID="theme-toggle"
         style={btn}
       >
         <Ionicons

@@ -443,3 +443,11 @@ main (its merge-base was my own tip `70720ab`, so all prior session work is pres
   account-claim in server.py, CI fix emergentintegrations optional + yarn, assessment draft-lock + invite
   link, duplicate-enrollment unification). Not started. GitHub Actions link/commit SHA need user push;
   prod credential rotation + duplicate-enrollment migration need user action on live data.
+
+## Update (June 2026) — Owner admin accounts + static-content bilingual
+- Two fixed owner admin accounts auto-seeded on backend startup (idempotent, `seed_admins.py`):
+  - `manoliszografakis@gmail.com` and `apostolakisalex@gmail.com`, shared password `matestzografakis_11.11`.
+  - Both are role=admin, membership approved, email verified. Role/approval re-asserted each start; password set only on first insert. Both verified logging in (200) → admin.
+- Static frontend app-copy made bilingual: `content/treatments.ts`, `content/services.ts` (+ consumers TreatmentsOverview/TreatmentDetail/ServiceDetail/PublicHome). Slugs unchanged.
+- Admin stays Greek under global EN via ForceGreekLanguage; ResourcesSection admin strings now bilingual (Greek in forced-Greek admin).
+- Open decision: Academy level titles/descriptions come from backend `school.py` (authored curriculum) and remain in authored Greek — consistent with earlier CMS-content boundary.

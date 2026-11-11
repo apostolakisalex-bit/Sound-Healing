@@ -8,21 +8,23 @@ import { ManagedImage } from "./ManagedImage";
 import { Shell, useUi } from "./Wellness";
 import { PhotoCarousel } from "./PhotoCarousel";
 import { serviceBySlug } from "@/src/content/services";
+import { useLanguage } from "./AppNavigation";
 
 const CONTACT_URL = "https://www.soundhealing.gr/el/epikoinwnia/";
 
 export function ServiceDetail() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
-  const service = serviceBySlug(slug);
   const ui = useUi();
   const { wellness } = useTheme();
+  const { t, language } = useLanguage();
+  const service = serviceBySlug(slug, language);
 
   return (
     <Shell publicPage eyebrow="" title="">
       <Head>
         <title>
-          {(service?.title || "Υπηρεσία") + " · Sound Healing Greece"}
+          {(service?.title || t("Υπηρεσία", "Service")) + " · Sound Healing Greece"}
         </title>
         <meta name="description" content={service?.intro || ""} />
       </Head>
@@ -33,12 +35,12 @@ export function ServiceDetail() {
         style={{ paddingVertical: 10 }}
       >
         <Text style={[ui.body, { color: wellness.lavenderInk, fontWeight: "700" }]}>
-          ← Αρχική
+          ← {t("Αρχική", "Home")}
         </Text>
       </Pressable>
 
       {!service ? (
-        <Text style={ui.body}>Η υπηρεσία δεν βρέθηκε.</Text>
+        <Text style={ui.body}>{t("Η υπηρεσία δεν βρέθηκε.", "Service not found.")}</Text>
       ) : (
         <View style={{ gap: 22 }}>
           <View style={{ gap: 12, alignItems: "center" }}>
@@ -162,7 +164,7 @@ export function ServiceDetail() {
             style={[ui.button, { alignItems: "center" }]}
           >
             <Text style={{ color: wellness.white, fontWeight: "700", fontSize: 15 }}>
-              Επικοινωνία & συνεργασία
+              {t("Επικοινωνία & συνεργασία", "Contact & collaboration")}
             </Text>
           </Pressable>
         </View>

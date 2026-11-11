@@ -5,10 +5,12 @@ import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import { useAuth } from "@/src/auth/AuthContext";
 import { Shell, useUi, Button, Field, Choices } from "@/src/components/Wellness";
+import { useLanguage } from "@/src/components/AppNavigation";
 
 WebBrowser.maybeCompleteAuthSession();
 export function AuthScreen({ registering = false }: { registering?: boolean }) {
   const ui = useUi();
+  const { t } = useLanguage();
   const auth = useAuth(),
     router = useRouter();
   const [name, setName] = useState(""),
@@ -53,7 +55,7 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
         sid = m ? decodeURIComponent(m[1]) : null;
       }
       if (!sid) {
-        setError("Η σύνδεση με Google δεν ολοκληρώθηκε.");
+        setError(t("Η σύνδεση με Google δεν ολοκληρώθηκε.", "Google sign-in was not completed."));
         return;
       }
       const signedIn = await auth.loginWithSession(sid);
@@ -65,7 +67,7 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
             : "/(tabs)/sanctuary",
       );
     } catch {
-      setError("Δεν ήταν δυνατή η σύνδεση με Google.");
+      setError(t("Δεν ήταν δυνατή η σύνδεση με Google.", "Could not sign in with Google."));
     } finally {
       setGoogleBusy(false);
     }
@@ -78,7 +80,10 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
       (registering && (name.trim().length < 2 || password.length < 10))
     ) {
       setError(
-        "Συμπλήρωσε τα στοιχεία. Στην εγγραφή χρειάζονται τουλάχιστον 10 χαρακτήρες για τον κωδικό.",
+        t(
+          "Συμπλήρωσε τα στοιχεία. Στην εγγραφή χρειάζονται τουλάχιστον 10 χαρακτήρες για τον κωδικό.",
+          "Fill in the details. Registration requires at least 10 characters for the password.",
+        ),
       );
       return;
     }
@@ -114,8 +119,8 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
         typeof e?.response?.data?.detail === "string"
           ? e.response.data.detail
           : registering
-            ? "Δεν ολοκληρώθηκε η εγγραφή. Έλεγξε τα στοιχεία ή δοκίμασε σύνδεση."
-            : "Δεν ήταν δυνατή η σύνδεση. Έλεγξε email και κωδικό.",
+            ? t("Δεν ολοκληρώθηκε η εγγραφή. Έλεγξε τα στοιχεία ή δοκίμασε σύνδεση.", "Registration could not be completed. Check the details or try signing in.")
+            : t("Δεν ήταν δυνατή η σύνδεση. Έλεγξε email και κωδικό.", "Could not sign in. Check your email and password."),
       );
     } finally {
       setBusy(false);
@@ -124,37 +129,39 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
   return (
     <Shell
       publicPage
-      eyebrow="Ο ΧΩΡΟΣ ΕΥΕΞΙΑΣ ΣΟΥ"
-      title={registering ? "Η διαδρομή σου ξεκινά εδώ." : "Καλώς ήρθες ξανά."}
+      eyebrow={t("Ο ΧΩΡΟΣ ΕΥΕΞΙΑΣ ΣΟΥ", "YOUR WELLNESS SPACE")}
+      title={registering ? t("Η διαδρομή σου ξεκινά εδώ.", "Your journey begins here.") : t("Καλώς ήρθες ξανά.", "Welcome back.")}
     >
       <View
         style={[ui.card, { maxWidth: 560, width: "100%", alignSelf: "center" }]}
       >
         {registering && (
           <>
-            <Field label="Όνομα" value={name} onChange={setName} />
-            <Field label="Επώνυμο" value={lastName} onChange={setLastName} />
+            <Field label={t("Όνομα", "First name")} value={name} onChange={setName} />
+            <Field label={t("Επώνυμο", "Last name")} value={lastName} onChange={setLastName} />
             <Field
-              label="Μήνας γέννησης (1–12)"
+              label={t("Μήνας γέννησης (1–12)", "Birth month (1–12)")}
               value={birthMonth}
               onChange={setBirthMonth}
             />
             <Field
-              label="Έτος γέννησης"
+              label={t("Έτος γέννησης", "Birth year")}
               value={birthYear}
               onChange={setBirthYear}
             />
-            <Field label="Τηλέφωνο" value={phone} onChange={setPhone} />
-            <Field label="Διεύθυνση" value={address} onChange={setAddress} />
+            <Field label={t("Τηλέφωνο", "Phone")} value={phone} onChange={setPhone} />
+            <Field label={t("Διεύθυνση", "Address")} value={address} onChange={setAddress} />
             <Choices
-              label="Δηλωμένο Level — θα επιβεβαιωθεί από τον διαχειριστή"
+              label={t("Δηλωμένο Level — θα επιβεβαιωθεί από τον διαχειριστή", "Declared Level — will be confirmed by the administrator")}
               values={["L1", "L2", "L3", "L4"]}
               value={declaredLevel}
               onChange={setDeclaredLevel}
             />
             <Text style={ui.body}>
-              Τα στοιχεία αίτησης είναι ορατά μόνο σε εσένα και στον
-              διαχειριστή. Η πρόσβαση μέλους ενεργοποιείται μετά την έγκριση.
+              {t(
+                "Τα στοιχεία αίτησης είναι ορατά μόνο σε εσένα και στον διαχειριστή. Η πρόσβαση μέλους ενεργοποιείται μετά την έγκριση.",
+                "Your application details are visible only to you and the administrator. Member access is activated after approval.",
+              )}
             </Text>
           </>
         )}
@@ -168,9 +175,9 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
           onChangeText={setEmail}
           style={ui.input}
         />
-        <Text style={ui.body}>Κωδικός</Text>
+        <Text style={ui.body}>{t("Κωδικός", "Password")}</Text>
         <TextInput
-          accessibilityLabel="Κωδικός"
+          accessibilityLabel={t("Κωδικός", "Password")}
           secureTextEntry
           autoCapitalize="none"
           autoComplete={registering ? "new-password" : "current-password"}
@@ -187,32 +194,35 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
           disabled={busy}
           label={
             busy
-              ? "Περίμενε…"
+              ? t("Περίμενε…", "Please wait…")
               : registering
-                ? "Δημιουργία λογαριασμού"
-                : "Σύνδεση"
+                ? t("Δημιουργία λογαριασμού", "Create account")
+                : t("Σύνδεση", "Sign in")
           }
           onPress={() => void submit()}
         />
         <Button
           secondary
           disabled={googleBusy}
-          label={googleBusy ? "Σύνδεση…" : "Σύνδεση με Google"}
+          label={googleBusy ? t("Σύνδεση…", "Signing in…") : t("Σύνδεση με Google", "Sign in with Google")}
           onPress={() => void googleSignIn()}
         />
         {!registering && (
           <Link href="/account-action" style={ui.body}>
-            Ξέχασα τον κωδικό μου
+            {t("Ξέχασα τον κωδικό μου", "I forgot my password")}
           </Link>
         )}
         <Link href={registering ? "/login" : "/register"} style={ui.body}>
           {registering
-            ? "Έχεις λογαριασμό; Σύνδεση"
-            : "Νέος χρήστης; Δημιουργία λογαριασμού"}
+            ? t("Έχεις λογαριασμό; Σύνδεση", "Already have an account? Sign in")
+            : t("Νέος χρήστης; Δημιουργία λογαριασμού", "New user? Create account")}
         </Link>
         {registering && (
           <Text style={ui.body}>
-            Η δημιουργία λογαριασμού δεν αποτελεί εγγραφή σε εκπαιδευτικό Level.
+            {t(
+              "Η δημιουργία λογαριασμού δεν αποτελεί εγγραφή σε εκπαιδευτικό Level.",
+              "Creating an account is not an enrollment in a training Level.",
+            )}
           </Text>
         )}
       </View>

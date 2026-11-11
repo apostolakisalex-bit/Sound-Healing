@@ -16,6 +16,7 @@ import secrets
 import httpx
 from emailer import send_receiver_feedback_invite
 from account_security import build_account_router, throttle, application_complete
+from seed_admins import seed_admins
 from ratelimit import limit_auth, limit_key
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr, field_validator
@@ -465,6 +466,7 @@ async def seed_db():
 @app.on_event("startup")
 async def startup():
     await db.auth_limits.create_index("expires_at", expireAfterSeconds=0)
+    await seed_admins(db, hash_password, logger)
     if os.environ.get("SEED_DEMO_CONTENT") == "true":
         await seed_db()
 
@@ -585,6 +587,25 @@ async def google_session(payload: SessionIn, request: Request):
             "created_at": datetime.now(timezone.utc),
             "read_by": [],
         })
+    elif user.get("auth_provider") != "google":
+        # Google has verified ownership of this email, so we may CLAIM the
+        # pre-existing password account: link it, mark the email verified,
+        # disable the old password (random hash) and revoke every existing
+        # session by bumping token_version. The caller then receives a token
+        # minted with the NEW version.
+        await db.users.update_one(
+            {"id": user["id"]},
+            {
+                "$set": {
+                    "auth_provider": "google",
+                    "email_verified": True,
+                    "password_hash": hash_password(secrets.token_urlsafe(32)),
+                    "profile_image": user.get("profile_image") or picture,
+                },
+                "$inc": {"token_version": 1},
+            },
+        )
+        user = await db.users.find_one({"id": user["id"]})
     token = create_token(user["id"], user.get("token_version", 0))
     return {"token": token, "user": serialize_user(user)}
 
@@ -821,7 +842,10 @@ async def ai_chat(payload: ChatIn, user: dict = Depends(get_current_user)):
     if os.environ.get("AI_ENABLED") != "true":
         raise HTTPException(503, "The assistant is not enabled")
     limit_key(f"ai:{user['id']}", 20, 60)
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+    except ImportError:
+        raise HTTPException(503, "The assistant is not available on this deployment.")
     session_id = f"shg-{user['id']}"
     system_msg = SYSTEM_MSG + f"\n\nThe user's name is {user['name']}. Their current level is {user.get('level','L1')} ({user.get('title','')}). XP: {user.get('xp',0)}."
     try:

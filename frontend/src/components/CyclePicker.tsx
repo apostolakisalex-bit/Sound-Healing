@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Text, View } from "react-native";
 import { api } from "@/src/api/client";
 import { Button, Field, Status, useUi, useLoad } from "./Wellness";
+import { useLanguage } from "./AppNavigation";
 type Cycle = {
   id: string;
   enrollment_id: string;
@@ -22,6 +23,7 @@ export function CyclePicker({
   onSelect: (id: string, code: string) => void;
 }) {
   const ui = useUi();
+  const { t } = useLanguage();
   const state = useLoad<Cycle[]>("/school/cycles", []);
   const [code, setCode] = useState(""),
     [focus, setFocus] = useState(""),
@@ -33,10 +35,12 @@ export function CyclePicker({
   const cycles = state.data.filter((c) => c.enrollment_id === enrollment);
   return (
     <View style={{ gap: 12 }}>
-      <Text style={ui.heading}>Κύκλος ατομικής πρακτικής</Text>
+      <Text style={ui.heading}>{t("Κύκλος ατομικής πρακτικής", "Individual practice cycle")}</Text>
       <Text style={ui.body}>
-        Κράτησε τις συνεδρίες του ίδιου δέκτη μαζί. Ο προγραμματισμός είναι
-        δικός σου και δεν αποτελεί επίσημο κανόνα πιστοποίησης.
+        {t(
+          "Κράτησε τις συνεδρίες του ίδιου δέκτη μαζί. Ο προγραμματισμός είναι δικός σου και δεν αποτελεί επίσημο κανόνα πιστοποίησης.",
+          "Keep sessions with the same receiver together. The planning is yours and is not an official certification rule.",
+        )}
       </Text>
       <Status state={state} />
       {cycles.map((c) => (
@@ -47,11 +51,10 @@ export function CyclePicker({
             onPress={() => onSelect(c.id, c.receiver_code)}
           />
           <Text style={ui.body}>
-            {c.recorded_sessions} καταγραφές · {c.reviewed_sessions} με αρχικό
-            έλεγχο
-            {c.planned_sessions
-              ? ` · ${c.planned_sessions} προγραμματισμένες`
-              : ""}
+            {t(
+              `${c.recorded_sessions} καταγραφές · ${c.reviewed_sessions} με αρχικό έλεγχο${c.planned_sessions ? ` · ${c.planned_sessions} προγραμματισμένες` : ""}`,
+              `${c.recorded_sessions} records · ${c.reviewed_sessions} reviewed${c.planned_sessions ? ` · ${c.planned_sessions} planned` : ""}`,
+            )}
           </Text>
           {!!c.intended_focus && (
             <Text style={ui.body}>{c.intended_focus}</Text>
@@ -60,32 +63,32 @@ export function CyclePicker({
       ))}
       <Button
         secondary
-        label={open ? "Κλείσιμο νέου κύκλου" : "Νέος κύκλος δέκτη"}
+        label={open ? t("Κλείσιμο νέου κύκλου", "Close new cycle") : t("Νέος κύκλος δέκτη", "New receiver cycle")}
         disabled={!enrollment}
         onPress={() => setOpen(!open)}
       />
       {open && (
         <View style={ui.card}>
-          <Field label="Κωδικός δέκτη" value={code} onChange={setCode} />
+          <Field label={t("Κωδικός δέκτη", "Receiver code")} value={code} onChange={setCode} />
           <Field
-            label="Εστίαση κύκλου (προαιρετικό)"
+            label={t("Εστίαση κύκλου (προαιρετικό)", "Cycle focus (optional)")}
             value={focus}
             onChange={setFocus}
             multiline
           />
           <Field
-            label="Προσδοκίες δέκτη (προαιρετικό)"
+            label={t("Προσδοκίες δέκτη (προαιρετικό)", "Receiver expectations (optional)")}
             value={expectations}
             onChange={setExpectations}
             multiline
           />
           <Field
-            label="Προγραμματισμένες συνεδρίες (προαιρετικό)"
+            label={t("Προγραμματισμένες συνεδρίες (προαιρετικό)", "Planned sessions (optional)")}
             value={planned}
             onChange={setPlanned}
           />
           <Button
-            label="Αποθήκευση κύκλου"
+            label={t("Αποθήκευση κύκλου", "Save cycle")}
             disabled={busy || !code.trim()}
             onPress={async () => {
               setBusy(true);
@@ -107,7 +110,10 @@ export function CyclePicker({
                 setPlanned("");
               } catch {
                 setError(
-                  "Δεν αποθηκεύτηκε. Έλεγξε την εγγραφή και τον αριθμό συνεδριών.",
+                  t(
+                    "Δεν αποθηκεύτηκε. Έλεγξε την εγγραφή και τον αριθμό συνεδριών.",
+                    "Not saved. Check the enrolment and the number of sessions.",
+                  ),
                 );
               } finally {
                 setBusy(false);

@@ -53,16 +53,20 @@ def build_assessment_router(db,current_user,admin_user):
         phase='repeat' if prior else 'first'
         return {**form,'questions':[q for q in form['questions'] if q.get('applies_to','all') in ('all',phase)]}
     async def bound(p,role):
-        await db.school_practices.update_one({'id':p['id']},{'$set':{'assessment_locked':True}})
-        p=await db.school_practices.find_one({'id':p['id']})
+        # Lock ONLY once a form is actually bound; locking before validating
+        # that an admin-activated form exists would strand the practice locked
+        # after a failed (409) attempt.
         key=f'{p["id"]}:{role}'
         existing=await db.assessment_bindings.find_one({'_id':key})
-        if existing: return existing['form']
+        if existing:
+            await db.school_practices.update_one({'id':p['id']},{'$set':{'assessment_locked':True}})
+            return existing['form']
         config=await db.assessment_configuration.find_one({'_id':f'{p["level_id"]}:{p["mode"]}:{role}'})
         if not config: raise HTTPException(409,'Η επίσημη φόρμα δεν έχει ενεργοποιηθεί από τον διαχειριστή.')
         form=await db.assessment_forms.find_one({'id':config['form_id']},{'_id':0})
         form=await applicable(form,p)
         await db.assessment_bindings.update_one({'_id':key},{'$setOnInsert':{'form':form}},upsert=True)
+        await db.school_practices.update_one({'id':p['id']},{'$set':{'assessment_locked':True}})
         return (await db.assessment_bindings.find_one({'_id':key}))['form']
     @router.post('/admin/forms/{draft_id}/activate')
     async def activate(draft_id:str,payload:Publication,admin=Depends(admin_user)):

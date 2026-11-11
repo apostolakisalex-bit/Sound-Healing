@@ -2,11 +2,12 @@ import React from "react";
 import { Text, View } from "react-native";
 import { Link } from "expo-router";
 import { Shell, useUi } from "./Wellness";
+import { useLanguage } from "./AppNavigation";
 
-// Shared Greek "feature withdrawn" notice for retired legacy routes.
+// Shared "feature withdrawn" notice for retired legacy routes.
 // Keeps a single, unified experience — the old environment never renders.
 export function RetiredNotice({
-  title = "Η λειτουργία αποσύρθηκε",
+  title,
   message,
   ctaHref,
   ctaLabel,
@@ -19,13 +20,18 @@ export function RetiredNotice({
   publicPage?: boolean;
 }) {
   const ui = useUi();
+  const { t } = useLanguage();
   return (
-    <Shell publicPage={publicPage} eyebrow="ΕΝΗΜΕΡΩΣΗ" title={title}>
+    <Shell
+      publicPage={publicPage}
+      eyebrow={t("ΕΝΗΜΕΡΩΣΗ", "UPDATE")}
+      title={title ?? t("Η λειτουργία αποσύρθηκε", "This feature has been withdrawn")}
+    >
       <View style={ui.card}>
         <Text style={ui.body}>{message}</Text>
         {!!ctaHref && (
           <Link href={ctaHref as any} style={[ui.body, { marginTop: 12 }]}>
-            {ctaLabel || "Συνέχεια"}
+            {ctaLabel || t("Συνέχεια", "Continue")}
           </Link>
         )}
       </View>

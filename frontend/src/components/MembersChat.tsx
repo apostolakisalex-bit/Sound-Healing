@@ -4,22 +4,24 @@ import { Link } from "expo-router";
 import { useAuth } from "@/src/auth/AuthContext";
 import { api } from "@/src/api/client";
 import { Button, Field, Status, useUi, useLoad } from "./Wellness";
+import { useLanguage } from "./AppNavigation";
 export function MembersChat() {
   const { user } = useAuth();
   const ui = useUi();
+  const { t } = useLanguage();
   if (!user)
     return (
       <View style={ui.card}>
-        <Text style={ui.heading}>Chat μελών</Text>
+        <Text style={ui.heading}>{t("Chat μελών", "Members chat")}</Text>
         <Link href="/login" style={ui.body}>
-          Σύνδεση για συμμετοχή →
+          {t("Σύνδεση για συμμετοχή →", "Sign in to join →")}
         </Link>
       </View>
     );
   if (user.membership_status && user.membership_status !== "approved")
     return (
       <Text style={ui.body}>
-        Το chat ενεργοποιείται μετά την έγκριση της εγγραφής σου.
+        {t("Το chat ενεργοποιείται μετά την έγκριση της εγγραφής σου.", "The chat is activated after your registration is approved.")}
       </Text>
     );
   return <Chat />;
@@ -27,6 +29,8 @@ export function MembersChat() {
 function Chat() {
   const { user } = useAuth();
   const ui = useUi();
+  const { t, language } = useLanguage();
+  const chatLocale = language === "en" ? "en-GB" : "el-GR";
   const [cursor, setCursor] = useState("");
   const state = useLoad<
     {
@@ -45,14 +49,16 @@ function Chat() {
   const [busy, setBusy] = useState(false);
   return (
     <View style={ui.card}>
-      <Text style={ui.heading}>Chat μελών</Text>
+      <Text style={ui.heading}>{t("Chat μελών", "Members chat")}</Text>
       <Text style={ui.body}>
-        Τα μηνύματα είναι ορατά στα εγκεκριμένα μέλη και στον διαχειριστή.
-        Μοιραζόμαστε εμπειρίες χωρίς προσωπικά στοιχεία δεκτών.
+        {t(
+          "Τα μηνύματα είναι ορατά στα εγκεκριμένα μέλη και στον διαχειριστή. Μοιραζόμαστε εμπειρίες χωρίς προσωπικά στοιχεία δεκτών.",
+          "Messages are visible to approved members and the administrator. We share experiences without recipients' personal details.",
+        )}
       </Text>
       <Button
         secondary
-        label="Νεότερα μηνύματα / Ανανέωση"
+        label={t("Νεότερα μηνύματα / Ανανέωση", "Newer messages / Refresh")}
         onPress={() => {
           if (cursor) setCursor("");
           else void state.reload();
@@ -70,7 +76,7 @@ function Chat() {
           }}
         >
           <Text style={{ fontSize: 12, fontWeight: "600" }}>
-            {m.name} · {new Date(m.created_at).toLocaleString("el-GR")}
+            {m.name} · {new Date(m.created_at).toLocaleString(chatLocale)}
           </Text>
           <Text style={ui.body}>{m.text}</Text>
           {user?.role === "admin" && (
@@ -94,18 +100,18 @@ function Chat() {
       {state.data.length === 50 && (
         <Button
           secondary
-          label="Παλαιότερα μηνύματα"
+          label={t("Παλαιότερα μηνύματα", "Older messages")}
           onPress={() => setCursor(state.data[state.data.length - 1].id)}
         />
       )}
       <Field
-        label="Το μήνυμά σου"
+        label={t("Το μήνυμά σου", "Your message")}
         value={message}
         onChange={setMessage}
         multiline
       />
       <Button
-        label="Αποστολή στο chat"
+        label={t("Αποστολή στο chat", "Send to chat")}
         disabled={busy || !message.trim() || message.length > 2000}
         onPress={async () => {
           setBusy(true);
@@ -116,7 +122,7 @@ function Chat() {
             if (cursor) setCursor("");
             else await state.reload();
           } catch {
-            setError("Δεν στάλθηκε. Περίμενε λίγο και δοκίμασε ξανά.");
+            setError(t("Δεν στάλθηκε. Περίμενε λίγο και δοκίμασε ξανά.", "Not sent. Wait a moment and try again."));
           } finally {
             setBusy(false);
           }

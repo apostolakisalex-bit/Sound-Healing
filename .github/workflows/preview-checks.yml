@@ -26,11 +26,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - run: npm install --global pnpm@11.19.0
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm typecheck
+      - run: npm install --global yarn@1.22.22
+      - run: yarn install --frozen-lockfile
+      - run: yarn typecheck
       - run: node scripts/test-load-races.cjs
-      - run: pnpm export:web
+      - run: yarn export:web
         env:
           EXPO_NO_TELEMETRY: '1'
           EXPO_PUBLIC_BACKEND_URL: https://preview.invalid

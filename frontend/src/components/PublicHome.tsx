@@ -25,7 +25,7 @@ import {
 } from "@/src/content/public";
 import { ContentItem, Status, useUi, useLoad } from "./Wellness";
 import { EventGrid } from "./EventGrid";
-import { serviceSlugByTitle } from "@/src/content/services";
+import { getServices, serviceSlugByTitle } from "@/src/content/services";
 type LiveTraining = {
   slug: string;
   title: string;
@@ -37,11 +37,6 @@ type LiveTraining = {
   price: string;
   location?: string;
 };
-const serviceTitles = [
-  "Διαδραστικά εργαστήρια & ομιλίες",
-  "Συμβουλευτική για ξενοδοχεία & Spa",
-  "Εταιρικές εκδηλώσεις & εργαστήρια",
-];
 // Elegant wellness wordmark (Cormorant Garamond) for the brand logotype.
 const BRAND_WORDMARK =
   Platform.OS === "web"
@@ -57,7 +52,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
   const router = useRouter();
   const { wellness } = useTheme();
   const ui = useUi();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const iconSurface = useIconSurface();
   const { width, fontScale } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -76,7 +71,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       location: live?.location || "",
       start: live?.start_date || item.published.event_end_date,
       end: item.published.event_end_date,
-      notes: item.published.summary ? `Κόστος: ${item.published.summary}` : "",
+      notes: item.published.summary ? `${t("Κόστος", "Price")}: ${item.published.summary}` : "",
     });
   };
   const settings = items.find(
@@ -207,7 +202,10 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
             alignItems: "center",
             justifyContent: "flex-start",
             paddingHorizontal: 24,
-            paddingTop: insets.top + (compactScreen ? 20 : 34),
+            // Drop the wordmark below the floating language/theme controls
+            // (which sit at insets.top + 12 and are ~40px tall) so the two
+            // icons never touch the word "Greece".
+            paddingTop: insets.top + (compactScreen ? 62 : 72),
           }}
         >
           <Text
@@ -247,7 +245,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
         {[
           [
             {
-              title: "Μανώλης Ζωγραφάκης",
+              title: t("Μανώλης Ζωγραφάκης", "Manolis Zografakis"),
               label: t("ΣΧΕΤΙΚΑ", "ABOUT"),
               image: photo("about", page("about")?.image_url || FOUNDER.photo),
               route: "/explore/about",
@@ -498,7 +496,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                           style={{ flexDirection: "row", gap: 8, marginTop: 4 }}
                         >
                           <Pressable
-                            accessibilityLabel="Προσθήκη στο ημερολόγιο"
+                            accessibilityLabel={t("Προσθήκη στο ημερολόγιο", "Add to calendar")}
                             onPress={(e) => {
                               (e as any)?.stopPropagation?.();
                               cardCalendar(item);
@@ -532,7 +530,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                             </Text>
                           </Pressable>
                           <Pressable
-                            accessibilityLabel="Μοιράσου"
+                            accessibilityLabel={t("Μοιράσου", "Share")}
                             onPress={(e) => {
                               (e as any)?.stopPropagation?.();
                               void shareSeminar(
@@ -583,7 +581,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
         <View style={[ui.row, { alignItems: "stretch" }]}>
           {(services.length
             ? services.map((i) => i.published.title)
-            : serviceTitles
+            : getServices(language).map((s) => s.title)
           ).map((title, index) => (
             <Pressable
               key={title}
@@ -631,7 +629,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           <Pressable
             onPress={() => router.push("/treatments" as any)}
             accessibilityRole="link"
-            accessibilityLabel="Treatments. Δείτε τις θεραπείες"
+            accessibilityLabel={t("Treatments. Δείτε τις θεραπείες", "Treatments. See the treatments")}
             style={[
               iconSurface,
               {

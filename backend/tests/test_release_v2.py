@@ -28,8 +28,8 @@ API = BASE_URL + "/api"
 MONGO_URL = os.environ["MONGO_URL"]
 DB_NAME = os.environ["DB_NAME"]
 
-ADMIN_EMAIL = "admin@soundhealing.gr"
-ADMIN_PASS = "temple2026"
+ADMIN_EMAIL = os.environ.get("SHG_TEST_ADMIN_EMAIL", "admin@soundhealing.gr")
+ADMIN_PASS = os.environ.get("SHG_TEST_ADMIN_PASSWORD", "")
 APPROVED_EMAIL = "uitest_167043@test.gr"
 APPROVED_PASS = "TestPass12345"
 
@@ -58,6 +58,8 @@ def login(s, email, pw):
 
 @pytest.fixture(scope="session")
 def admin_token(s):
+    if not ADMIN_PASS:
+        pytest.skip("Set SHG_TEST_ADMIN_PASSWORD to run admin-authenticated tests.")
     return login(s, ADMIN_EMAIL, ADMIN_PASS)
 
 

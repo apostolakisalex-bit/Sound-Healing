@@ -14,8 +14,9 @@ BASE_URL = (
     or os.environ.get("EXPO_PUBLIC_BACKEND_URL")
     or ""
 ).rstrip("/")
+# Admin credentials are sourced ONLY from the environment — never hardcoded.
 ADMIN_EMAIL = os.environ.get("SHG_TEST_ADMIN_EMAIL", "admin@soundhealing.gr")
-ADMIN_PASSWORD = os.environ.get("SHG_TEST_ADMIN_PASSWORD", "temple2026")
+ADMIN_PASSWORD = os.environ.get("SHG_TEST_ADMIN_PASSWORD", "")
 
 # Expose to test modules
 os.environ["EXPO_PUBLIC_BACKEND_URL"] = BASE_URL
@@ -35,6 +36,8 @@ def api():
 
 @pytest.fixture(scope="session")
 def admin_token(api):
+    if not ADMIN_PASSWORD:
+        pytest.skip("Set SHG_TEST_ADMIN_PASSWORD to run admin-authenticated tests.")
     r = api.post(
         f"{BASE_URL}/api/auth/login",
         json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD},

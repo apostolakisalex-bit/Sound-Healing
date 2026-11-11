@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Platform, Text, View } from "react-native";
 import { api } from "@/src/api/client";
 import { Button, Field, Status, useUi, useLoad } from "./Wellness";
+import { useLanguage } from "./AppNavigation";
 export type AssessmentQuestion = {
   key: string;
   label: string;
@@ -20,6 +21,7 @@ export function AssessmentFields({
   onChange: (a: AnswerValues) => void;
 }) {
   const ui = useUi();
+  const { t } = useLanguage();
   return (
     <View style={{ gap: 24 }}>
       {questions.map((q) => (
@@ -39,7 +41,10 @@ export function AssessmentFields({
               </Text>
               {q.kind === "multi" && (
                 <Text style={ui.body}>
-                  Μπορείς να επιλέξεις περισσότερες από μία απαντήσεις.
+                  {t(
+                    "Μπορείς να επιλέξεις περισσότερες από μία απαντήσεις.",
+                    "You can select more than one answer.",
+                  )}
                 </Text>
               )}
               {q.options.map((option) => {
@@ -98,11 +103,16 @@ export function PracticeAssessments({
   onChanged?: () => Promise<unknown>;
 }) {
   const [open, setOpen] = useState(false);
+  const { t } = useLanguage();
   return (
     <View style={{ gap: 12 }}>
       <Button
         secondary
-        label={open ? "Κλείσιμο αξιολογήσεων" : "Αξιολογήσεις μαθητή & δέκτη"}
+        label={
+          open
+            ? t("Κλείσιμο αξιολογήσεων", "Close assessments")
+            : t("Αξιολογήσεις μαθητή & δέκτη", "Learner & receiver assessments")
+        }
         onPress={() => setOpen(!open)}
       />
       {open && (
@@ -125,6 +135,7 @@ function AssessmentPanel({
   onChanged?: () => Promise<unknown>;
 }) {
   const ui = useUi();
+  const { t } = useLanguage();
   const state = useLoad<Overview>(
     `/school/practices/${practiceId}/assessments`,
     {
@@ -149,7 +160,10 @@ function AssessmentPanel({
       setMessage(
         typeof e?.response?.data?.detail === "string"
           ? e.response.data.detail
-          : "Δεν ολοκληρώθηκε. Έλεγξε τις απαντήσεις και δοκίμασε ξανά.",
+          : t(
+              "Δεν ολοκληρώθηκε. Έλεγξε τις απαντήσεις και δοκίμασε ξανά.",
+              "Not completed. Check your answers and try again.",
+            ),
       );
     } finally {
       setBusy(false);
@@ -160,18 +174,20 @@ function AssessmentPanel({
       <Status state={state} />
       {!state.loading && !state.error && (
         <>
-          <Text style={ui.heading}>Αναστοχασμός μαθητή</Text>
+          <Text style={ui.heading}>{t("Αναστοχασμός μαθητή", "Learner reflection")}</Text>
           {!state.data.practitioner.form ? (
             <Text style={ui.body}>
-              Η επίσημη φόρμα αυτού του Level αναμένει ενεργοποίηση από τον
-              admin.
+              {t(
+                "Η επίσημη φόρμα αυτού του Level αναμένει ενεργοποίηση από τον admin.",
+                "The official form for this Level is awaiting activation by the admin.",
+              )}
             </Text>
           ) : staff || response?.status === "submitted" ? (
             <>
               <Text style={ui.body}>
                 {response?.status === "submitted"
-                  ? "Υποβλήθηκε"
-                  : "Δεν έχει υποβληθεί"}
+                  ? t("Υποβλήθηκε", "Submitted")
+                  : t("Δεν έχει υποβληθεί", "Not submitted")}
               </Text>
               {response?.status === "submitted" && (
                 <AnswerReview
@@ -194,8 +210,8 @@ function AssessmentPanel({
                   disabled={busy}
                   label={
                     submit
-                      ? "Οριστική υποβολή αξιολόγησης"
-                      : "Αποθήκευση πρόχειρης αξιολόγησης"
+                      ? t("Οριστική υποβολή αξιολόγησης", "Submit assessment")
+                      : t("Αποθήκευση πρόχειρης αξιολόγησης", "Save draft assessment")
                   }
                   onPress={() =>
                     void run(async () => {
@@ -210,8 +226,11 @@ function AssessmentPanel({
                       setDraft(null);
                       setMessage(
                         submit
-                          ? "Η αξιολόγηση υποβλήθηκε στον εκπαιδευτή και στον admin."
-                          : "Το πρόχειρο αποθηκεύτηκε.",
+                          ? t(
+                              "Η αξιολόγηση υποβλήθηκε στον εκπαιδευτή και στον admin.",
+                              "The assessment was submitted to the instructor and the admin.",
+                            )
+                          : t("Το πρόχειρο αποθηκεύτηκε.", "The draft was saved."),
                       );
                     })
                   }
@@ -219,23 +238,27 @@ function AssessmentPanel({
               ))}
             </>
           )}
-          <Text style={ui.heading}>Αξιολόγηση δέκτη / συμμετεχόντων</Text>
+          <Text style={ui.heading}>{t("Αξιολόγηση δέκτη / συμμετεχόντων", "Receiver / participant assessment")}</Text>
           {!state.data.receiver.form ? (
             <Text style={ui.body}>
-              Η φόρμα δέκτη αναμένει ενεργοποίηση από τον admin.
+              {t(
+                "Η φόρμα δέκτη αναμένει ενεργοποίηση από τον admin.",
+                "The receiver form is awaiting activation by the admin.",
+              )}
             </Text>
           ) : (
             <>
               {!staff && (
                 <>
                   <Text style={ui.body}>
-                    Μετά την υποβολή της πρακτικής, δημιούργησε ξεχωριστό
-                    σύνδεσμο για κάθε συμμετέχοντα. Οι απαντήσεις είναι ορατές
-                    στον αρμόδιο εκπαιδευτή και στον admin.
+                    {t(
+                      "Μετά την υποβολή της πρακτικής, δημιούργησε ξεχωριστό σύνδεσμο για κάθε συμμετέχοντα. Οι απαντήσεις είναι ορατές στον αρμόδιο εκπαιδευτή και στον admin.",
+                      "After submitting the practice, create a separate link for each participant. Answers are visible to the responsible instructor and the admin.",
+                    )}
                   </Text>
                   <Button
                     disabled={busy}
-                    label="Δημιουργία προσωπικού συνδέσμου"
+                    label={t("Δημιουργία προσωπικού συνδέσμου", "Create personal link")}
                     onPress={() =>
                       void run(async () => {
                         const { data } = await api.post(
@@ -247,7 +270,10 @@ function AssessmentPanel({
                             : process.env.EXPO_PUBLIC_WEB_URL;
                         if (!base) {
                           setMessage(
-                            "Χρειάζεται EXPO_PUBLIC_WEB_URL για κοινοποίηση από κινητή εφαρμογή.",
+                            t(
+                              "Χρειάζεται EXPO_PUBLIC_WEB_URL για κοινοποίηση από κινητή εφαρμογή.",
+                              "EXPO_PUBLIC_WEB_URL is required to share from the mobile app.",
+                            ),
                           );
                           return;
                         }
@@ -268,18 +294,18 @@ function AssessmentPanel({
                 <View key={inv.id} style={ui.card}>
                   <Text style={ui.body}>
                     {inv.status === "submitted"
-                      ? "Η αξιολόγηση παραλήφθηκε"
+                      ? t("Η αξιολόγηση παραλήφθηκε", "The assessment was received")
                       : inv.status === "revoked"
-                        ? "Ο σύνδεσμος ανακλήθηκε"
+                        ? t("Ο σύνδεσμος ανακλήθηκε", "The link was revoked")
                         : new Date(inv.expires_at) < new Date()
-                          ? "Ο σύνδεσμος έληξε"
-                          : "Αναμονή απάντησης"}
+                          ? t("Ο σύνδεσμος έληξε", "The link expired")
+                          : t("Αναμονή απάντησης", "Awaiting response")}
                   </Text>
                   {!staff && inv.status === "pending" && (
                     <Button
                       secondary
                       disabled={busy}
-                      label="Ανάκληση συνδέσμου"
+                      label={t("Ανάκληση συνδέσμου", "Revoke link")}
                       onPress={() =>
                         void run(() =>
                           api.post(

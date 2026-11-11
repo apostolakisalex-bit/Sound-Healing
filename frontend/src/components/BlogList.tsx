@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { ManagedImage } from "./ManagedImage";
 import { useUi, useLoad, Status } from "./Wellness";
+import { useLanguage } from "./AppNavigation";
 
 export type BlogPost = {
   id: number;
@@ -18,17 +19,11 @@ export type BlogPost = {
   categories: string[];
 };
 
-const BADGE: Record<BlogPost["category"], string> = {
-  training: "Εκπαιδευτικό",
-  events: "Εκδήλωση",
-  general: "Άρθρο",
-};
-
-const formatDate = (iso: string) => {
+const formatDate = (iso: string, locale: string) => {
   if (!iso) return "";
   const [y, m, d] = iso.split("-").map(Number);
   if (!y || !m || !d) return "";
-  return new Intl.DateTimeFormat("el-GR", {
+  return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -40,6 +35,14 @@ export function BlogList({ section }: { section: "training" | "events" }) {
   const router = useRouter();
   const { wellness } = useTheme();
   const ui = useUi();
+  const { t, language } = useLanguage();
+  const dateLocale = language === "en" ? "en-GB" : "el-GR";
+  const badge = (c: BlogPost["category"]) =>
+    c === "training"
+      ? t("Εκπαιδευτικό", "Educational")
+      : c === "events"
+        ? t("Εκδήλωση", "Event")
+        : t("Άρθρο", "Article");
   const { width } = useWindowDimensions();
   const state = useLoad<BlogPost[]>(`/blog?section=${section}`, []);
   const [archiveOpen, setArchiveOpen] = useState(false);
@@ -66,7 +69,9 @@ export function BlogList({ section }: { section: "training" | "events" }) {
   const liveOwn = own.filter((p) => !p.date || p.date >= today);
   const live = [...liveOwn, ...general];
   const archiveLabel =
-    section === "events" ? "Αρχείο εκδηλώσεων" : "Αρχείο εκπαιδευτικών";
+    section === "events"
+      ? t("Αρχείο εκδηλώσεων", "Events archive")
+      : t("Αρχείο εκπαιδευτικών", "Training archive");
 
   const gridStyle = {
     flexDirection: "row",
@@ -115,8 +120,8 @@ export function BlogList({ section }: { section: "training" | "events" }) {
       )}
       <View style={{ padding: 14, gap: 8, flex: 1 }}>
         <Text style={[ui.label, { color: wellness.lavenderInk, fontSize: 11 }]}>
-          {BADGE[post.category]}
-          {post.date ? ` · ${formatDate(post.date)}` : ""}
+          {badge(post.category)}
+          {post.date ? ` · ${formatDate(post.date, dateLocale)}` : ""}
         </Text>
         <Text
           accessibilityRole="header"
@@ -143,7 +148,7 @@ export function BlogList({ section }: { section: "training" | "events" }) {
           }}
         >
           <Text style={[ui.body, { color: wellness.slate, fontSize: 14 }]}>
-            Διάβασε περισσότερα
+            {t("Διάβασε περισσότερα", "Read more")}
           </Text>
           <Ionicons name="arrow-forward" size={15} color={wellness.slate} />
         </View>
@@ -153,7 +158,7 @@ export function BlogList({ section }: { section: "training" | "events" }) {
 
   return (
     <View style={{ gap: 16 }}>
-      <Text style={ui.heading}>Από το blog</Text>
+      <Text style={ui.heading}>{t("Από το blog", "From the blog")}</Text>
       {state.loading && <Status state={state} />}
       {!!live.length && <View style={gridStyle}>{live.map(renderCard)}</View>}
 

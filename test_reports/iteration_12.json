@@ -1,0 +1,43 @@
+{
+  "summary": "Tested the bilingual (EL/EN) migration in the Expo web preview at a 375x667 mobile viewport, frontend only. I scanned the rendered DOM for Greek and English text on every screen I visited. CRITICAL bug found and FIXED: /explore/training crashed in both languages with 'Uncaught Error: t is not a function' (red screen). Cause: in PublicExperience.tsx the seminars.map((t) => ...) callback parameter shadowed the translator t. After the fix the page renders in EL and EN. Public screens (/, soundhealing, training, levels, events, about, services, journal, contact, seminar detail), auth screens (/login, /register, /account-action in forgot/reset/verify modes) and member screens (profile, sanctuary, academy, journey, practice, members chat, onboarding checklist for a pending TEST_ user) switch to English. Toggling back to Greek works and the setting persists across navigation. CMS/DB content (seminar titles, bodies and locations, blog post, backend level titles) correctly stays in its authored language. FAILURES: (1) The admin environment does NOT stay fully Greek. With EN on, the admin Πρόοδος section, the member detail view under Μέλη, the Αξιολογήσεις header, ResourcesSection texts, the footer and the bottom tabs show English. (2) Hardcoded Greek static content remains in EN mode: the landing services grid, the founder card name, /treatments and /treatment/<slug>, /service/<slug>, a few aria-labels and error/success messages.",
+  "backend_issues": {"critical": [], "minor": [
+    {"endpoint": "POST /api/auth/forgot-password (and reset-password, verify-email)", "issue": "The backend returns a Greek 'message'. AccountAccess.tsx:184 and :29 show r.data.message ahead of the translated t() fallback, so in EN mode the user sees 'Αν υπάρχει αντίστοιχος λογαριασμός, θα λάβεις email...'."}
+  ]},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "PublicExperience /explore/training", "issue": "FIXED by testing agent. Red-screen 't is not a function': seminars.data.items.map((t) => ...) shadowed the translator, and action_label: t('Πληροφορίες & εγγραφή', ...) called the seminar object. Renamed the callback parameter to 'sem'. Reference: src/components/PublicExperience.tsx:198-216", "testID": "n/a", "priority": "CRITICAL"}
+    ],
+    "integration_issues": [
+      {"flow": "Admin stays Greek", "issue": "Shared components inside /admin use useLanguage().t and switch to English when EN is on. Verified in the browser: section 'Πρόοδος' (<Progress staff/>) shows 'Progress in practice', 'Enrolment status', 'Refresh progress', 'Previous/Next enrolments', etc. 'Μέλη' member detail (MemberProfile with staff) shows 'Approved member', 'Records & confirmed progress', 'Recorded hours', 'Not activated', etc. 'Αξιολογήσεις' (PracticeAssessments) shows 'Learner & receiver assessments'. 'Περιεχόμενο' (ResourcesSection) shows 'No material yet' and 'Upload'. The Shell footer shows 'Sound Healing Greece · Chania · Athens · Online'. The BottomNavigation labels show Home/Sound/Training/Events/Profile. Admin-only files (admin.tsx, AdminOverview, AdminCalendar, MediaLibrary, FormWorkspace, Activity) correctly stay Greek.", "affected_testIDs": ["language-toggle"]},
+      {"flow": "Static public content not bilingual", "issue": "The hardcoded content files src/content/treatments.ts and src/content/services.ts are Greek-only, so /treatments, /treatment/<slug> (including UI fact labels 'Διάρκεια', 'Μορφή', 'Εμπειρία'), /service/<slug> and the landing 'Services' grid stay Greek in EN mode. These are static code content, not CMS.", "affected_testIDs": []}
+    ],
+    "design_issues": [
+      {"screen": "Header", "issues": ["The language and theme toggle buttons use minHeight/minWidth 40, below the 44pt touch target (AppNavigation.tsx:66-67)"]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": ["/app/test_reports/iteration_12.json"],
+  "action_items": [
+    "HIGH: Force Greek for the whole admin environment. For example, export a <ForceGreek> wrapper from AppNavigation.tsx that provides Language context {language:'el', t:(el)=>el} and wrap the /admin screen with it (this also covers Progress staff, MembersAdmin/MemberProfile staff, PracticeAssessments, ResourcesSection, EditorialIntro, Status/useUi and the Shell footer). Decide whether the BottomNavigation/header toggle on /admin should also be Greek or hidden.",
+    "MEDIUM: Translate the static content in src/content/treatments.ts (titles, subtitles, fact labels, bodies, benefits) and src/content/services.ts, or at least the UI labels ('Διάρκεια'/'Μορφή'/'Εμπειρία'). Also translate PublicHome.tsx:40-44 serviceTitles, which are visible on the landing page in EN.",
+    "LOW: PublicHome.tsx:253 founder title 'Μανώλης Ζωγραφάκης' is not wrapped in t(), unlike PublicExperience.tsx:73 which uses 'Manolis Zografakis'. Untranslated aria-labels: PublicHome.tsx:504 'Προσθήκη στο ημερολόγιο', :538 'Μοιράσου', :637 'Treatments. Δείτε τις θεραπείες', :191 alt fallback. Also :79 'Κόστος:' in calendar notes.",
+    "LOW: Untranslated error strings: AppNavigation.tsx:169 and :271 (notifications), Wellness.tsx:266 (useLoad error shown by Status), CyclePicker/TreatmentDetail WhatsApp prefill text (TreatmentDetail.tsx:238, TreatmentsOverview.tsx:97,105), TreatmentsOverview.tsx:24 meta description.",
+    "LOW: AccountAccess.tsx:29 and :184 prefer the backend's Greek r.data.message over t(). Use the translated client string in EN, or make the backend return a message code.",
+    "LOW: Raise the header toggle touch targets to 44x44."
+  ],
+  "critical_code_review_comments": [
+    "Do not name callback parameters 't' in components that use const { t } = useLanguage(). This caused the /explore/training crash. Other uses (TrainingLevels.tsx:241/337, SoundHealingGuide.tsx:312, PublicHome.tsx:111/120, EventsCalendar.tsx:80) do not currently call t() inside the shadowed scope, but they are fragile.",
+    "app/admin.tsx is 1217 lines. Split it into section modules.",
+    "The language toggle had no testID. testID='language-toggle' and 'theme-toggle' were added."
+  ],
+  "updated_files": [
+    "/app/frontend/src/components/PublicExperience.tsx (renamed seminar map param t->sem to fix the crash)",
+    "/app/frontend/src/components/AppNavigation.tsx (added testID language-toggle / theme-toggle)"
+  ],
+  "success_rate": {"backend": "N/A (not requested)", "frontend": "~80%: public, auth and member EN switching pass after the crash fix; admin-stays-Greek FAILS; treatments/services static content not translated"},
+  "seed_data_creation": "Registered one pending TEST user via /register (EN mode): test_i18n_93156@test.gr / TestPass12345 (name TEST_I18n Tester). There is no delete endpoint, so it was left in place. No other data was changed.",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "The language toggle is now [data-testid='language-toggle'] (aria-label 'Switch to English' / 'Αλλαγή στα Ελληνικά'). The preference persists in localStorage key 'languagePreference'. Admin sections open via aria-label 'Άνοιγμα: <Section>'. Reload /admin to return to the overview. Login inputs: input[aria-label='Email'] and input[aria-label='Password'|'Κωδικός']. To check for leaks, collect DOM text nodes that contain Greek (EN mode) or Latin-only text (admin).",
+  "rca_of_issue": "/explore/training red screen: PublicExperience.tsx built seminar ContentItems with seminars.data.items.map((t) => ({... action_label: t('Πληροφορίες & εγγραφή','Details & registration') })). The local 't' (a seminar object) shadowed the useLanguage translator, so calling it threw TypeError 't is not a function' during render. It reproduced whenever seminars were loaded, in both languages. Fix: renamed the param to 'sem'. Verified the page renders in EL and EN."
+}

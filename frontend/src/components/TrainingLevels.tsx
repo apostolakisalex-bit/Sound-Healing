@@ -8,6 +8,7 @@ import { ManagedImage } from "./ManagedImage";
 import { PhotoCarousel } from "./PhotoCarousel";
 import Svg, { Circle, Ellipse, G, Path } from "react-native-svg";
 import { Shell, Status, useUi, useLoad } from "./Wellness";
+import { useLanguage } from "./AppNavigation";
 
 type Training = {
   slug: string;
@@ -25,40 +26,60 @@ type Photo = { uri: string; alt: string; level?: number | null };
 
 // Editorial summaries of soundhealing.gr/el/ekpaideftika-seminaria/.
 // Practice targets and certification rules remain managed by the school.
-const levels = [
+const makeLevels = (t: (el: string, en: string) => string) => [
   {
-    title: "Τα θεμέλια",
+    title: t("Τα θεμέλια", "The foundations"),
     subtitle: "Himalayan singing bowls",
-    audience: "Για αρχάριους, χωρίς προηγούμενη εμπειρία.",
-    body: "Γνωριμία με τα μπολ, τις παραδόσεις και τις τεχνικές παιξίματος. Εξερευνάς τη χρήση ενός έως τριών μπολ, τον προσωπικό διαλογισμό και τη δομή μιας ατομικής συνεδρίας.",
-    practice:
+    audience: t("Για αρχάριους, χωρίς προηγούμενη εμπειρία.", "For beginners, with no prior experience."),
+    body: t(
+      "Γνωριμία με τα μπολ, τις παραδόσεις και τις τεχνικές παιξίματος. Εξερευνάς τη χρήση ενός έως τριών μπολ, τον προσωπικό διαλογισμό και τη δομή μιας ατομικής συνεδρίας.",
+      "An introduction to the bowls, their traditions and playing techniques. You explore using one to three bowls, personal meditation and the structure of an individual session.",
+    ),
+    practice: t(
       "Η ατομική πρακτική συνοδεύεται από καταγραφή και αξιολόγηση της εμπειρίας.",
+      "Individual practice is accompanied by recording and evaluating the experience.",
+    ),
   },
   {
-    title: "Εμβάθυνση",
+    title: t("Εμβάθυνση", "Going deeper"),
     subtitle: "Singing bowls · Tingsha · Chimes",
-    audience: "Συνέχεια της εκπαίδευσης του Level 1.",
-    body: "Προχωρημένοι συνδυασμοί έως επτά μπολ, φωνή, κρυστάλλινα μπολ και συμπληρωματικά όργανα. Εμβαθύνεις στη χαλάρωση και στη σύνθεση της ατομικής συνεδρίας.",
-    practice:
+    audience: t("Συνέχεια της εκπαίδευσης του Level 1.", "A continuation of the Level 1 training."),
+    body: t(
+      "Προχωρημένοι συνδυασμοί έως επτά μπολ, φωνή, κρυστάλλινα μπολ και συμπληρωματικά όργανα. Εμβαθύνεις στη χαλάρωση και στη σύνθεση της ατομικής συνεδρίας.",
+      "Advanced combinations of up to seven bowls, voice, crystal bowls and complementary instruments. You go deeper into relaxation and the composition of the individual session.",
+    ),
+    practice: t(
       "Παρακολουθείς διαδοχικές συνεδρίες με τον ίδιο δέκτη, την πρόθεσή του και την ανατροφοδότηση μετά από κάθε πρακτική.",
+      "You follow consecutive sessions with the same recipient, their intention and the feedback after each practice.",
+    ),
   },
   {
-    title: "Ομαδικά Sound Baths",
-    subtitle: "Singing bowls · Gong · Ομάδα",
-    audience: "Για όσους συνεχίζουν μετά τα δύο βασικά επίπεδα.",
-    body: "Συντονισμός ομάδων με γκονγκ, κρυστάλλινα μπολ, τύμπανα και πρόσθετα όργανα. Δημιουργία ηχητικών διαδρομών με έμφαση στη ροή και στον ασφαλή χώρο.",
-    practice:
+    title: t("Ομαδικά Sound Baths", "Group Sound Baths"),
+    subtitle: t("Singing bowls · Gong · Ομάδα", "Singing bowls · Gong · Group"),
+    audience: t("Για όσους συνεχίζουν μετά τα δύο βασικά επίπεδα.", "For those continuing after the two foundational levels."),
+    body: t(
+      "Συντονισμός ομάδων με γκονγκ, κρυστάλλινα μπολ, τύμπανα και πρόσθετα όργανα. Δημιουργία ηχητικών διαδρομών με έμφαση στη ροή και στον ασφαλή χώρο.",
+      "Facilitating groups with gongs, crystal bowls, drums and additional instruments. Creating sound journeys with an emphasis on flow and a safe space.",
+    ),
+    practice: t(
       "Καταγράφεις τις ομαδικές πρακτικές και συγκεντρώνεις αξιολογήσεις της εμπειρίας των συμμετεχόντων.",
+      "You record the group practices and gather evaluations of the participants' experience.",
+    ),
   },
   {
-    title: "Επαγγελματική ανάπτυξη",
-    subtitle: "Εμβάθυνση & προσωπική προσέγγιση",
-    audience: "Το τέταρτο στάδιο της εκπαιδευτικής διαδρομής.",
-    body: "Εμβάθυνση στην πρακτική, προσέγγιση με επίγνωση του τραύματος, εισαγωγή στα διαπασών και ανάπτυξη επαγγελματικών συνεργασιών.",
-    practice:
+    title: t("Επαγγελματική ανάπτυξη", "Professional development"),
+    subtitle: t("Εμβάθυνση & προσωπική προσέγγιση", "Deepening & personal approach"),
+    audience: t("Το τέταρτο στάδιο της εκπαιδευτικής διαδρομής.", "The fourth stage of the training path."),
+    body: t(
+      "Εμβάθυνση στην πρακτική, προσέγγιση με επίγνωση του τραύματος, εισαγωγή στα διαπασών και ανάπτυξη επαγγελματικών συνεργασιών.",
+      "Deepening the practice, a trauma-informed approach, an introduction to tuning forks and developing professional collaborations.",
+    ),
+    practice: t(
       "Οι αναλυτικές οδηγίες πρακτικής και ολοκλήρωσης παρέχονται από τη σχολή.",
+      "Detailed practice and completion guidelines are provided by the school.",
+    ),
   },
-];
+]
 
 export function LevelSymbol({
   level,
@@ -68,6 +89,7 @@ export function LevelSymbol({
   size?: number;
 }) {
   const { wellness } = useTheme();
+  const { t } = useLanguage();
   const bowl = (
     <G>
       <Ellipse cx="24" cy="35" rx="17" ry="4" fill={wellness.blueMist} />
@@ -83,9 +105,9 @@ export function LevelSymbol({
       accessibilityLabel={
         [
           "Singing bowl",
-          "Singing bowl, tingsha και chimes",
-          "Singing bowl, γκονγκ και ομάδα",
-          "Λωτός",
+          t("Singing bowl, tingsha και chimes", "Singing bowl, tingsha and chimes"),
+          t("Singing bowl, γκονγκ και ομάδα", "Singing bowl, gong and group"),
+          t("Λωτός", "Lotus"),
         ][level - 1]
       }
     >
@@ -137,13 +159,15 @@ export function TrainingLevelCards() {
   const router = useRouter();
   const { wellness } = useTheme();
   const ui = useUi();
+  const { t } = useLanguage();
+  const levels = makeLevels(t);
   return (
     <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
       {levels.map((level, index) => (
         <Pressable
           key={index}
           accessibilityRole="link"
-          accessibilityLabel={`Level ${index + 1}: ${level.title}. Αναλυτική παρουσίαση`}
+          accessibilityLabel={`Level ${index + 1}: ${level.title}. ${t("Αναλυτική παρουσίαση", "Detailed presentation")}`}
           onPress={() =>
             router.push(`/explore/levels?level=${index + 1}` as any)
           }
@@ -172,7 +196,7 @@ export function TrainingLevelCards() {
             {level.subtitle}
           </Text>
           <Text style={[ui.body, { fontSize: 12, color: wellness.slate }]}>
-            Γνώρισε το επίπεδο →
+            {t("Γνώρισε το επίπεδο →", "Explore this level →")}
           </Text>
         </Pressable>
       ))}
@@ -201,6 +225,9 @@ export default function TrainingLevelsPage() {
   const router = useRouter();
   const { wellness } = useTheme();
   const ui = useUi();
+  const { t } = useLanguage();
+  const tr = t;
+  const levels = makeLevels(t);
   const { level } = useLocalSearchParams<{ level?: string }>();
   const selected = [1, 2, 3, 4].includes(Number(level)) ? Number(level) : 1;
   const item = levels[selected - 1];
@@ -227,14 +254,14 @@ export default function TrainingLevelsPage() {
 
       <Pressable
         accessibilityRole="link"
-        accessibilityLabel="Πίσω στα Εκπαιδευτικά"
+        accessibilityLabel={t("Πίσω στα Εκπαιδευτικά", "Back to Training")}
         onPress={() => router.push("/explore/training")}
         style={{ minHeight: 44, justifyContent: "center", paddingVertical: 6 }}
       >
         <Text
           style={[ui.body, { color: wellness.lavenderInk, fontWeight: "700" }]}
         >
-          ← Εκπαιδευτικά
+          {t("← Εκπαιδευτικά", "← Training")}
         </Text>
       </Pressable>
 
@@ -297,12 +324,12 @@ export default function TrainingLevelsPage() {
         </Text>
         <Text style={ui.body}>{item.body}</Text>
         <View style={{ height: 1, backgroundColor: wellness.line }} />
-        <Text style={ui.label}>Η ΠΡΑΚΤΙΚΗ ΣΟΥ</Text>
+        <Text style={ui.label}>{t("Η ΠΡΑΚΤΙΚΗ ΣΟΥ", "YOUR PRACTICE")}</Text>
         <Text style={ui.body}>{item.practice}</Text>
       </View>
 
       {/* Ενδεχόμενο προγραμματισμένο σεμινάριο αυτού του επιπέδου */}
-      <Text style={ui.heading}>Προγραμματισμένο σεμινάριο</Text>
+      <Text style={ui.heading}>{t("Προγραμματισμένο σεμινάριο", "Scheduled seminar")}</Text>
       <Status state={state} />
       {!state.loading &&
         !state.error &&
@@ -311,7 +338,7 @@ export default function TrainingLevelsPage() {
             <Pressable
               key={t.slug}
               accessibilityRole="link"
-              accessibilityLabel={`${t.full_title || t.title}. Πληροφορίες και κράτηση`}
+              accessibilityLabel={`${t.full_title || t.title}. ${tr("Πληροφορίες και κράτηση", "Information and booking")}`}
               onPress={() => router.push(`/seminar/${t.slug}` as any)}
               style={({ pressed }) => [
                 ui.card,
@@ -349,7 +376,7 @@ export default function TrainingLevelsPage() {
                       color: wellness.lavenderInk,
                     }}
                   >
-                    ● ΕΝΕΡΓΟ · LEVEL {selected}
+                    ● {tr("ΕΝΕΡΓΟ", "ACTIVE")} · LEVEL {selected}
                   </Text>
                 </View>
                 <Text
@@ -380,7 +407,7 @@ export default function TrainingLevelsPage() {
                     { color: wellness.lavenderInk, fontWeight: "700" },
                   ]}
                 >
-                  Πληροφορίες & κράτηση →
+                  {tr("Πληροφορίες & κράτηση →", "Information & booking →")}
                 </Text>
               </View>
             </Pressable>
@@ -388,9 +415,10 @@ export default function TrainingLevelsPage() {
         ) : (
           <View style={[ui.card, { backgroundColor: wellness.ice, gap: 10 }]}>
             <Text style={[ui.body, { color: wellness.ink }]}>
-              Δεν υπάρχει αυτή τη στιγμή προγραμματισμένο σεμινάριο για το Level{" "}
-              {selected}. Δες όλα τα εκπαιδευτικά ή επικοινώνησε μαζί μας για το
-              επόμενο.
+              {tr(
+                "Δεν υπάρχει αυτή τη στιγμή προγραμματισμένο σεμινάριο για αυτό το Level. Δες όλα τα εκπαιδευτικά ή επικοινώνησε μαζί μας για το επόμενο.",
+                "There is no scheduled seminar for this Level at the moment. See all the trainings or contact us about the next one.",
+              )}
             </Text>
             <Pressable
               accessibilityRole="link"
@@ -402,7 +430,7 @@ export default function TrainingLevelsPage() {
                   { color: wellness.lavenderInk, fontWeight: "700" },
                 ]}
               >
-                Όλα τα εκπαιδευτικά σεμινάρια →
+                {t("Όλα τα εκπαιδευτικά σεμινάρια →", "All training seminars →")}
               </Text>
             </Pressable>
           </View>
@@ -411,7 +439,7 @@ export default function TrainingLevelsPage() {
       {/* Καρουζέλ με φωτογραφίες από παλιότερα σεμινάρια */}
       {gallery.length > 0 && (
         <View style={{ gap: 12 }}>
-          <Text style={ui.heading}>Στιγμές από προηγούμενα σεμινάρια</Text>
+          <Text style={ui.heading}>{t("Στιγμές από προηγούμενα σεμινάρια", "Moments from previous seminars")}</Text>
           <PhotoCarousel photos={gallery} />
         </View>
       )}
@@ -425,7 +453,7 @@ export default function TrainingLevelsPage() {
         }
       >
         <Text style={[ui.body, { color: wellness.slate }]}>
-          Αναλυτικό πρόγραμμα της σχολής ↗
+          {t("Αναλυτικό πρόγραμμα της σχολής ↗", "The school's full programme ↗")}
         </Text>
       </Pressable>
     </Shell>

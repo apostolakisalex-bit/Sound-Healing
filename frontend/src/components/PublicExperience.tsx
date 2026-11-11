@@ -22,53 +22,102 @@ import {
 import { FOUNDER } from "@/src/content/public";
 import { useLanguage } from "./AppNavigation";
 
-const sections = {
+const SECTION_KEYS = [
+  "soundhealing",
+  "services",
+  "training",
+  "about",
+  "events",
+  "journal",
+  "contact",
+] as const;
+type Section = (typeof SECTION_KEYS)[number];
+const makeSections = (t: (el: string, en: string) => string) => ({
   soundhealing: {
-    title: "Γνώρισε την ηχοθεραπεία.",
-    label: "Ηχοθεραπεία",
-    summary: "Ο ήχος ως αφετηρία για ακρόαση, χαλάρωση και προσωπική εμπειρία.",
-    body: "Οι ηχογαβάθες, τα gong και άλλα ακουστικά όργανα συνθέτουν μια εμπειρία ήχου. Στην επίσημη σελίδα μπορείς να διαβάσεις την προσέγγιση του Μανώλη και να γνωρίσεις τα όργανα που χρησιμοποιεί.",
+    title: t("Γνώρισε την ηχοθεραπεία.", "Discover sound healing."),
+    label: t("Ηχοθεραπεία", "Sound healing"),
+    summary: t(
+      "Ο ήχος ως αφετηρία για ακρόαση, χαλάρωση και προσωπική εμπειρία.",
+      "Sound as a starting point for listening, relaxation and personal experience.",
+    ),
+    body: t(
+      "Οι ηχογαβάθες, τα gong και άλλα ακουστικά όργανα συνθέτουν μια εμπειρία ήχου. Στην επίσημη σελίδα μπορείς να διαβάσεις την προσέγγιση του Μανώλη και να γνωρίσεις τα όργανα που χρησιμοποιεί.",
+      "Singing bowls, gongs and other acoustic instruments compose a sound experience. On the official website you can read about Manolis' approach and get to know the instruments he uses.",
+    ),
   },
   services: {
-    title: "Βρες τον δικό σου χώρο στον ήχο.",
-    label: "Υπηρεσίες",
-    summary:
+    title: t("Βρες τον δικό σου χώρο στον ήχο.", "Find your own space in sound."),
+    label: t("Υπηρεσίες", "Services"),
+    summary: t(
       "Διαδραστικά εργαστήρια, εταιρικά προγράμματα και συμβουλευτική για ξενοδοχεία και Spa.",
-    body: "Ο Μανώλης σχεδιάζει εργαστήρια και ομιλίες για ομάδες, εκπαιδευτικούς φορείς και διοργανώσεις ευεξίας. Συνεργάζεται με επιχειρήσεις για εταιρικές εκδηλώσεις και προσφέρει συμβουλευτική σε ξενοδοχεία και Spa για τον χώρο, τα όργανα και την εκπαίδευση του προσωπικού.",
+      "Interactive workshops, corporate programmes and consulting for hotels and spas.",
+    ),
+    body: t(
+      "Ο Μανώλης σχεδιάζει εργαστήρια και ομιλίες για ομάδες, εκπαιδευτικούς φορείς και διοργανώσεις ευεξίας. Συνεργάζεται με επιχειρήσεις για εταιρικές εκδηλώσεις και προσφέρει συμβουλευτική σε ξενοδοχεία και Spa για τον χώρο, τα όργανα και την εκπαίδευση του προσωπικού.",
+      "Manolis designs workshops and talks for groups, educational organisations and wellness events. He collaborates with businesses for corporate events and offers consulting to hotels and spas on the space, the instruments and staff training.",
+    ),
   },
   training: {
-    title: "Μάθε. Εξασκήσου. Εξελίξου.",
-    label: "Εκπαιδευτικά",
-    summary:
+    title: t("Μάθε. Εξασκήσου. Εξελίξου.", "Learn. Practise. Grow."),
+    label: t("Εκπαιδευτικά", "Training"),
+    summary: t(
       "Τέσσερα προοδευτικά Levels που συνδυάζουν θεωρία, βιωματική μάθηση και πρακτική.",
-    body: "Η εκπαιδευτική διαδρομή περνά από τις Himalayan singing bowls και την ατομική πρακτική στον συντονισμό ομάδων και την επαγγελματική ανάπτυξη. Η δημιουργία λογαριασμού είναι ξεχωριστή από την εγγραφή σε εκπαιδευτικό τμήμα.",
+      "Four progressive Levels that combine theory, experiential learning and practice.",
+    ),
+    body: t(
+      "Η εκπαιδευτική διαδρομή περνά από τις Himalayan singing bowls και την ατομική πρακτική στον συντονισμό ομάδων και την επαγγελματική ανάπτυξη. Η δημιουργία λογαριασμού είναι ξεχωριστή από την εγγραφή σε εκπαιδευτικό τμήμα.",
+      "The training path moves from Himalayan singing bowls and individual practice to facilitating groups and professional development. Creating an account is separate from enrolling in a training class.",
+    ),
   },
   about: {
-    title: "Μανώλης Ζωγραφάκης",
-    label: "Σχετικά",
-    summary: "Ηχοθεραπευτής, μουσικός παραγωγός και συντονιστής Breathwork.",
-    body: "Ο Μανώλης Ζωγραφάκης είναι πιστοποιημένος ηχοθεραπευτής, μέλος των ISTA και IPHM, συντονιστής Breathwork και μουσικός παραγωγός. Η προσωπική του διαδρομή συνδέει τη μουσική με τον διαλογισμό Vipassana. Ξεκίνησε με κλασική κιθάρα και συνέχισε ως παραγωγός ηλεκτρονικής μουσικής με το όνομα ΜΑΜΑ.\n\nΜετά τις σπουδές του στο Goldsmiths του Λονδίνου, γνώρισε τις ηχογαβάθες και τα gong στο Βερολίνο. Μαθήτευσε δίπλα στην Eléna Sofia Melnishca και συνέχισε την εκπαίδευσή του στο Νεπάλ και στο Sound Healing Academy.\n\nΑπό το 2020 έχει βάση τα Χανιά. Προσφέρει ιδιωτικές και ομαδικές συνεδρίες, εκπαιδευτικά σεμινάρια, εργαστήρια και συνεργασίες με επιχειρήσεις και χώρους ευεξίας. Το 2024 συμμετείχε ως ομιλητής στο TEDxAthens.",
+    title: t("Μανώλης Ζωγραφάκης", "Manolis Zografakis"),
+    label: t("Σχετικά", "About"),
+    summary: t(
+      "Ηχοθεραπευτής, μουσικός παραγωγός και συντονιστής Breathwork.",
+      "Sound healer, music producer and Breathwork facilitator.",
+    ),
+    body: t(
+      "Ο Μανώλης Ζωγραφάκης είναι πιστοποιημένος ηχοθεραπευτής, μέλος των ISTA και IPHM, συντονιστής Breathwork και μουσικός παραγωγός. Η προσωπική του διαδρομή συνδέει τη μουσική με τον διαλογισμό Vipassana. Ξεκίνησε με κλασική κιθάρα και συνέχισε ως παραγωγός ηλεκτρονικής μουσικής με το όνομα ΜΑΜΑ.\n\nΜετά τις σπουδές του στο Goldsmiths του Λονδίνου, γνώρισε τις ηχογαβάθες και τα gong στο Βερολίνο. Μαθήτευσε δίπλα στην Eléna Sofia Melnishca και συνέχισε την εκπαίδευσή του στο Νεπάλ και στο Sound Healing Academy.\n\nΑπό το 2020 έχει βάση τα Χανιά. Προσφέρει ιδιωτικές και ομαδικές συνεδρίες, εκπαιδευτικά σεμινάρια, εργαστήρια και συνεργασίες με επιχειρήσεις και χώρους ευεξίας. Το 2024 συμμετείχε ως ομιλητής στο TEDxAthens.",
+      "Manolis Zografakis is a certified sound healer, a member of ISTA and IPHM, a Breathwork facilitator and a music producer. His personal path connects music with Vipassana meditation. He started with classical guitar and continued as an electronic music producer under the name MAMA.\n\nAfter his studies at Goldsmiths in London, he discovered singing bowls and gongs in Berlin. He trained alongside Eléna Sofia Melnishca and continued his education in Nepal and at the Sound Healing Academy.\n\nSince 2020 he has been based in Chania. He offers private and group sessions, training seminars, workshops and collaborations with businesses and wellness spaces. In 2024 he spoke at TEDxAthens.",
+    ),
   },
   events: {
-    title: "Συναντιόμαστε στον ήχο.",
-    label: "Εκδηλώσεις",
-    summary: "Sound Baths και αυτοτελείς εμπειρίες ήχου με τον Μανώλη.",
-    body: "Ανακάλυψε τις δημοσιευμένες συναντήσεις παρακάτω. Για το τρέχον πρόγραμμα και πληροφορίες συμμετοχής μπορείς επίσης να επισκεφθείς το soundhealing.gr.",
+    title: t("Συναντιόμαστε στον ήχο.", "We meet in sound."),
+    label: t("Εκδηλώσεις", "Events"),
+    summary: t(
+      "Sound Baths και αυτοτελείς εμπειρίες ήχου με τον Μανώλη.",
+      "Sound baths and standalone sound experiences with Manolis.",
+    ),
+    body: t(
+      "Ανακάλυψε τις δημοσιευμένες συναντήσεις παρακάτω. Για το τρέχον πρόγραμμα και πληροφορίες συμμετοχής μπορείς επίσης να επισκεφθείς το soundhealing.gr.",
+      "Discover the published gatherings below. For the current programme and participation details you can also visit soundhealing.gr.",
+    ),
   },
   journal: {
-    title: "Χώρος για έμπνευση.",
-    label: "Άρθρα",
-    summary: "Σκέψεις γύρω από τον ήχο, την ακρόαση και την πρακτική.",
-    body: "Εδώ συγκεντρώνονται τα άρθρα της ομάδας. Περισσότερα κείμενα είναι διαθέσιμα στον επίσημο ιστότοπο.",
+    title: t("Χώρος για έμπνευση.", "A space for inspiration."),
+    label: t("Άρθρα", "Articles"),
+    summary: t(
+      "Σκέψεις γύρω από τον ήχο, την ακρόαση και την πρακτική.",
+      "Thoughts on sound, listening and practice.",
+    ),
+    body: t(
+      "Εδώ συγκεντρώνονται τα άρθρα της ομάδας. Περισσότερα κείμενα είναι διαθέσιμα στον επίσημο ιστότοπο.",
+      "The team's articles are gathered here. More texts are available on the official website.",
+    ),
   },
   contact: {
-    title: "Ας μιλήσουμε.",
-    label: "Επικοινωνία",
-    summary: "Για μια συνεδρία, την εκπαίδευση ή μια συνεργασία.",
-    body: "Πες μας τι σε ενδιαφέρει, ώστε να βρούμε μαζί το επόμενο βήμα. Για διαθεσιμότητα και λεπτομέρειες συμμετοχής χρησιμοποίησε την επίσημη σελίδα επικοινωνίας.",
+    title: t("Ας μιλήσουμε.", "Let's talk."),
+    label: t("Επικοινωνία", "Contact"),
+    summary: t(
+      "Για μια συνεδρία, την εκπαίδευση ή μια συνεργασία.",
+      "For a session, training or a collaboration.",
+    ),
+    body: t(
+      "Πες μας τι σε ενδιαφέρει, ώστε να βρούμε μαζί το επόμενο βήμα. Για διαθεσιμότητα και λεπτομέρειες συμμετοχής χρησιμοποίησε την επίσημη σελίδα επικοινωνίας.",
+      "Tell us what you're interested in, so we can find the next step together. For availability and participation details, use the official contact page.",
+    ),
   },
-};
-type Section = keyof typeof sections;
+});
 type LiveSeminar = {
   slug: string;
   title: string;
@@ -106,6 +155,7 @@ function NavLink({
 export function PublicExperience({ section }: { section?: string }) {
   const ui = useUi();
   const { t } = useLanguage();
+  const sections = makeSections(t);
   const state = useLoad<ContentItem[]>("/content/public", []);
   const seminars = useLoad<{ items: LiveSeminar[] }>("/trainings/catalog", {
     items: [],
@@ -145,25 +195,25 @@ export function PublicExperience({ section }: { section?: string }) {
   // Completed seminars (curated `active:false` or past end date) fall into the archive.
   const seminarItems: ContentItem[] =
     section === "training"
-      ? seminars.data.items.map((t) => ({
-          id: "seminar-" + t.slug,
+      ? seminars.data.items.map((sem) => ({
+          id: "seminar-" + sem.slug,
           completed:
-            typeof t.active === "boolean"
-              ? !t.active
-              : !!t.end_date && t.end_date < today,
+            typeof sem.active === "boolean"
+              ? !sem.active
+              : !!sem.end_date && sem.end_date < today,
           published: {
-            title: t.title,
+            title: sem.title,
             summary: "",
             body: "",
             kind: "event",
             section: "training",
-            image_url: t.image,
-            event_date: t.date,
-            event_time: t.time,
-            event_location: t.location,
-            event_end_date: t.end_date,
-            action_url: `/seminar/${t.slug}`,
-            action_label: "Πληροφορίες & εγγραφή",
+            image_url: sem.image,
+            event_date: sem.date,
+            event_time: sem.time,
+            event_location: sem.location,
+            event_end_date: sem.end_date,
+            action_url: `/seminar/${sem.slug}`,
+            action_label: t("Πληροφορίες & εγγραφή", "Details & registration"),
             level_id: null,
             media_url: "",
           },
@@ -178,13 +228,13 @@ export function PublicExperience({ section }: { section?: string }) {
       title={valid ? "" : t("Η σελίδα δεν βρέθηκε", "Page not found")}
     >
       <Head>
-        <title>{page?.label || "Καλώς ήρθες"} · Sound Healing Greece</title>
+        <title>{page?.label || t("Καλώς ήρθες", "Welcome")} · Sound Healing Greece</title>
         <meta
           name="description"
           content={
             intro?.published.summary ||
             page?.summary ||
-            "Εμπειρίες ήχου, εκπαίδευση και προσωπική πρακτική με το Sound Healing Greece."
+            t("Εμπειρίες ήχου, εκπαίδευση και προσωπική πρακτική με το Sound Healing Greece.", "Sound experiences, training and personal practice with Sound Healing Greece.")
           }
         />
       </Head>
@@ -200,7 +250,7 @@ export function PublicExperience({ section }: { section?: string }) {
           }
           imageAlt={
             intro?.published.image_alt ||
-            (section === "about" ? "Μανώλης Ζωγραφάκης" : title)
+            (section === "about" ? t("Μανώλης Ζωγραφάκης", "Manolis Zografakis") : title)
           }
           actionLabel={intro?.published.action_label}
           actionUrl={intro?.published.action_url}

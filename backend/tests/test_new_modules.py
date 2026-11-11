@@ -207,6 +207,8 @@ class TestSchoolAdmin:
     def test_cohort_enrollment_attendance_flow(
         self, api, admin_auth, fresh_user
     ):
+        if not os.environ.get("SHG_TEST_ADMIN_PASSWORD"):
+            pytest.skip("Set SHG_TEST_ADMIN_PASSWORD to run this test.")
         admin_login = api.post(
             f"{BASE}/api/auth/login",
             json={
@@ -214,7 +216,7 @@ class TestSchoolAdmin:
                     "SHG_TEST_ADMIN_EMAIL", "admin@soundhealing.gr"
                 ),
                 "password": os.environ.get(
-                    "SHG_TEST_ADMIN_PASSWORD", "temple2026"
+                    "SHG_TEST_ADMIN_PASSWORD", ""
                 ),
             },
         ).json()

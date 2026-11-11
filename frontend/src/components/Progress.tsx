@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Text, View } from "react-native";
 import { Button, Choices, Status, useUi, useLoad } from "./Wellness";
+import { useLanguage } from "./AppNavigation";
 
 type Metric = { count: number; minutes: number };
 type Row = {
@@ -12,49 +13,60 @@ type Row = {
   attendance: Record<string, Metric>;
   practices: Record<string, Metric>;
 };
-const labels: Record<string, string> = {
-  draft: "Πρόχειρες",
-  submitted: "Για έλεγχο",
-  changes_requested: "Για διόρθωση",
-  reviewed: "Ελεγμένες",
-};
 export function Progress({ staff = false }: { staff?: boolean }) {
   const ui = useUi();
+  const { t, language } = useLanguage();
   const [offset, setOffset] = useState(0);
-  const [level, setLevel] = useState("Όλα");
-  const [status, setStatus] = useState("Όλες");
+  const [level, setLevel] = useState("all");
+  const [status, setStatus] = useState("all");
+  const locale = language === "el" ? "el-GR" : "en-GB";
+  // Display labels for the practice-status columns; keys stay stable.
+  const labels: [string, string][] = [
+    ["draft", t("Πρόχειρες", "Drafts")],
+    ["submitted", t("Για έλεγχο", "For review")],
+    ["changes_requested", t("Για διόρθωση", "For revision")],
+    ["reviewed", t("Ελεγμένες", "Reviewed")],
+  ];
   const state = useLoad<{ items: Row[]; total: number }>(
-    `/school/progress?staff_view=${staff}&offset=${offset}&limit=20${level === "Όλα" ? "" : `&level_id=${level}`}${status === "Όλες" ? "" : `&enrollment_status=${status === "Ενεργές" ? "active" : "paused"}`}`,
+    `/school/progress?staff_view=${staff}&offset=${offset}&limit=20${level === "all" ? "" : `&level_id=${level}`}${status === "all" ? "" : `&enrollment_status=${status}`}`,
     { items: [], total: 0 },
   );
+  const levelAll = t("Όλα", "All");
+  const statusOptions: [string, string][] = [
+    ["all", t("Όλες", "All")],
+    ["active", t("Ενεργές", "Active")],
+    ["paused", t("Σε παύση", "Paused")],
+  ];
   return (
     <View style={{ gap: 16 }}>
-      <Text style={ui.heading}>Η πρόοδος στην πράξη</Text>
+      <Text style={ui.heading}>{t("Η πρόοδος στην πράξη", "Progress in practice")}</Text>
       <Text style={ui.body}>
-        Παρουσίες και καταγραφές ανά εγγραφή. Ο αρχικός έλεγχος πρακτικής δεν
-        αποτελεί πιστοποίηση.
+        {t(
+          "Παρουσίες και καταγραφές ανά εγγραφή. Ο αρχικός έλεγχος πρακτικής δεν αποτελεί πιστοποίηση.",
+          "Attendance and records per enrolment. The initial practice review is not a certification.",
+        )}
       </Text>
       <Choices
         label="Level"
-        values={["Όλα", "L1", "L2", "L3", "L4"]}
-        value={level}
+        values={[levelAll, "L1", "L2", "L3", "L4"]}
+        value={level === "all" ? levelAll : level}
         onChange={(v) => {
           setOffset(0);
-          setLevel(v);
+          setLevel(v === levelAll ? "all" : v);
         }}
       />
       <Choices
-        label="Κατάσταση εγγραφής"
-        values={["Όλες", "Ενεργές", "Σε παύση"]}
-        value={status}
+        label={t("Κατάσταση εγγραφής", "Enrolment status")}
+        values={statusOptions.map(([, lbl]) => lbl)}
+        value={statusOptions.find(([key]) => key === status)?.[1] || ""}
         onChange={(v) => {
           setOffset(0);
-          setStatus(v);
+          setStatus(statusOptions.find(([, lbl]) => lbl === v)?.[0] || "all");
         }}
       />
       <Button
         secondary
-        label="Ανανέωση προόδου"
+        label={t("Ανανέωση προόδου", "Refresh progress")}
         disabled={state.loading}
         onPress={() => void state.reload()}
       />
@@ -63,31 +75,37 @@ export function Progress({ staff = false }: { staff?: boolean }) {
         <>
           {!state.data.items.length && (
             <Text style={ui.body}>
-              Δεν βρέθηκαν εγγραφές με αυτά τα φίλτρα.
+              {t(
+                "Δεν βρέθηκαν εγγραφές με αυτά τα φίλτρα.",
+                "No enrolments found with these filters.",
+              )}
             </Text>
           )}
           {state.data.items.map((row) => (
             <View key={row.enrollment_id} style={ui.card}>
               <Text style={ui.label}>
                 {row.level_id} ·{" "}
-                {row.status === "active" ? "Ενεργή εγγραφή" : "Σε παύση"}
+                {row.status === "active"
+                  ? t("Ενεργή εγγραφή", "Active enrolment")
+                  : t("Σε παύση", "Paused")}
               </Text>
               <Text style={ui.heading}>
                 {staff ? `${row.learner_name} · ` : ""}
                 {row.cohort_title}
               </Text>
               <Text style={ui.body}>
-                Παρουσίες: {row.attendance.present.count} · Ώρες παρακολούθησης:{" "}
-                {(row.attendance.present.minutes / 60).toLocaleString("el-GR", {
+                {t("Παρουσίες:", "Attendance:")} {row.attendance.present.count} ·{" "}
+                {t("Ώρες παρακολούθησης:", "Hours attended:")}{" "}
+                {(row.attendance.present.minutes / 60).toLocaleString(locale, {
                   maximumFractionDigits: 1,
                 })}{" "}
               </Text>
               <Text style={ui.body}>
-                Απουσίες: {row.attendance.absent.count} · Δικαιολογημένες:{" "}
-                {row.attendance.excused.count}
+                {t("Απουσίες:", "Absences:")} {row.attendance.absent.count} ·{" "}
+                {t("Δικαιολογημένες:", "Excused:")} {row.attendance.excused.count}
               </Text>
               <View style={ui.row}>
-                {Object.entries(labels)
+                {labels
                   .filter(([key]) => !staff || key !== "draft")
                   .map(([key, label]) => (
                     <View
@@ -99,7 +117,8 @@ export function Progress({ staff = false }: { staff?: boolean }) {
                       </Text>
                       <Text style={ui.body}>{label}</Text>
                       <Text style={ui.body}>
-                        {row.practices[key]?.minutes || 0} λεπτά πρακτικής
+                        {row.practices[key]?.minutes || 0}{" "}
+                        {t("λεπτά πρακτικής", "min of practice")}
                       </Text>
                     </View>
                   ))}
@@ -107,18 +126,21 @@ export function Progress({ staff = false }: { staff?: boolean }) {
             </View>
           ))}
           <Text style={ui.body}>
-            {state.data.total} εγγραφές με τα επιλεγμένα φίλτρα
+            {t(
+              `${state.data.total} εγγραφές με τα επιλεγμένα φίλτρα`,
+              `${state.data.total} enrolments with the selected filters`,
+            )}
           </Text>
           <View style={ui.row}>
             <Button
               secondary
-              label="Προηγούμενες εγγραφές"
+              label={t("Προηγούμενες εγγραφές", "Previous enrolments")}
               disabled={offset === 0}
               onPress={() => setOffset(Math.max(0, offset - 20))}
             />
             <Button
               secondary
-              label="Επόμενες εγγραφές"
+              label={t("Επόμενες εγγραφές", "Next enrolments")}
               disabled={offset + 20 >= state.data.total}
               onPress={() => setOffset(offset + 20)}
             />

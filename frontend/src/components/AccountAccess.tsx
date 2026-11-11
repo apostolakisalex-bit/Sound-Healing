@@ -5,13 +5,15 @@ import * as Linking from "expo-linking";
 import { api } from "@/src/api/client";
 import { useAuth } from "@/src/auth/AuthContext";
 import { Button, Choices, Field, Shell, Status, useUi, useLoad } from "./Wellness";
-const messageOf = (e: any) =>
+import { useLanguage } from "./AppNavigation";
+const messageOf = (e: any, fallback: string) =>
   typeof e?.response?.data?.detail === "string"
     ? e.response.data.detail
-    : "Έλεγξε όλα τα στοιχεία και δοκίμασε ξανά.";
+    : fallback;
 export function AccountChecklist() {
   const { refresh } = useAuth();
   const ui = useUi();
+  const { t } = useLanguage();
   const state = useLoad<any>("/auth/account", {});
   const [draft, setDraft] = useState<Record<string, any> | null>(null);
   const [message, setMessage] = useState("");
@@ -24,32 +26,34 @@ export function AccountChecklist() {
       const result = await task();
       await state.reload();
       await refresh();
-      setMessage(result?.data?.message || "Τα στοιχεία αποθηκεύτηκαν.");
+      setMessage(result?.data?.message || t("Τα στοιχεία αποθηκεύτηκαν.", "Your details have been saved."));
     } catch (e) {
-      setMessage(messageOf(e));
+      setMessage(messageOf(e, t("Έλεγξε όλα τα στοιχεία και δοκίμασε ξανά.", "Check all the details and try again.")));
     } finally {
       setBusy(false);
     }
   };
   return (
     <View style={ui.card}>
-      <Text style={ui.heading}>Ολοκλήρωση εγγραφής</Text>
+      <Text style={ui.heading}>{t("Ολοκλήρωση εγγραφής", "Complete registration")}</Text>
       <Status state={state} />
       {!state.loading && !state.error && (
         <>
           {!state.data.application_complete && (
             <>
               <Text style={ui.body}>
-                Συμπλήρωσε τα στοιχεία σου ώστε ο Μανώλης να εξετάσει την αίτησή
-                σου.
+                {t(
+                  "Συμπλήρωσε τα στοιχεία σου ώστε ο Μανώλης να εξετάσει την αίτησή σου.",
+                  "Fill in your details so Manolis can review your application.",
+                )}
               </Text>
               {[
-                ["first_name", "Όνομα"],
-                ["last_name", "Επώνυμο"],
-                ["birth_month", "Μήνας γέννησης (1–12)"],
-                ["birth_year", "Έτος γέννησης"],
-                ["phone", "Τηλέφωνο"],
-                ["address", "Διεύθυνση"],
+                ["first_name", t("Όνομα", "First name")],
+                ["last_name", t("Επώνυμο", "Last name")],
+                ["birth_month", t("Μήνας γέννησης (1–12)", "Birth month (1–12)")],
+                ["birth_year", t("Έτος γέννησης", "Birth year")],
+                ["phone", t("Τηλέφωνο", "Phone")],
+                ["address", t("Διεύθυνση", "Address")],
               ].map(([key, label]) => (
                 <Field
                   key={key}
@@ -59,14 +63,14 @@ export function AccountChecklist() {
                 />
               ))}
               <Choices
-                label="Δηλωμένο Level"
+                label={t("Δηλωμένο Level", "Declared Level")}
                 values={["L1", "L2", "L3", "L4"]}
                 value={values.declared_level || "L1"}
                 onChange={(v) => setDraft({ ...values, declared_level: v })}
               />
               <Button
                 disabled={busy}
-                label="Αποθήκευση στοιχείων"
+                label={t("Αποθήκευση στοιχείων", "Save details")}
                 onPress={() =>
                   void run(() =>
                     api.put("/auth/application", {
@@ -84,29 +88,29 @@ export function AccountChecklist() {
             </>
           )}
           {state.data.application_complete && (
-            <Text style={ui.body}>✓ Τα στοιχεία εγγραφής είναι πλήρη.</Text>
+            <Text style={ui.body}>{t("✓ Τα στοιχεία εγγραφής είναι πλήρη.", "✓ Registration details are complete.")}</Text>
           )}
           {!state.data.email_verified ? (
             <>
               <Text style={ui.body}>
-                Επιβεβαίωσε το email σου: {state.data.email}
+                {t("Επιβεβαίωσε το email σου:", "Confirm your email:")} {state.data.email}
               </Text>
               <Button
                 secondary
                 disabled={busy}
-                label="Αποστολή email επιβεβαίωσης"
+                label={t("Αποστολή email επιβεβαίωσης", "Send confirmation email")}
                 onPress={() =>
                   void run(() => api.post("/auth/verification-email"))
                 }
               />
             </>
           ) : (
-            <Text style={ui.body}>✓ Το email έχει επιβεβαιωθεί.</Text>
+            <Text style={ui.body}>{t("✓ Το email έχει επιβεβαιωθεί.", "✓ Email has been confirmed.")}</Text>
           )}
           <Button
             secondary
             disabled={busy}
-            label="Έχω επιβεβαιώσει — Ανανέωση"
+            label={t("Έχω επιβεβαιώσει — Ανανέωση", "I've confirmed — Refresh")}
             onPress={() =>
               void run(async () => {
                 await state.reload();
@@ -125,6 +129,7 @@ export function AccountChecklist() {
 }
 export function AccountAction() {
   const ui = useUi();
+  const { t } = useLanguage();
   const [mode, setMode] = useState("forgot");
   const [token, setToken] = useState("");
   const [email, setEmail] = useState("");
@@ -159,7 +164,10 @@ export function AccountAction() {
   const submit = async () => {
     if (mode === "reset" && (password.length < 10 || password !== confirm)) {
       setMessage(
-        "Χρειάζονται τουλάχιστον 10 χαρακτήρες και ίδιος κωδικός στα δύο πεδία.",
+        t(
+          "Χρειάζονται τουλάχιστον 10 χαρακτήρες και ίδιος κωδικός στα δύο πεδία.",
+          "At least 10 characters are required and the password must match in both fields.",
+        ),
       );
       return;
     }
@@ -175,15 +183,15 @@ export function AccountAction() {
       setMessage(
         r.data.message ||
           (mode === "verify"
-            ? "Το email επιβεβαιώθηκε. Επέστρεψε στο προφίλ σου."
-            : "Ο κωδικός άλλαξε. Συνδέσου με τον νέο κωδικό."),
+            ? t("Το email επιβεβαιώθηκε. Επέστρεψε στο προφίλ σου.", "Your email has been confirmed. Return to your profile.")
+            : t("Ο κωδικός άλλαξε. Συνδέσου με τον νέο κωδικό.", "Your password has changed. Sign in with the new password.")),
       );
       setDone(true);
       setPassword("");
       setConfirm("");
       setToken("");
     } catch (e) {
-      setMessage(messageOf(e));
+      setMessage(messageOf(e, t("Έλεγξε όλα τα στοιχεία και δοκίμασε ξανά.", "Check all the details and try again.")));
     } finally {
       setBusy(false);
     }
@@ -191,8 +199,8 @@ export function AccountAction() {
   return (
     <Shell
       publicPage
-      eyebrow="ΛΟΓΑΡΙΑΣΜΟΣ"
-      title={mode === "verify" ? "Επιβεβαίωση email" : "Ανάκτηση κωδικού"}
+      eyebrow={t("ΛΟΓΑΡΙΑΣΜΟΣ", "ACCOUNT")}
+      title={mode === "verify" ? t("Επιβεβαίωση email", "Email confirmation") : t("Ανάκτηση κωδικού", "Password recovery")}
     >
       <View
         style={[ui.card, { maxWidth: 560, width: "100%", alignSelf: "center" }]}
@@ -214,8 +222,8 @@ export function AccountAction() {
             {mode === "reset" && (
               <>
                 {[
-                  [password, setPassword, "Νέος κωδικός"],
-                  [confirm, setConfirm, "Επανάληψη κωδικού"],
+                  [password, setPassword, t("Νέος κωδικός", "New password")],
+                  [confirm, setConfirm, t("Επανάληψη κωδικού", "Repeat password")],
                 ].map(([value, setter, label], i) => (
                   <TextInput
                     key={i}
@@ -235,12 +243,12 @@ export function AccountAction() {
               disabled={busy || (mode !== "forgot" && !token)}
               label={
                 busy
-                  ? "Περίμενε…"
+                  ? t("Περίμενε…", "Please wait…")
                   : mode === "forgot"
-                    ? "Αποστολή οδηγιών"
+                    ? t("Αποστολή οδηγιών", "Send instructions")
                     : mode === "reset"
-                      ? "Αποθήκευση νέου κωδικού"
-                      : "Επιβεβαίωση email"
+                      ? t("Αποθήκευση νέου κωδικού", "Save new password")
+                      : t("Επιβεβαίωση email", "Confirm email")
               }
               onPress={() => void submit()}
             />
@@ -252,10 +260,10 @@ export function AccountAction() {
           </Text>
         )}
         <Link href="/login" style={ui.body}>
-          Σύνδεση
+          {t("Σύνδεση", "Sign in")}
         </Link>
         <Link href="/(tabs)/profile" style={ui.body}>
-          Προφίλ
+          {t("Προφίλ", "Profile")}
         </Link>
       </View>
     </Shell>

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Image, Text, View } from "react-native";
 import { Link } from "expo-router";
 import { useUi } from "./Wellness";
+import { useLanguage } from "./AppNavigation";
 
 export function EditorialIntro({
   title,
@@ -26,6 +27,7 @@ export function EditorialIntro({
 }) {
   const ui = useUi();
   const { wellness } = useTheme();
+  const { t } = useLanguage();
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [imageUrl]);
   const image = (imageUrl?.startsWith("https://") || imageUrl?.startsWith("/api/media/")) && !failed;
@@ -84,7 +86,7 @@ export function EditorialIntro({
             ))}
           {preview && failed && (
             <Text style={ui.body}>
-              Η εικόνα δεν φορτώθηκε. Έλεγξε τον σύνδεσμο.
+              {t("Η εικόνα δεν φορτώθηκε. Έλεγξε τον σύνδεσμο.", "The image did not load. Check the link.")}
             </Text>
           )}
         </View>

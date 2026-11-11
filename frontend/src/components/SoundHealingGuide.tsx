@@ -4,34 +4,36 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { useUi } from "./Wellness";
+import { useLanguage } from "./AppNavigation";
 
-const STATS = [
-  { value: "60%", label: "νερό στο σώμα", caption: "Άριστος αγωγός του ήχου — φτάνει σε κυτταρικό επίπεδο." },
-  { value: "4–8Hz", label: "κύματα Θήτα", caption: "Ο ήχος οδηγεί τον εγκέφαλο σε βαθιά χαλάρωση & διαίσθηση." },
-  { value: "2.400+", label: "χρόνια ιστορίας", caption: "Οι ηχογαβάθες συνοδεύουν τον άνθρωπο από την εποχή του Βούδα." },
-  { value: "7", label: "μέταλλα", caption: "Κάθε παραδοσιακό μπολ: μια νότα, ένας πλανήτης, ένα τσάκρα." },
+type Tr = (el: string, en: string) => string;
+const makeStats = (t: Tr) => [
+  { value: "60%", label: t("νερό στο σώμα", "water in the body"), caption: t("Άριστος αγωγός του ήχου — φτάνει σε κυτταρικό επίπεδο.", "An excellent conductor of sound — it reaches cellular level.") },
+  { value: "4–8Hz", label: t("κύματα Θήτα", "Theta waves"), caption: t("Ο ήχος οδηγεί τον εγκέφαλο σε βαθιά χαλάρωση & διαίσθηση.", "Sound guides the brain into deep relaxation & intuition.") },
+  { value: "2.400+", label: t("χρόνια ιστορίας", "years of history"), caption: t("Οι ηχογαβάθες συνοδεύουν τον άνθρωπο από την εποχή του Βούδα.", "Singing bowls have accompanied humankind since the time of the Buddha.") },
+  { value: "7", label: t("μέταλλα", "metals"), caption: t("Κάθε παραδοσιακό μπολ: μια νότα, ένας πλανήτης, ένα τσάκρα.", "Each traditional bowl: one note, one planet, one chakra.") },
 ];
 
-const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; label: string }[] = [
-  { icon: "leaf-outline", label: "Βαθιά χαλάρωση" },
-  { icon: "pulse-outline", label: "Λιγότερο άγχος & ένταση" },
-  { icon: "heart-outline", label: "Χαμηλότερη πίεση" },
-  { icon: "moon-outline", label: "Καλύτερος ύπνος" },
-  { icon: "sparkles-outline", label: "Πνευματική διαύγεια" },
-  { icon: "color-palette-outline", label: "Περισσότερη δημιουργικότητα" },
-  { icon: "sync-outline", label: "Ισορροπία στα τσάκρα" },
-  { icon: "flower-outline", label: "Εσωτερική αρμονία & γείωση" },
+const makeBenefits = (t: Tr): { icon: keyof typeof Ionicons.glyphMap; label: string }[] => [
+  { icon: "leaf-outline", label: t("Βαθιά χαλάρωση", "Deep relaxation") },
+  { icon: "pulse-outline", label: t("Λιγότερο άγχος & ένταση", "Less stress & tension") },
+  { icon: "heart-outline", label: t("Χαμηλότερη πίεση", "Lower blood pressure") },
+  { icon: "moon-outline", label: t("Καλύτερος ύπνος", "Better sleep") },
+  { icon: "sparkles-outline", label: t("Πνευματική διαύγεια", "Mental clarity") },
+  { icon: "color-palette-outline", label: t("Περισσότερη δημιουργικότητα", "More creativity") },
+  { icon: "sync-outline", label: t("Ισορροπία στα τσάκρα", "Chakra balance") },
+  { icon: "flower-outline", label: t("Εσωτερική αρμονία & γείωση", "Inner harmony & grounding") },
 ];
 
-const INSTRUMENTS = [
-  "Θιβετιανά μπολ",
-  "Κρυστάλλινα μπολ",
+const makeInstruments = (t: Tr) => [
+  t("Θιβετιανά μπολ", "Tibetan bowls"),
+  t("Κρυστάλλινα μπολ", "Crystal bowls"),
   "Gong",
-  "Μονόχορδο",
-  "Τύμπανο",
+  t("Μονόχορδο", "Monochord"),
+  t("Τύμπανο", "Drum"),
   "Chimes",
-  "Διαπασών",
-  "Φωνή",
+  t("Διαπασών", "Tuning forks"),
+  t("Φωνή", "Voice"),
 ];
 
 type Therapy = {
@@ -43,54 +45,54 @@ type Therapy = {
   benefits: string[];
 };
 
-const THERAPIES: Therapy[] = [
+const makeTherapies = (t: Tr): Therapy[] => [
   {
     icon: "body-outline",
-    title: "Ηχητικό Μασάζ",
-    type: "Ατομική",
-    duration: "1 ώρα",
-    text: "Θιβετιανά μπολ τοποθετούνται πάνω και γύρω από το σώμα, στέλνοντας δονήσεις που χαλαρώνουν τους μύες και απελευθερώνουν ένταση.",
-    benefits: ["Βαθιά χαλάρωση", "Απελευθέρωση έντασης", "Ισορροπία στα τσάκρα"],
+    title: t("Ηχητικό Μασάζ", "Sound Massage"),
+    type: t("Ατομική", "Individual"),
+    duration: t("1 ώρα", "1 hour"),
+    text: t("Θιβετιανά μπολ τοποθετούνται πάνω και γύρω από το σώμα, στέλνοντας δονήσεις που χαλαρώνουν τους μύες και απελευθερώνουν ένταση.", "Tibetan bowls are placed on and around the body, sending vibrations that relax the muscles and release tension."),
+    benefits: [t("Βαθιά χαλάρωση", "Deep relaxation"), t("Απελευθέρωση έντασης", "Release of tension"), t("Ισορροπία στα τσάκρα", "Chakra balance")],
   },
   {
     icon: "water-outline",
     title: "Sound Bath",
-    type: "Ομαδική / ατομική",
-    duration: "1:30 – 2 ώρες",
-    text: "«Λούζεσαι» σε θεραπευτικά ηχητικά κύματα από μπολ, gong, μονόχορδο και φωνή — ιδανικό για αρχάριους στον διαλογισμό.",
-    benefits: ["Βαθιά διαλογιστική εμπειρία", "Ηρεμία & διαύγεια", "Χωρίς καμία εμπειρία"],
+    type: t("Ομαδική / ατομική", "Group / individual"),
+    duration: t("1:30 – 2 ώρες", "1:30 – 2 hours"),
+    text: t("«Λούζεσαι» σε θεραπευτικά ηχητικά κύματα από μπολ, gong, μονόχορδο και φωνή — ιδανικό για αρχάριους στον διαλογισμό.", "You \"bathe\" in therapeutic sound waves from bowls, gong, monochord and voice — ideal for beginners to meditation."),
+    benefits: [t("Βαθιά διαλογιστική εμπειρία", "Deep meditative experience"), t("Ηρεμία & διαύγεια", "Calm & clarity"), t("Χωρίς καμία εμπειρία", "No experience needed")],
   },
   {
     icon: "compass-outline",
     title: "Hero's Journey",
-    type: "Ατομική σειρά",
-    duration: "2 ώρες · 4–12 συνεδρίες",
-    text: "Ολιστική διαδρομή εμπνευσμένη από το «Ταξίδι του Ήρωα»: αφήνεις παλιά μοτίβα και δημιουργείς μια νέα ιστορία για τον εαυτό σου.",
-    benefits: ["Απελευθέρωση παλιών μοτίβων", "Αυτογνωσία", "Μεταμόρφωση & ανανέωση"],
+    type: t("Ατομική σειρά", "Individual series"),
+    duration: t("2 ώρες · 4–12 συνεδρίες", "2 hours · 4–12 sessions"),
+    text: t("Ολιστική διαδρομή εμπνευσμένη από το «Ταξίδι του Ήρωα»: αφήνεις παλιά μοτίβα και δημιουργείς μια νέα ιστορία για τον εαυτό σου.", "A holistic journey inspired by the \"Hero's Journey\": you let go of old patterns and create a new story for yourself."),
+    benefits: [t("Απελευθέρωση παλιών μοτίβων", "Releasing old patterns"), t("Αυτογνωσία", "Self-awareness"), t("Μεταμόρφωση & ανανέωση", "Transformation & renewal")],
   },
   {
     icon: "musical-note-outline",
     title: "Tuning Fork Therapy",
-    type: "Ατομική",
-    duration: "1 ώρα",
-    text: "Διαπασών πάνω και γύρω από το σώμα συντονίζονται με τις φυσικές του συχνότητες και αποφορτίζουν το νευρικό σύστημα.",
-    benefits: ["Ευθυγράμμιση τσάκρα", "Διαύγεια σκέψης", "Βαθιά χαλάρωση"],
+    type: t("Ατομική", "Individual"),
+    duration: t("1 ώρα", "1 hour"),
+    text: t("Διαπασών πάνω και γύρω από το σώμα συντονίζονται με τις φυσικές του συχνότητες και αποφορτίζουν το νευρικό σύστημα.", "Tuning forks on and around the body attune to its natural frequencies and discharge the nervous system."),
+    benefits: [t("Ευθυγράμμιση τσάκρα", "Chakra alignment"), t("Διαύγεια σκέψης", "Clear thinking"), t("Βαθιά χαλάρωση", "Deep relaxation")],
   },
   {
     icon: "bed-outline",
     title: "Vibroacoustic Therapy",
-    type: "Ατομική",
-    duration: "~30 λεπτά",
-    text: "Ειδικό στρώμα μεταδίδει δονήσεις χαμηλών συχνοτήτων στο σώμα, ενώ απολαμβάνεις θεραπευτικούς ήχους — μια πολυαισθητηριακή εμπειρία.",
-    benefits: ["Ρύθμιση νευρικού συστήματος", "Καλύτερος ύπνος", "Αίσθηση γείωσης"],
+    type: t("Ατομική", "Individual"),
+    duration: t("~30 λεπτά", "~30 minutes"),
+    text: t("Ειδικό στρώμα μεταδίδει δονήσεις χαμηλών συχνοτήτων στο σώμα, ενώ απολαμβάνεις θεραπευτικούς ήχους — μια πολυαισθητηριακή εμπειρία.", "A special mat transmits low-frequency vibrations into the body while you enjoy therapeutic sounds — a multisensory experience."),
+    benefits: [t("Ρύθμιση νευρικού συστήματος", "Nervous system regulation"), t("Καλύτερος ύπνος", "Better sleep"), t("Αίσθηση γείωσης", "A sense of grounding")],
   },
 ];
 
-const EXPECT = [
-  "Καλωσόρισμα & οι στόχοι της συνεδρίας",
-  "Σύντομος καθοδηγούμενος διαλογισμός",
-  "Η εμπειρία του ήχου σε όλο το σώμα",
-  "Απαλή επιστροφή στο «εδώ & τώρα»",
+const makeExpect = (t: Tr) => [
+  t("Καλωσόρισμα & οι στόχοι της συνεδρίας", "Welcome & the goals of the session"),
+  t("Σύντομος καθοδηγούμενος διαλογισμός", "A short guided meditation"),
+  t("Η εμπειρία του ήχου σε όλο το σώμα", "The experience of sound throughout the body"),
+  t("Απαλή επιστροφή στο «εδώ & τώρα»", "A gentle return to the «here & now»"),
 ];
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
@@ -107,6 +109,7 @@ function TherapyCard({ t, tone }: { t: Therapy; tone: { bg: string; ink: string 
   const [open, setOpen] = useState(false);
   const ui = useUi();
   const { wellness } = useTheme();
+  const { t: lt } = useLanguage();
   return (
     <Pressable
       accessibilityRole="button"
@@ -151,7 +154,7 @@ function TherapyCard({ t, tone }: { t: Therapy; tone: { bg: string; ink: string 
       )}
       {!open && (
         <Text style={{ fontSize: 12, color: wellness.lavenderInk, fontWeight: "700" }}>
-          Δες τα οφέλη →
+          {lt("Δες τα οφέλη →", "See the benefits →")}
         </Text>
       )}
     </Pressable>
@@ -162,6 +165,12 @@ export function SoundHealingGuide() {
   const router = useRouter();
   const ui = useUi();
   const { wellness } = useTheme();
+  const { t } = useLanguage();
+  const STATS = makeStats(t);
+  const BENEFITS = makeBenefits(t);
+  const INSTRUMENTS = makeInstruments(t);
+  const THERAPIES = makeTherapies(t);
+  const EXPECT = makeExpect(t);
   const TONES = [
     { bg: wellness.lavender, ink: wellness.lavenderInk },
     { bg: wellness.sage, ink: wellness.sageInk },
@@ -172,18 +181,19 @@ export function SoundHealingGuide() {
     <View style={{ gap: 32, paddingTop: 8 }}>
       {/* What is it */}
       <View style={{ gap: 10 }}>
-        <Eyebrow>ΤΙ ΕΙΝΑΙ</Eyebrow>
-        <Text style={ui.heading}>Ο ήχος ως θεραπεία</Text>
+        <Eyebrow>{t("ΤΙ ΕΙΝΑΙ", "WHAT IT IS")}</Eyebrow>
+        <Text style={ui.heading}>{t("Ο ήχος ως θεραπεία", "Sound as therapy")}</Text>
         <Text style={[ui.body, { fontSize: 15, lineHeight: 24, color: wellness.ink }]}>
-          Από την αρχαία Ελλάδα ως το Θιβέτ, πολιτισμοί χρησιμοποίησαν τον ήχο για
-          θεραπεία και διαλογισμό. Μπολ, gong και κύμβαλα δονούνται σε συχνότητες που
-          ταξιδεύουν μέσα στο σώμα και φέρνουν αρμονία σε νου, σώμα και πνεύμα.
+          {t(
+            "Από την αρχαία Ελλάδα ως το Θιβέτ, πολιτισμοί χρησιμοποίησαν τον ήχο για θεραπεία και διαλογισμό. Μπολ, gong και κύμβαλα δονούνται σε συχνότητες που ταξιδεύουν μέσα στο σώμα και φέρνουν αρμονία σε νου, σώμα και πνεύμα.",
+            "From ancient Greece to Tibet, cultures have used sound for healing and meditation. Bowls, gongs and cymbals vibrate at frequencies that travel through the body and bring harmony to mind, body and spirit.",
+          )}
         </Text>
       </View>
 
       {/* Stats infographic */}
       <View style={{ gap: 12 }}>
-        <Eyebrow>ΜΕ ΜΙΑ ΜΑΤΙΑ</Eyebrow>
+        <Eyebrow>{t("ΜΕ ΜΙΑ ΜΑΤΙΑ", "AT A GLANCE")}</Eyebrow>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
           {STATS.map((s, i) => {
             const tone = TONES[i % TONES.length];
@@ -216,18 +226,19 @@ export function SoundHealingGuide() {
 
       {/* How it works */}
       <View style={[ui.card, { backgroundColor: wellness.ice, gap: 10 }]}>
-        <Eyebrow>ΠΩΣ ΔΟΥΛΕΥΕΙ</Eyebrow>
+        <Eyebrow>{t("ΠΩΣ ΔΟΥΛΕΥΕΙ", "HOW IT WORKS")}</Eyebrow>
         <Text style={[ui.body, { fontSize: 15, lineHeight: 24, color: wellness.ink }]}>
-          Τα πάντα δονούνται. Το άγχος «ξεκουρδίζει» το σώμα, όπως ένα όργανο εκτός
-          τόνου. Οι ηχογαβάθες λειτουργούν σαν διαπασών: αποκαθιστούν την υγιή δόνηση
-          και ενεργοποιούν τις αυτοθεραπευτικές δυνάμεις του οργανισμού.
+          {t(
+            "Τα πάντα δονούνται. Το άγχος «ξεκουρδίζει» το σώμα, όπως ένα όργανο εκτός τόνου. Οι ηχογαβάθες λειτουργούν σαν διαπασών: αποκαθιστούν την υγιή δόνηση και ενεργοποιούν τις αυτοθεραπευτικές δυνάμεις του οργανισμού.",
+            "Everything vibrates. Stress «detunes» the body, like an instrument out of tune. Singing bowls act like a tuning fork: they restore healthy vibration and activate the body's self-healing powers.",
+          )}
         </Text>
       </View>
 
       {/* Benefits */}
       <View style={{ gap: 12 }}>
-        <Eyebrow>ΤΑ ΟΦΕΛΗ</Eyebrow>
-        <Text style={ui.heading}>Τι κερδίζεις</Text>
+        <Eyebrow>{t("ΤΑ ΟΦΕΛΗ", "THE BENEFITS")}</Eyebrow>
+        <Text style={ui.heading}>{t("Τι κερδίζεις", "What you gain")}</Text>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
           {BENEFITS.map((b, i) => {
             const tone = TONES[i % TONES.length];
@@ -270,7 +281,7 @@ export function SoundHealingGuide() {
 
       {/* Instruments */}
       <View style={{ gap: 12 }}>
-        <Eyebrow>ΤΑ ΟΡΓΑΝΑ</Eyebrow>
+        <Eyebrow>{t("ΤΑ ΟΡΓΑΝΑ", "THE INSTRUMENTS")}</Eyebrow>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
           {INSTRUMENTS.map((ins) => (
             <View
@@ -296,8 +307,8 @@ export function SoundHealingGuide() {
 
       {/* Therapies */}
       <View style={{ gap: 12 }}>
-        <Eyebrow>ΟΙ ΘΕΡΑΠΕΙΕΣ</Eyebrow>
-        <Text style={ui.heading}>Βρες αυτή που σου ταιριάζει</Text>
+        <Eyebrow>{t("ΟΙ ΘΕΡΑΠΕΙΕΣ", "THE THERAPIES")}</Eyebrow>
+        <Text style={ui.heading}>{t("Βρες αυτή που σου ταιριάζει", "Find the one that suits you")}</Text>
         {THERAPIES.map((t, i) => (
           <TherapyCard key={t.title} t={t} tone={TONES[i % TONES.length]} />
         ))}
@@ -305,7 +316,7 @@ export function SoundHealingGuide() {
 
       {/* What to expect */}
       <View style={{ gap: 12 }}>
-        <Eyebrow>ΤΙ ΝΑ ΠΕΡΙΜΕΝΕΙΣ</Eyebrow>
+        <Eyebrow>{t("ΤΙ ΝΑ ΠΕΡΙΜΕΝΕΙΣ", "WHAT TO EXPECT")}</Eyebrow>
         <View style={{ gap: 10 }}>
           {EXPECT.map((step, i) => (
             <View key={step} style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
@@ -336,9 +347,9 @@ export function SoundHealingGuide() {
           { backgroundColor: wellness.lavender, borderColor: wellness.lavenderInk, gap: 12 },
         ]}
       >
-        <Text style={[ui.heading, { color: wellness.ink }]}>Έτοιμος να το βιώσεις;</Text>
+        <Text style={[ui.heading, { color: wellness.ink }]}>{t("Έτοιμος να το βιώσεις;", "Ready to experience it?")}</Text>
         <Text style={[ui.body, { color: wellness.ink }]}>
-          Στείλε μήνυμα και βρες μαζί με τον Μανώλη τη συνεδρία που σου ταιριάζει.
+          {t("Στείλε μήνυμα και βρες μαζί με τον Μανώλη τη συνεδρία που σου ταιριάζει.", "Send a message and find the session that suits you together with Manolis.")}
         </Text>
         <Pressable
           accessibilityRole="button"
@@ -358,7 +369,7 @@ export function SoundHealingGuide() {
         >
           <Ionicons name="chatbubble-ellipses-outline" size={18} color="#FFFFFF" />
           <Text style={{ color: "#FFFFFF", fontWeight: "700", fontSize: 15 }}>
-            Μίλα μαζί μας
+            {t("Μίλα μαζί μας", "Talk to us")}
           </Text>
         </Pressable>
       </View>

@@ -7,11 +7,13 @@ import { useTheme } from "@/src/theme/ThemeContext";
 import { ManagedImage } from "./ManagedImage";
 import { Shell, useUi } from "./Wellness";
 import { treatmentBySlug, TREATMENTS_PHONE } from "@/src/content/treatments";
+import { useLanguage } from "./AppNavigation";
 
 export function TreatmentDetail() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
-  const t = treatmentBySlug(slug);
+  const { t: tr, language } = useLanguage();
+  const t = treatmentBySlug(slug, language);
   const ui = useUi();
   const { wellness } = useTheme();
 
@@ -24,7 +26,7 @@ export function TreatmentDetail() {
 
       <Pressable
         accessibilityRole="link"
-        accessibilityLabel="Πίσω στα Treatments"
+        accessibilityLabel={tr("Πίσω στα Treatments", "Back to Treatments")}
         onPress={() => router.push("/treatments")}
         style={{ minHeight: 44, justifyContent: "center", paddingVertical: 6 }}
       >
@@ -34,7 +36,7 @@ export function TreatmentDetail() {
       </Pressable>
 
       {!t ? (
-        <Text style={ui.body}>Η θεραπεία δεν βρέθηκε.</Text>
+        <Text style={ui.body}>{tr("Η θεραπεία δεν βρέθηκε.", "Treatment not found.")}</Text>
       ) : (
         <View style={{ gap: 22 }}>
           <View style={{ gap: 12, alignItems: "center" }}>
@@ -118,7 +120,7 @@ export function TreatmentDetail() {
           </View>
 
           <View style={{ gap: 10 }}>
-            <Text style={ui.heading}>Τι είναι</Text>
+            <Text style={ui.heading}>{tr("Τι είναι", "What it is")}</Text>
             {t.body.map((p, i) => (
               <Text key={i} style={[ui.body, { fontSize: 15 }]}>
                 {p}
@@ -128,7 +130,7 @@ export function TreatmentDetail() {
 
           {/* Infographic — οφέλη ως checklist */}
           <View style={{ gap: 12 }}>
-            <Text style={ui.heading}>Οφέλη</Text>
+            <Text style={ui.heading}>{tr("Οφέλη", "Benefits")}</Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
               {t.benefits.map((b, i) => (
                 <View
@@ -161,7 +163,7 @@ export function TreatmentDetail() {
 
           {/* Infographic — τι να περιμένεις ως αριθμημένα βήματα */}
           <View style={{ gap: 12 }}>
-            <Text style={ui.heading}>Τι να περιμένεις</Text>
+            <Text style={ui.heading}>{tr("Τι να περιμένεις", "What to expect")}</Text>
             <View style={{ gap: 2 }}>
               {t.expect.map((step, i) => (
                 <View key={i} style={{ flexDirection: "row", gap: 12 }}>
@@ -217,19 +219,25 @@ export function TreatmentDetail() {
             ]}
           >
             <Text style={[ui.heading, { color: wellness.ink }]}>
-              Κλείσε ραντεβού
+              {tr("Κλείσε ραντεβού", "Book an appointment")}
             </Text>
             <Text style={[ui.body, { color: wellness.ink }]}>
-              Επικοινώνησε για διαθεσιμότητα και κράτηση της συνεδρίας.
+              {tr(
+                "Επικοινώνησε για διαθεσιμότητα και κράτηση της συνεδρίας.",
+                "Get in touch for availability and to book your session.",
+              )}
             </Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Κράτηση μέσω WhatsApp"
+                accessibilityLabel={tr("Κράτηση μέσω WhatsApp", "Book via WhatsApp")}
                 onPress={() =>
                   void Linking.openURL(
                     `https://wa.me/30${TREATMENTS_PHONE}?text=${encodeURIComponent(
-                      `Γεια σας! Θα ήθελα να κλείσω ραντεβού για: ${t.title}.`,
+                      tr(
+                        `Γεια σας! Θα ήθελα να κλείσω ραντεβού για: ${t.title}.`,
+                        `Hello! I would like to book an appointment for: ${t.title}.`,
+                      ),
                     )}`,
                   )
                 }
@@ -256,7 +264,7 @@ export function TreatmentDetail() {
               </Pressable>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={`Κλήση ${TREATMENTS_PHONE}`}
+                accessibilityLabel={tr(`Κλήση ${TREATMENTS_PHONE}`, `Call ${TREATMENTS_PHONE}`)}
                 onPress={() =>
                   void Linking.openURL(`tel:+30${TREATMENTS_PHONE}`)
                 }
@@ -284,7 +292,7 @@ export function TreatmentDetail() {
                     fontSize: 15,
                   }}
                 >
-                  Κλήση
+                  {tr("Κλήση", "Call")}
                 </Text>
               </Pressable>
             </View>

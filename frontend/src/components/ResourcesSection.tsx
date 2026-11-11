@@ -20,6 +20,7 @@ import { useAuth } from "@/src/auth/AuthContext";
 import { api } from "@/src/api/client";
 import { spacing, radii, type Colors } from "@/src/theme";
 import { useTheme } from "@/src/theme/ThemeContext";
+import { useLanguage } from "@/src/components/AppNavigation";
 
 export type ParentType =
   | "academy_level"
@@ -73,6 +74,7 @@ export function ResourcesSection({
 }) {
   const { user } = useAuth();
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [resources, setResources] = useState<Resource[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -105,7 +107,7 @@ export function ResourcesSection({
       const file = result.assets[0];
       if (!file) return;
       if (file.size && file.size > 12 * 1024 * 1024) {
-        Alert.alert("File too large", "Max 12 MB per file.");
+        Alert.alert(t("Πολύ μεγάλο αρχείο", "File too large"), t("Μέγιστο 12 MB ανά αρχείο.", "Max 12 MB per file."));
         return;
       }
       setUploading(true);
@@ -136,11 +138,11 @@ export function ResourcesSection({
         file_size: file.size || base64.length,
       });
       await load();
-      Alert.alert("Uploaded", `${file.name} added to ${title}.`);
+      Alert.alert(t("Ανέβηκε", "Uploaded"), t(`Το ${file.name} προστέθηκε στο ${title}.`, `${file.name} added to ${title}.`));
     } catch (e: any) {
       Alert.alert(
-        "Upload failed",
-        e?.response?.data?.detail || e?.message || "Try again",
+        t("Η μεταφόρτωση απέτυχε", "Upload failed"),
+        e?.response?.data?.detail || e?.message || t("Δοκίμασε ξανά", "Try again"),
       );
     } finally {
       setUploading(false);
@@ -197,10 +199,10 @@ export function ResourcesSection({
   };
 
   const removeResource = async (r: Resource) => {
-    Alert.alert("Remove resource?", `Delete "${r.name}"?`, [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("Αφαίρεση υλικού;", "Remove resource?"), t(`Διαγραφή «${r.name}»;`, `Delete "${r.name}"?`), [
+      { text: t("Άκυρο", "Cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: t("Διαγραφή", "Delete"),
         style: "destructive",
         onPress: async () => {
           try {
@@ -208,8 +210,8 @@ export function ResourcesSection({
             await load();
           } catch (e: any) {
             Alert.alert(
-              "Delete failed",
-              e?.response?.data?.detail || "Try again",
+              t("Η διαγραφή απέτυχε", "Delete failed"),
+              e?.response?.data?.detail || t("Δοκίμασε ξανά", "Try again"),
             );
           }
         },
@@ -227,8 +229,8 @@ export function ResourcesSection({
           <Overline color={colors.accent.gold}>{title}</Overline>
           <Body size="small" color={colors.text.muted} style={{ marginTop: 4 }}>
             {resources.length > 0
-              ? `${resources.length} αρχεία`
-              : "Δεν υπάρχει ακόμη υλικό"}
+              ? t(`${resources.length} αρχεία`, `${resources.length} files`)
+              : t("Δεν υπάρχει ακόμη υλικό", "No material yet")}
           </Body>
         </View>
         {isAdmin ? (
@@ -256,7 +258,7 @@ export function ResourcesSection({
                   color={colors.accent.gold}
                   style={{ letterSpacing: 1, textTransform: "uppercase" }}
                 >
-                  Upload
+                  {t("Μεταφόρτωση", "Upload")}
                 </Body>
               </>
             )}
@@ -267,7 +269,10 @@ export function ResourcesSection({
       {resources.length === 0 && !isAdmin ? (
         <GlowCard style={{ marginTop: spacing.sm }}>
           <Body size="small" color={colors.text.muted}>
-            Το εκπαιδευτικό υλικό θα εμφανιστεί εδώ όταν προστεθεί από τη σχολή.
+            {t(
+              "Το εκπαιδευτικό υλικό θα εμφανιστεί εδώ όταν προστεθεί από τη σχολή.",
+              "Educational material will appear here once added by the school.",
+            )}
           </Body>
         </GlowCard>
       ) : null}

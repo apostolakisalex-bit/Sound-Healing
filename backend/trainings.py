@@ -453,7 +453,11 @@ def build_trainings_router(db, admin_user) -> APIRouter:
             if doc.get('archived'):
                 items.pop(slug, None)
                 continue
-            if not p:
+            # Public catalog exposes ONLY items whose PUBLISHED revision is a
+            # training announcement. A draft still awaiting publication, or one
+            # reclassified away from 'training' in its published revision, must
+            # never reach signed-out visitors.
+            if not p or p.get('section') != 'training' or p.get('kind') != 'announcement':
                 continue
             items[slug] = {'slug': slug, 'url': p.get('action_url', ''), 'title': p['title'], 'full_title': p['title'], 'level': p.get('training_level'), 'image': p.get('image_url', ''), 'date': p.get('event_date', ''), 'start_date': p.get('event_start_date', ''), 'end_date': p.get('event_end_date', ''), 'time': p.get('event_time', ''), 'location': p.get('event_location', ''), 'address': p.get('event_location', ''), 'price': p.get('event_price', ''), 'phone': p.get('event_phone', ''), 'description': p.get('body') or p.get('summary', ''), 'program': p.get('event_program', '').splitlines(), 'audience': p.get('event_audience', '').splitlines(), 'certification': p.get('event_certification', ''), 'managed': True}
         today = datetime.now(ZoneInfo('Europe/Athens')).date().isoformat()

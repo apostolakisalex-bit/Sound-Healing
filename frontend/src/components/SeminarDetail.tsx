@@ -6,6 +6,7 @@ import { useTheme } from "@/src/theme/ThemeContext";
 import { ManagedImage } from "./ManagedImage";
 import { Shell, useUi, Status, useLoad } from "./Wellness";
 import { addToDeviceCalendar, shareSeminar } from "@/src/utils/seminarActions";
+import { useLanguage } from "./AppNavigation";
 
 type Training = {
   active?: boolean;
@@ -121,6 +122,7 @@ export function SeminarDetail() {
   const router = useRouter();
   const { wellness } = useTheme();
   const ui = useUi();
+  const { t: tr } = useLanguage();
   const LEVEL_TONE: Record<number, { bg: string; ink: string }> = {
     1: { bg: wellness.lavender, ink: wellness.lavenderInk },
     2: { bg: wellness.sage, ink: wellness.sageInk },
@@ -139,9 +141,9 @@ export function SeminarDetail() {
       start: t.start_date,
       end: t.end_date,
       notes: [
-        t.time && `Ώρα: ${t.time}`,
-        t.price && `Κόστος: ${t.price}`,
-        t.phone && `Κράτηση: ${t.phone}`,
+        t.time && `${tr("Ώρα", "Time")}: ${t.time}`,
+        t.price && `${tr("Κόστος", "Cost")}: ${t.price}`,
+        t.phone && `${tr("Κράτηση", "Booking")}: ${t.phone}`,
       ]
         .filter(Boolean)
         .join("\n"),
@@ -155,32 +157,34 @@ export function SeminarDetail() {
   }[] = [
     {
       icon: "calendar-outline",
-      label: "ΗΜΕΡΟΜΗΝΙΑ",
+      label: tr("ΗΜΕΡΟΜΗΝΙΑ", "DATE"),
       value: t.date,
       tint: wellness.lavender,
     },
-    { icon: "time-outline", label: "ΩΡΑ", value: t.time, tint: wellness.sage },
+    { icon: "time-outline", label: tr("ΩΡΑ", "TIME"), value: t.time, tint: wellness.sage },
     {
       icon: "cash-outline",
-      label: "ΚΟΣΤΟΣ",
+      label: tr("ΚΟΣΤΟΣ", "COST"),
       value: t.price,
       tint: wellness.champagne,
     },
     {
       icon: "location-outline",
-      label: "ΧΩΡΟΣ",
+      label: tr("ΧΩΡΟΣ", "VENUE"),
       value: t.address || t.location,
       tint: wellness.blueMist,
     },
     {
       icon: "people-outline",
-      label: "ΘΕΣΕΙΣ",
-      value: t.max_participants ? `έως ${t.max_participants} άτομα` : "",
+      label: tr("ΘΕΣΕΙΣ", "SPOTS"),
+      value: t.max_participants
+        ? tr(`έως ${t.max_participants} άτομα`, `up to ${t.max_participants} people`)
+        : "",
       tint: wellness.ice,
     },
     {
       icon: "chatbubble-ellipses-outline",
-      label: "ΓΛΩΣΣΑ",
+      label: tr("ΓΛΩΣΣΑ", "LANGUAGE"),
       value: t.language,
       tint: wellness.lavender,
     },
@@ -196,7 +200,7 @@ export function SeminarDetail() {
         <Text
           style={[ui.body, { color: wellness.lavenderInk, fontWeight: "700" }]}
         >
-          ← Εκπαιδευτικά
+          ← {tr("Εκπαιδευτικά", "Training")}
         </Text>
       </Pressable>
 
@@ -265,8 +269,11 @@ export function SeminarDetail() {
                     }}
                   >
                     {t.active
-                      ? "● ΕΝΕΡΓΟ"
-                      : "ΟΛΟΚΛΗΡΩΘΗΚΕ / ΧΩΡΙΣ ΕΝΕΡΓΕΣ ΗΜΕΡΟΜΗΝΙΕΣ"}
+                      ? tr("● ΕΝΕΡΓΟ", "● ACTIVE")
+                      : tr(
+                          "ΟΛΟΚΛΗΡΩΘΗΚΕ / ΧΩΡΙΣ ΕΝΕΡΓΕΣ ΗΜΕΡΟΜΗΝΙΕΣ",
+                          "COMPLETED / NO ACTIVE DATES",
+                        )}
                   </Text>
                 </View>
               </View>
@@ -330,7 +337,7 @@ export function SeminarDetail() {
                     fontSize: 14,
                   }}
                 >
-                  Ημερολόγιο
+                  {tr("Ημερολόγιο", "Calendar")}
                 </Text>
               </Pressable>
             )}
@@ -366,7 +373,7 @@ export function SeminarDetail() {
                     fontSize: 14,
                   }}
                 >
-                  Μοιράσου
+                  {tr("Μοιράσου", "Share")}
                 </Text>
               </Pressable>
           </View>
@@ -384,10 +391,13 @@ export function SeminarDetail() {
                 ]}
               >
                 <Text style={[ui.heading, { color: wellness.ink }]}>
-                  Κράτηση θέσης
+                  {tr("Κράτηση θέσης", "Reserve your spot")}
                 </Text>
                 <Text style={[ui.body, { color: wellness.ink }]}>
-                  Επικοινώνησε για διαθεσιμότητα και πληροφορίες συμμετοχής.
+                  {tr(
+                    "Επικοινώνησε για διαθεσιμότητα και πληροφορίες συμμετοχής.",
+                    "Get in touch for availability and participation details.",
+                  )}
                 </Text>
                 <View
                   style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}
@@ -417,7 +427,7 @@ export function SeminarDetail() {
                         fontSize: 15,
                       }}
                     >
-                      Κλήση {phone}
+                      {tr("Κλήση", "Call")} {phone}
                     </Text>
                   </Pressable>
                   <Pressable
@@ -473,7 +483,7 @@ export function SeminarDetail() {
 
           {!!t.program?.length && (
             <View style={{ gap: 14 }}>
-              <Text style={ui.heading}>Τι θα δούμε</Text>
+              <Text style={ui.heading}>{tr("Τι θα δούμε", "What we'll cover")}</Text>
               <BulletList
                 items={t.program}
                 icon="checkmark-circle"
@@ -484,7 +494,7 @@ export function SeminarDetail() {
 
           {!!t.audience?.length && (
             <View style={{ gap: 14 }}>
-              <Text style={ui.heading}>Για ποιους είναι</Text>
+              <Text style={ui.heading}>{tr("Για ποιους είναι", "Who it's for")}</Text>
               <BulletList
                 items={t.audience}
                 icon="person-circle-outline"
@@ -499,7 +509,7 @@ export function SeminarDetail() {
                 <View
                   style={[ui.card, { backgroundColor: wellness.ice, gap: 6 }]}
                 >
-                  <Text style={ui.label}>ΕΙΣΗΓΗΤΗΣ</Text>
+                  <Text style={ui.label}>{tr("ΕΙΣΗΓΗΤΗΣ", "INSTRUCTOR")}</Text>
                   <Text style={[ui.body, { color: wellness.ink }]}>
                     {t.instructor}
                   </Text>
@@ -509,7 +519,7 @@ export function SeminarDetail() {
                 <View
                   style={[ui.card, { backgroundColor: wellness.ice, gap: 6 }]}
                 >
-                  <Text style={ui.label}>ΠΙΣΤΟΠΟΙΗΣΗ</Text>
+                  <Text style={ui.label}>{tr("ΠΙΣΤΟΠΟΙΗΣΗ", "CERTIFICATION")}</Text>
                   <Text style={[ui.body, { color: wellness.ink }]}>
                     {t.certification}
                   </Text>

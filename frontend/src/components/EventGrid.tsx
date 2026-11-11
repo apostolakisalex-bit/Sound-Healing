@@ -5,6 +5,7 @@ import { Pressable, Text, View, useWindowDimensions } from "react-native";
 import { Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { ContentItem, Field, useUi } from "./Wellness";
+import { useLanguage } from "./AppNavigation";
 
 /** Photo-led cards based on soundhealing.gr, with CMS-owned event details. */
 export function EventGrid({
@@ -18,6 +19,7 @@ export function EventGrid({
 }) {
   const { wellness } = useTheme();
   const ui = useUi();
+  const { t } = useLanguage();
   const { width } = useWindowDimensions();
   const [search, setSearch] = useState("");
   const [archiveOpen, setArchiveOpen] = useState(false);
@@ -108,7 +110,7 @@ export function EventGrid({
       <View style={{ padding: 14, gap: 12, flex: 1 }}>
         {past && (
           <Text style={[ui.label, { color: wellness.muted, fontSize: 11 }]}>
-            {training ? "Παλαιότερο εκπαιδευτικό" : "Ολοκληρωμένη εκδήλωση"}
+            {training ? t("Παλαιότερο εκπαιδευτικό", "Past training") : t("Ολοκληρωμένη εκδήλωση", "Completed event")}
           </Text>
         )}
         {p.action_url ? (
@@ -180,12 +182,12 @@ export function EventGrid({
           >
             {past
               ? training
-                ? "Πληροφορίες εκπαιδευτικού"
-                : "Πληροφορίες εκδήλωσης"
+                ? t("Πληροφορίες εκπαιδευτικού", "Training details")
+                : t("Πληροφορίες εκδήλωσης", "Event details")
               : p.action_label ||
                 (training
-                  ? "Πληροφορίες & εγγραφή"
-                  : "Πληροφορίες & συμμετοχή")}{" "}
+                  ? t("Πληροφορίες & εγγραφή", "Details & registration")
+                  : t("Πληροφορίες & συμμετοχή", "Details & participation"))}{" "}
             ↗
           </Link>
         )}
@@ -208,8 +210,8 @@ export function EventGrid({
       <Field
         label={
           training
-            ? "Αναζήτηση σεμιναρίου, χώρου ή ημερομηνίας"
-            : "Αναζήτηση εκδήλωσης, χώρου ή ημερομηνίας"
+            ? t("Αναζήτηση σεμιναρίου, χώρου ή ημερομηνίας", "Search by seminar, venue or date")
+            : t("Αναζήτηση εκδήλωσης, χώρου ή ημερομηνίας", "Search by event, venue or date")
         }
         value={search}
         onChange={setSearch}
@@ -220,10 +222,10 @@ export function EventGrid({
       ) : (
         <Text accessibilityLiveRegion="polite" style={ui.body}>
           {search.trim()
-            ? `${training ? "Δεν βρέθηκαν εκπαιδευτικά." : "Δεν βρέθηκαν εκδηλώσεις."} Δοκίμασε διαφορετική αναζήτηση.`
+            ? `${training ? t("Δεν βρέθηκαν εκπαιδευτικά.", "No training found.") : t("Δεν βρέθηκαν εκδηλώσεις.", "No events found.")} ${t("Δοκίμασε διαφορετική αναζήτηση.", "Try a different search.")}`
             : training
-              ? "Δεν υπάρχουν ενεργά εκπαιδευτικά αυτή τη στιγμή."
-              : "Δεν υπάρχουν ενεργές εκδηλώσεις αυτή τη στιγμή."}
+              ? t("Δεν υπάρχουν ενεργά εκπαιδευτικά αυτή τη στιγμή.", "There are no active trainings at the moment.")
+              : t("Δεν υπάρχουν ενεργές εκδηλώσεις αυτή τη στιγμή.", "There are no active events at the moment.")}
         </Text>
       )}
 
@@ -231,8 +233,8 @@ export function EventGrid({
         <View style={{ gap: 16 }}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Αρχείο, ${pastItems.length} ${
-              training ? "εκπαιδευτικά" : "εκδηλώσεις"
+            accessibilityLabel={`${t("Αρχείο", "Archive")}, ${pastItems.length} ${
+              training ? t("εκπαιδευτικά", "trainings") : t("εκδηλώσεις", "events")
             }`}
             onPress={() => setArchiveOpen((o) => !o)}
             style={({ pressed }) => ({
@@ -254,7 +256,7 @@ export function EventGrid({
               color={wellness.slate}
             />
             <Text style={[ui.body, { flex: 1, fontSize: 15, color: wellness.ink }]}>
-              Αρχείο{" "}
+              {t("Αρχείο", "Archive")}{" "}
               <Text style={{ color: wellness.muted }}>({pastItems.length})</Text>
             </Text>
             <Ionicons

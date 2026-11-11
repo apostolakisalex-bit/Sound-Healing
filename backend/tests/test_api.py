@@ -5,6 +5,10 @@ import pytest
 
 BASE = os.environ["EXPO_PUBLIC_BACKEND_URL"].rstrip("/")
 
+# Admin credentials come only from the environment — never hardcoded.
+ADMIN_EMAIL = os.environ.get("SHG_TEST_ADMIN_EMAIL", "admin@soundhealing.gr")
+ADMIN_PASSWORD = os.environ.get("SHG_TEST_ADMIN_PASSWORD", "")
+
 
 # ============ AUTH ============
 class TestAuth:
@@ -36,8 +40,10 @@ class TestAuth:
         assert r.status_code == 400
 
     def test_admin_login(self, api):
+        if not ADMIN_PASSWORD:
+            pytest.skip("Set SHG_TEST_ADMIN_PASSWORD to run this test.")
         r = api.post(f"{BASE}/api/auth/login", json={
-            "email": "admin@soundhealing.gr", "password": "temple2026"
+            "email": ADMIN_EMAIL, "password": ADMIN_PASSWORD
         })
         assert r.status_code == 200
         body = r.json()
@@ -46,7 +52,7 @@ class TestAuth:
 
     def test_login_wrong_password(self, api):
         r = api.post(f"{BASE}/api/auth/login", json={
-            "email": "admin@soundhealing.gr", "password": "wrong"
+            "email": ADMIN_EMAIL, "password": "definitely-not-the-password"
         })
         assert r.status_code == 401
 

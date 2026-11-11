@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { ContentItem, useUi, useLoad, Status } from "./Wellness";
 import { ManagedImage } from "./ManagedImage";
+import { useLanguage } from "./AppNavigation";
 
 /** A single dated happening placed on the calendar grid. */
 type CalEvent = {
@@ -29,8 +30,6 @@ type LiveTraining = {
   active?: boolean;
 };
 
-const WEEKDAYS = ["Δε", "Τρ", "Τε", "Πε", "Πα", "Σα", "Κυ"];
-
 const p2 = (n: number) => String(n).padStart(2, "0");
 const isISO = (s?: string) => (s && /^\d{4}-\d{2}-\d{2}/.test(s) ? s.slice(0, 10) : "");
 
@@ -42,14 +41,14 @@ const athensToday = () =>
     day: "2-digit",
   }).format(new Date());
 
-const monthLabel = (y: number, m: number) =>
-  new Intl.DateTimeFormat("el-GR", { month: "long", year: "numeric" }).format(
+const monthLabel = (y: number, m: number, locale: string) =>
+  new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(
     new Date(y, m, 1),
   );
 
-const longDate = (iso: string) => {
+const longDate = (iso: string, locale: string) => {
   const [y, m, d] = iso.split("-").map(Number);
-  return new Intl.DateTimeFormat("el-GR", {
+  return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -60,6 +59,12 @@ export function EventsCalendar({ mode }: { mode?: "training" | "events" }) {
   const router = useRouter();
   const { wellness } = useTheme();
   const ui = useUi();
+  const { t, language } = useLanguage();
+  const WEEKDAYS =
+    language === "en"
+      ? ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
+      : ["Δε", "Τρ", "Τε", "Πε", "Πα", "Σα", "Κυ"];
+  const dateLocale = language === "en" ? "en-GB" : "el-GR";
   const PURPLE = wellness.lavenderInk; // επερχόμενες
   const GREY = wellness.muted; // ολοκληρωμένες
   const trainings = useLoad<{ items: LiveTraining[] }>("/trainings/catalog", {
@@ -158,7 +163,7 @@ export function EventsCalendar({ mode }: { mode?: "training" | "events" }) {
   return (
     <View style={{ gap: 16 }}>
       <Text style={ui.heading}>
-        {mode === "training" ? "Ημερολόγιο εκπαιδευτικών" : "Ημερολόγιο εκδηλώσεων"}
+        {mode === "training" ? t("Ημερολόγιο εκπαιδευτικών", "Training calendar") : t("Ημερολόγιο εκδηλώσεων", "Events calendar")}
       </Text>
       <View
         style={[ui.card, { maxWidth: 460, width: "100%", alignSelf: "center", gap: 14 }]}
@@ -175,7 +180,7 @@ export function EventsCalendar({ mode }: { mode?: "training" | "events" }) {
             onPress={() => step(-1)}
             hitSlop={10}
             accessibilityRole="button"
-            accessibilityLabel="Προηγούμενος μήνας"
+            accessibilityLabel={t("Προηγούμενος μήνας", "Previous month")}
             style={{ padding: 8 }}
           >
             <Ionicons name="chevron-back" size={22} color={wellness.ink} />
@@ -184,13 +189,13 @@ export function EventsCalendar({ mode }: { mode?: "training" | "events" }) {
             accessibilityRole="header"
             style={[ui.label, { fontSize: 15, letterSpacing: 0.4, textTransform: "capitalize" }]}
           >
-            {monthLabel(y, m)}
+            {monthLabel(y, m, dateLocale)}
           </Text>
           <Pressable
             onPress={() => step(1)}
             hitSlop={10}
             accessibilityRole="button"
-            accessibilityLabel="Επόμενος μήνας"
+            accessibilityLabel={t("Επόμενος μήνας", "Next month")}
             style={{ padding: 8 }}
           >
             <Ionicons name="chevron-forward" size={22} color={wellness.ink} />
@@ -238,7 +243,7 @@ export function EventsCalendar({ mode }: { mode?: "training" | "events" }) {
                   }}
                   accessibilityRole={hasEvents ? "button" : undefined}
                   accessibilityLabel={
-                    hasEvents ? `${day}, ${dayEvents!.length} εκδήλωση/εις` : undefined
+                    hasEvents ? `${day}, ${dayEvents!.length} ${t("εκδήλωση/εις", "event(s)")}` : undefined
                   }
                   style={{
                     flex: 1,
@@ -280,8 +285,8 @@ export function EventsCalendar({ mode }: { mode?: "training" | "events" }) {
 
         {/* Υπόμνημα */}
         <View style={{ flexDirection: "row", gap: 18, flexWrap: "wrap", paddingTop: 2 }}>
-          <Legend color={PURPLE} label="Επερχόμενες" />
-          <Legend color={GREY} label="Ολοκληρωμένες" />
+          <Legend color={PURPLE} label={t("Επερχόμενες", "Upcoming")} />
+          <Legend color={GREY} label={t("Ολοκληρωμένες", "Completed")} />
         </View>
       </View>
 
@@ -289,7 +294,7 @@ export function EventsCalendar({ mode }: { mode?: "training" | "events" }) {
       {!!selectedEvents.length && (
         <View style={{ gap: 10 }}>
           <Text style={[ui.label, { fontSize: 13, color: wellness.ink }]}>
-            {longDate(selected)}
+            {longDate(selected, dateLocale)}
           </Text>
           {selectedEvents.map((e) => (
             <Pressable
@@ -334,7 +339,7 @@ export function EventsCalendar({ mode }: { mode?: "training" | "events" }) {
                 </Text>
                 <Text style={[ui.body, { fontSize: 12 }]} numberOfLines={1}>
                   {[e.dateText, e.location].filter(Boolean).join(" · ") ||
-                    (e.past ? "Ολοκληρώθηκε" : "Επερχόμενη")}
+                    (e.past ? t("Ολοκληρώθηκε", "Completed") : t("Επερχόμενη", "Upcoming"))}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color={wellness.muted} />
@@ -345,7 +350,7 @@ export function EventsCalendar({ mode }: { mode?: "training" | "events" }) {
 
       {loading && <Status state={trainings.loading ? trainings : content} />}
       {!loading && !events.length && (
-        <Text style={ui.body}>Δεν υπάρχουν ακόμη καταχωρημένες ημερομηνίες.</Text>
+        <Text style={ui.body}>{t("Δεν υπάρχουν ακόμη καταχωρημένες ημερομηνίες.", "No dates have been scheduled yet.")}</Text>
       )}
     </View>
   );

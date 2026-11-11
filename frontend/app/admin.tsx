@@ -16,6 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { AdminOverview } from "@/src/components/AdminOverview";
 import { ResourcesSection } from "@/src/components/ResourcesSection";
+import { ForceGreekLanguage } from "@/src/components/AppNavigation";
 import { api } from "@/src/api/client";
 import { useAuth } from "@/src/auth/AuthContext";
 import {
@@ -123,15 +124,17 @@ const fresh: Draft = {
 export default function Admin() {
   const { user } = useAuth();
   const ui = useUi();
-  if (!user || !["admin", "instructor"].includes(user.role))
-    return (
+  const inner =
+    !user || !["admin", "instructor"].includes(user.role) ? (
       <Shell eyebrow="ΧΩΡΟΣ ΕΡΓΑΣΙΑΣ" title="Περιορισμένη πρόσβαση">
         <Text style={ui.body}>
           Αυτός ο χώρος είναι διαθέσιμος στην ομάδα της σχολής.
         </Text>
       </Shell>
+    ) : (
+      <WorkspaceScreen />
     );
-  return <WorkspaceScreen />;
+  return <ForceGreekLanguage>{inner}</ForceGreekLanguage>;
 }
 function WorkspaceScreen() {
   const { user } = useAuth();

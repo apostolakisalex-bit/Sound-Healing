@@ -6,12 +6,15 @@ import Head from "expo-router/head";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { Shell, useUi } from "./Wellness";
 import { ManagedImage } from "./ManagedImage";
-import { TREATMENTS, TREATMENTS_PHONE } from "@/src/content/treatments";
+import { getTreatments, TREATMENTS_PHONE } from "@/src/content/treatments";
+import { useLanguage } from "./AppNavigation";
 
 export function TreatmentsOverview() {
   const router = useRouter();
   const ui = useUi();
   const { wellness } = useTheme();
+  const { t: tr, language } = useLanguage();
+  const treatments = getTreatments(language);
 
   return (
     <Shell publicPage eyebrow="" title="">
@@ -25,31 +28,33 @@ export function TreatmentsOverview() {
 
       <Pressable
         accessibilityRole="link"
-        accessibilityLabel="Πίσω στην Αρχική"
+        accessibilityLabel={tr("Πίσω στην Αρχική", "Back to Home")}
         onPress={() => router.push("/")}
         style={{ minHeight: 44, justifyContent: "center", paddingVertical: 6 }}
       >
         <Text
           style={[ui.body, { color: wellness.lavenderInk, fontWeight: "700" }]}
         >
-          ← Αρχική
+          {tr("← Αρχική", "← Home")}
         </Text>
       </Pressable>
 
       <View style={{ gap: 8 }}>
         <Text style={ui.title}>Treatments</Text>
         <Text style={[ui.body, { color: wellness.slate }]}>
-          Ατομικές & ομαδικές συνεδρίες ηχοθεραπείας. Επίλεξε μια θεραπεία για να
-          δεις όλες τις πληροφορίες.
+          {tr(
+            "Ατομικές & ομαδικές συνεδρίες ηχοθεραπείας. Επίλεξε μια θεραπεία για να δεις όλες τις πληροφορίες.",
+            "Individual & group sound healing sessions. Choose a treatment to see all the details.",
+          )}
         </Text>
       </View>
 
       <View style={{ gap: 14, marginTop: 6 }}>
-        {TREATMENTS.map((t) => (
+        {treatments.map((t) => (
           <Pressable
             key={t.slug}
             accessibilityRole="link"
-            accessibilityLabel={`${t.title}. Περισσότερα`}
+            accessibilityLabel={`${t.title}. ${tr("Περισσότερα", "More")}`}
             onPress={() => router.push(`/treatment/${t.slug}` as any)}
             style={[
               ui.card,
@@ -89,12 +94,18 @@ export function TreatmentsOverview() {
             </View>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`Κλείσε ραντεβού για ${t.title} μέσω WhatsApp`}
+              accessibilityLabel={tr(
+                `Κλείσε ραντεβού για ${t.title} μέσω WhatsApp`,
+                `Book an appointment for ${t.title} via WhatsApp`,
+              )}
               hitSlop={8}
               onPress={() =>
                 void Linking.openURL(
                   `https://wa.me/30${TREATMENTS_PHONE}?text=${encodeURIComponent(
-                    `Γεια σας! Θα ήθελα να κλείσω ραντεβού για: ${t.title}.`,
+                    tr(
+                      `Γεια σας! Θα ήθελα να κλείσω ραντεβού για: ${t.title}.`,
+                      `Hello! I would like to book an appointment for: ${t.title}.`,
+                    ),
                   )}`,
                 )
               }

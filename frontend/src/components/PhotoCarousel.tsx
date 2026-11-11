@@ -3,6 +3,7 @@ import { Platform, Pressable, ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { ManagedImage } from "./ManagedImage";
+import { useLanguage } from "./AppNavigation";
 
 /** Swipeable photo carousel with dots (and chevrons on web). */
 export function PhotoCarousel({
@@ -101,11 +102,12 @@ function Arrow({
   onPress: () => void;
 }) {
   const { wellness } = useTheme();
+  const { t } = useLanguage();
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={dir === "chevron-back" ? "Προηγούμενη φωτογραφία" : "Επόμενη φωτογραφία"}
+      accessibilityLabel={dir === "chevron-back" ? t("Προηγούμενη φωτογραφία", "Previous photo") : t("Επόμενη φωτογραφία", "Next photo")}
       style={{
         position: "absolute",
         top: "50%",

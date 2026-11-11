@@ -1,5 +1,5 @@
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { AppHeader, BottomNavigation, HeaderControls } from "./AppNavigation";
+import { AppHeader, BottomNavigation, HeaderControls, useLanguage } from "./AppNavigation";
 import { GoldenDust } from "./GoldenDust";
 import { ManagedImage } from "./ManagedImage";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -281,12 +281,18 @@ export function Status({
 }) {
   const ui = useUi();
   const palette = usePalette();
+  const { t } = useLanguage();
   return state.loading ? (
     <ActivityIndicator color={palette.ink} />
   ) : state.error ? (
     <View style={ui.error}>
-      <Text style={ui.body}>{state.error}</Text>
-      <Button label="Δοκίμασε ξανά" onPress={state.reload} />
+      <Text style={ui.body}>
+        {t(
+          "Δεν μπορέσαμε να φορτώσουμε τα στοιχεία. Δοκίμασε ξανά.",
+          "We couldn't load this. Please try again.",
+        )}
+      </Text>
+      <Button label={t("Δοκίμασε ξανά", "Try again")} onPress={state.reload} />
     </View>
   ) : null;
 }
@@ -311,6 +317,7 @@ export function Shell({
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
   const ui = useUi();
+  const { t } = useLanguage();
   const staff = !!user && ["admin", "instructor"].includes(user.role);
   return (
     <KeyboardAvoidingView style={[ui.page, { paddingLeft: insets.left, paddingRight: insets.right }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
@@ -344,7 +351,10 @@ export function Shell({
           <Text style={ui.body}>
             {siteSettings
               ? siteSettings.body
-              : "Sound Healing Greece · Χανιά · Αθήνα · Online"}
+              : t(
+                  "Sound Healing Greece · Χανιά · Αθήνα · Online",
+                  "Sound Healing Greece · Chania · Athens · Online",
+                )}
           </Text>
         </View>
       </ScrollView>
@@ -395,6 +405,7 @@ export function ContentCard({
   const p = item.published;
   const ui = useUi();
   const { colors } = useTheme();
+  const { t } = useLanguage();
   return (
     <View style={ui.card}>
       {!!p.image_url && (
@@ -405,7 +416,7 @@ export function ContentCard({
           style={{ width: "100%", height: 240, borderRadius: 16 }}
         />
       )}
-      <Text style={ui.label}>{p.level_id || "ΕΥΕΞΙΑ"}</Text>
+      <Text style={ui.label}>{p.level_id || t("ΕΥΕΞΙΑ", "WELLNESS")}</Text>
       <Text style={ui.heading}>{p.title}</Text>
       <Text style={ui.body}>{p.summary}</Text>
       {!!p.body && <Text style={ui.body}>{p.body}</Text>}
@@ -427,7 +438,7 @@ export function ContentCard({
       {!!p.media_url && (
         <Button
           secondary
-          label="Άνοιγμα υλικού"
+          label={t("Άνοιγμα υλικού", "Open material")}
           onPress={() => {
             void Linking.openURL(p.media_url);
           }}
@@ -437,7 +448,7 @@ export function ContentCard({
         <ResourcesSection
           parentType="cms_content"
           parentId={item.id}
-          title="Υλικό μαθήματος"
+          title={t("Υλικό μαθήματος", "Lesson material")}
         />
       )}
       {complete && (
@@ -445,10 +456,10 @@ export function ContentCard({
           disabled={busy || completed}
           label={
             completed
-              ? "Ολοκληρώθηκε"
+              ? t("Ολοκληρώθηκε", "Completed")
               : busy
-                ? "Αποθήκευση…"
-                : "Σημείωση ως ολοκληρωμένο"
+                ? t("Αποθήκευση…", "Saving…")
+                : t("Σημείωση ως ολοκληρωμένο", "Mark as complete")
           }
           onPress={async () => {
             setBusy(true);
@@ -457,7 +468,7 @@ export function ContentCard({
               await api.post(`/school/lessons/${item.id}/complete`);
               setCompleted(true);
             } catch {
-              setMessage("Δεν αποθηκεύτηκε. Δοκίμασε ξανά.");
+              setMessage(t("Δεν αποθηκεύτηκε. Δοκίμασε ξανά.", "Not saved. Please try again."));
             } finally {
               setBusy(false);
             }

@@ -24,7 +24,7 @@ import {
   useUi,
   useLoad,
 } from "./Wellness";
-import { useIconSurface } from "./AppNavigation";
+import { useIconSurface, useLanguage } from "./AppNavigation";
 
 type Level = {
   cohort_id?: string | null;
@@ -81,11 +81,6 @@ const empty: Member = {
   stats: { minutes: 0, sessions: 0, receivers: 0, evaluations: 0 },
   requests: [],
 };
-const statusLabel: Record<string, string> = {
-  pending: "Αναμονή έγκρισης",
-  approved: "Εγκεκριμένο μέλος",
-  rejected: "Η αίτηση δεν εγκρίθηκε",
-};
 export function MemberProfile({
   memberId,
   cohorts = [],
@@ -99,6 +94,15 @@ export function MemberProfile({
   const iconSurface = useIconSurface();
   const router = useRouter();
   const staff = !!memberId;
+  const { t } = useLanguage();
+  const statusLabel = (s: string) =>
+    (
+      {
+        pending: t("Αναμονή έγκρισης", "Awaiting approval"),
+        approved: t("Εγκεκριμένο μέλος", "Approved member"),
+        rejected: t("Η αίτηση δεν εγκρίθηκε", "Application not approved"),
+      } as Record<string, string>
+    )[s] || "";
   const state = useLoad<Member>(
     staff ? `/admin/members/${memberId}` : "/members/me",
     empty,
@@ -121,12 +125,12 @@ export function MemberProfile({
       await task();
       await state.reload();
       if (!staff) await refresh();
-      setMessage("Αποθηκεύτηκε.");
+      setMessage(t("Αποθηκεύτηκε.", "Saved."));
     } catch (e: any) {
       setMessage(
         typeof e?.response?.data?.detail === "string"
           ? e.response.data.detail
-          : "Δεν αποθηκεύτηκε. Έλεγξε τα στοιχεία.",
+          : t("Δεν αποθηκεύτηκε. Έλεγξε τα στοιχεία.", "Not saved. Check the details."),
       );
     } finally {
       setBusy(false);
@@ -205,34 +209,37 @@ export function MemberProfile({
           ))}
         </View>
       </View>
-      <Text style={ui.body}>{statusLabel[p.membership_status] || ""}</Text>
+      <Text style={ui.body}>{statusLabel(p.membership_status)}</Text>
       <View style={ui.card}>
-        <Text style={ui.heading}>Καταγραφή & επιβεβαιωμένη πρόοδος</Text>
+        <Text style={ui.heading}>{t("Καταγραφή & επιβεβαιωμένη πρόοδος", "Records & confirmed progress")}</Text>
         <Text style={ui.body}>
-          Καταγεγραμμένες ώρες:{" "}
+          {t("Καταγεγραμμένες ώρες:", "Recorded hours:")}{" "}
           {((p.stats.recorded_minutes ?? p.stats.minutes) / 60).toFixed(1)}
         </Text>
         <Text style={ui.body}>
-          Εγκεκριμένες πρακτικές: {p.stats.approved_sessions ?? 0}
+          {t("Εγκεκριμένες πρακτικές:", "Approved practices:")} {p.stats.approved_sessions ?? 0}
         </Text>
         <Text style={ui.body}>
-          Προσμετρημένες πρακτικές εφαρμογής: {p.stats.credited_sessions ?? 0} ·
-          Ώρες: {((p.stats.credited_minutes ?? 0) / 60).toFixed(1)}
+          {t("Προσμετρημένες πρακτικές εφαρμογής:", "Credited app practices:")}{" "}
+          {p.stats.credited_sessions ?? 0} · {t("Ώρες:", "Hours:")}{" "}
+          {((p.stats.credited_minutes ?? 0) / 60).toFixed(1)}
         </Text>
         <Text style={ui.body}>
-          Αναγνωρισμένες παλαιότερες πρακτικές:{" "}
+          {t("Αναγνωρισμένες παλαιότερες πρακτικές:", "Recognized earlier practices:")}{" "}
           {p.stats.historical_credited_sessions ?? 0}
         </Text>
         <Text style={ui.body}>
-          Οι καταγεγραμμένες ώρες δεν αποτελούν αυτόματα πιστοποιημένη πρόοδο. Η
-          προσμέτρηση επιβεβαιώνεται από τον διαχειριστή.
+          {t(
+            "Οι καταγεγραμμένες ώρες δεν αποτελούν αυτόματα πιστοποιημένη πρόοδο. Η προσμέτρηση επιβεβαιώνεται από τον διαχειριστή.",
+            "Recorded hours do not automatically count as certified progress. Crediting is confirmed by the administrator.",
+          )}
         </Text>
       </View>
       {!!p.bio && <Text style={ui.body}>{p.bio}</Text>}
       {!staff && (
         <Button
           secondary
-          label="Επεξεργασία προφίλ"
+          label={t("Επεξεργασία προφίλ", "Edit profile")}
           onPress={() => setEditing(!editing)}
         />
       )}
@@ -246,7 +253,7 @@ export function MemberProfile({
           {p.membership_status === "approved" && (
             <Button
               secondary
-              label="Αλλαγή φωτογραφίας προφίλ"
+              label={t("Αλλαγή φωτογραφίας προφίλ", "Change profile photo")}
               disabled={busy}
               onPress={() =>
                 void run(async () => {
@@ -256,10 +263,10 @@ export function MemberProfile({
               }
             />
           )}
-          <Field label="Όνομα προφίλ" value={name} onChange={setName} />
-          <Field label="Λίγα λόγια" value={bio} onChange={setBio} multiline />
+          <Field label={t("Όνομα προφίλ", "Profile name")} value={name} onChange={setName} />
+          <Field label={t("Λίγα λόγια", "A few words")} value={bio} onChange={setBio} multiline />
           <Button
-            label="Αποθήκευση προφίλ"
+            label={t("Αποθήκευση προφίλ", "Save profile")}
             disabled={busy}
             onPress={() =>
               void run(async () => {
@@ -276,10 +283,10 @@ export function MemberProfile({
         contentContainerStyle={{ gap: 16, paddingVertical: 6 }}
       >
         {[
-          [`${(p.stats.minutes / 60).toFixed(1)}`, "Ώρες"],
-          [String(p.stats.sessions), "Συνεδρίες"],
-          [String(p.stats.receivers), "Άτομα"],
-          [String(p.stats.evaluations), "Αξιολογήσεις"],
+          [`${(p.stats.minutes / 60).toFixed(1)}`, t("Ώρες", "Hours")],
+          [String(p.stats.sessions), t("Συνεδρίες", "Sessions")],
+          [String(p.stats.receivers), t("Άτομα", "People")],
+          [String(p.stats.evaluations), t("Αξιολογήσεις", "Assessments")],
         ].map(([value, label]) => (
           <View key={label} style={{ width: 74, alignItems: "center", gap: 7 }}>
             <View
@@ -305,7 +312,7 @@ export function MemberProfile({
         ))}
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Τα όργανά μου"
+          accessibilityLabel={t("Τα όργανά μου", "My instruments")}
           onPress={() => setShowInstruments(!showInstruments)}
           style={{ width: 74, alignItems: "center", gap: 7 }}
         >
@@ -327,24 +334,25 @@ export function MemberProfile({
               color={wellness.slate}
             />
           </View>
-          <Text style={{ fontSize: 11 }}>Όργανα · {p.instruments.length}</Text>
+          <Text style={{ fontSize: 11 }}>{t("Όργανα", "Instruments")} · {p.instruments.length}</Text>
         </Pressable>
       </ScrollView>
       <Text style={[ui.body, { fontSize: 11 }]}>
-        Οι ώρες και οι συνεδρίες προκύπτουν από υποβληθείσες πρακτικές. Τα
-        μοναδικά άτομα υπολογίζονται από τους κωδικούς δεκτών ατομικών
-        συνεδριών.
+        {t(
+          "Οι ώρες και οι συνεδρίες προκύπτουν από υποβληθείσες πρακτικές. Τα μοναδικά άτομα υπολογίζονται από τους κωδικούς δεκτών ατομικών συνεδριών.",
+          "Hours and sessions come from submitted practices. Unique people are counted from the receiver codes of individual sessions.",
+        )}
       </Text>
       {(showInstruments || staff) && (
         <View style={ui.card}>
-          <Text style={ui.heading}>Όργανα</Text>
+          <Text style={ui.heading}>{t("Όργανα", "Instruments")}</Text>
           {p.instruments.map((i) => (
             <View key={i} style={ui.row}>
               <Text style={ui.body}>{i}</Text>
               {!staff && (
                 <Button
                   secondary
-                  label={`Αφαίρεση ${i}`}
+                  label={`${t("Αφαίρεση", "Remove")} ${i}`}
                   disabled={busy}
                   onPress={() =>
                     void run(() =>
@@ -360,12 +368,12 @@ export function MemberProfile({
           {!staff && p.membership_status === "approved" && (
             <>
               <Field
-                label="Προσθήκη οργάνου"
+                label={t("Προσθήκη οργάνου", "Add instrument")}
                 value={instrument}
                 onChange={setInstrument}
               />
               <Button
-                label="Προσθήκη"
+                label={t("Προσθήκη", "Add")}
                 disabled={busy || !instrument.trim()}
                 onPress={() =>
                   void run(async () => {
@@ -385,14 +393,14 @@ export function MemberProfile({
           <Text style={[ui.body, { fontWeight: "600" }]}>
             {l.level_id} ·{" "}
             {l.complete
-              ? "Ολοκληρωμένες πρακτικές"
+              ? t("Ολοκληρωμένες πρακτικές", "Completed practices")
               : l.enabled
-                ? "Σε εξέλιξη"
-                : "Δεν έχει ενεργοποιηθεί"}
+                ? t("Σε εξέλιξη", "In progress")
+                : t("Δεν έχει ενεργοποιηθεί", "Not activated")}
           </Text>
           {l.enabled && l.target ? (
             <View
-              accessibilityLabel={`${l.completed} από ${l.target} πρακτικές`}
+              accessibilityLabel={`${l.completed} ${t("από", "of")} ${l.target} ${t("πρακτικές", "practices")}`}
               style={{ flexDirection: "row", flexWrap: "wrap", gap: 7 }}
             >
               {Array.from({ length: l.target }, (_, i) => (
@@ -412,14 +420,20 @@ export function MemberProfile({
           ) : (
             <Text style={ui.body}>
               {l.enabled
-                ? "Ο στόχος πρακτικών δεν έχει οριστεί από τον διαχειριστή."
-                : "Αναμονή επιβεβαίωσης από τη σχολή."}
+                ? t(
+                    "Ο στόχος πρακτικών δεν έχει οριστεί από τον διαχειριστή.",
+                    "The practice target has not been set by the administrator.",
+                  )
+                : t(
+                    "Αναμονή επιβεβαίωσης από τη σχολή.",
+                    "Awaiting confirmation from the school.",
+                  )}
             </Text>
           )}
           {l.enabled && (
             <Text style={[ui.body, { fontSize: 12 }]}>
-              {l.historical_completed} επιβεβαιωμένες παλαιότερες ·{" "}
-              {l.verified_in_app} από την εφαρμογή
+              {l.historical_completed} {t("επιβεβαιωμένες παλαιότερες", "confirmed earlier")} ·{" "}
+              {l.verified_in_app} {t("από την εφαρμογή", "from the app")}
             </Text>
           )}
           {staff && (
@@ -488,16 +502,16 @@ export function MemberProfile({
       )}
       {!staff && p.membership_status === "approved" && (
         <View style={ui.card}>
-          <Text style={ui.heading}>Συμμετοχή σε εκπαιδευτικό</Text>
+          <Text style={ui.heading}>{t("Συμμετοχή σε εκπαιδευτικό", "Join a training")}</Text>
           <Choices
-            label="Επιθυμητό Level"
+            label={t("Επιθυμητό Level", "Desired Level")}
             values={["L1", "L2", "L3", "L4"]}
             value={level}
             onChange={setLevel}
           />
-          <Field label="Μήνυμα προς τη σχολή" value={note} onChange={setNote} />
+          <Field label={t("Μήνυμα προς τη σχολή", "Message to the school")} value={note} onChange={setNote} />
           <Button
-            label="Αποστολή αίτησης συμμετοχής"
+            label={t("Αποστολή αίτησης συμμετοχής", "Send participation request")}
             disabled={busy}
             onPress={() =>
               void run(() =>
@@ -513,7 +527,7 @@ export function MemberProfile({
       {p.requests.map((r) => (
         <View key={r.level_id} style={ui.card}>
           <Text style={ui.body}>
-            Αίτηση {r.level_id} · {statusLabel[r.status] || r.status}
+            {t("Αίτηση", "Request")} {r.level_id} · {statusLabel(r.status) || r.status}
           </Text>
           {!!r.decision_note && <Text style={ui.body}>{r.decision_note}</Text>}
           {staff && r.status === "pending" && (
@@ -565,22 +579,22 @@ export function MemberProfile({
         <View style={ui.row}>
           <Button
             secondary
-            label="Η σχολή μου"
+            label={t("Η σχολή μου", "My school")}
             onPress={() => router.push("/academy")}
           />
           <Button
             secondary
-            label="Οι πρακτικές μου"
+            label={t("Οι πρακτικές μου", "My practices")}
             onPress={() => router.push("/practice")}
           />
           <Button
             secondary
-            label="Ταξίδι"
+            label={t("Ταξίδι", "Journey")}
             onPress={() => router.push("/journey")}
           />
           <Button
             secondary
-            label="Chat μελών"
+            label={t("Chat μελών", "Members chat")}
             onPress={() => router.push("/explore/contact")}
           />
         </View>
@@ -589,12 +603,12 @@ export function MemberProfile({
         <>
           <Button
             secondary
-            label="Ανανέωση κατάστασης"
+            label={t("Ανανέωση κατάστασης", "Refresh status")}
             onPress={() => void run(async () => {})}
           />
           <Button
             secondary
-            label="Αποσύνδεση"
+            label={t("Αποσύνδεση", "Log out")}
             onPress={() => void logout().then(() => router.replace("/"))}
           />
         </>
