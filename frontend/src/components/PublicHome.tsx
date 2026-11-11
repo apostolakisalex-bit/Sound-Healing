@@ -433,7 +433,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
         {introCards.map(renderIntroTile)}
       </View>
       <Text style={[ui.heading, { fontWeight: "600" }]}>
-        {t("Γνώρισε τη σχολή και τα 4 Levels", "Meet the school and the 4 Levels")}
+        {t("Γνώρισε τη σχολή και τα 4 Επίπεδα", "Meet the school and the 4 Levels")}
       </Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
         {levels.map(renderLevelCard)}
