@@ -22,16 +22,16 @@ export default function YoutubeCard() {
   const { t } = useLanguage();
   const { width } = useWindowDimensions();
   const hostRef = useRef<View>(null);
-  const playerRef = useRef<any>(null);
   const [visible, setVisible] = useState(false);
   const [ready, setReady] = useState(false);
+  const [play, setPlay] = useState(false);
   const [muted, setMuted] = useState(true);
   const detected = useRef(false);
 
   const playerWidth = Math.min(width - 48, 640);
   const playerHeight = Math.round((playerWidth * 9) / 16);
 
-  // Start playing once the card scrolls into view.
+  // Mark the card visible once it scrolls into view.
   useEffect(() => {
     const id = setInterval(() => {
       const node = hostRef.current;
@@ -48,10 +48,13 @@ export default function YoutubeCard() {
     return () => clearInterval(id);
   }, []);
 
-  // Some devices ignore play={true} set before the player reports ready;
-  // nudge playback with a seek once both the player is ready and on screen.
+  // Start playback only AFTER the player is ready and on screen, with a short
+  // delay so the library's mute command lands first — otherwise the player
+  // briefly plays with sound before muting. This guarantees a silent start.
   useEffect(() => {
-    if (ready && visible) playerRef.current?.seekTo(0, true);
+    if (!ready || !visible) return;
+    const id = setTimeout(() => setPlay(true), 350);
+    return () => clearTimeout(id);
   }, [ready, visible]);
 
   return (
@@ -62,11 +65,11 @@ export default function YoutubeCard() {
     >
       <View style={{ height: playerHeight, backgroundColor: "#000000" }}>
         <YoutubePlayer
-          ref={playerRef}
           height={playerHeight}
           width={playerWidth}
-          play={visible}
+          play={play}
           mute={muted}
+          volume={muted ? 0 : 100}
           videoId={VIDEO_ID}
           onReady={() => setReady(true)}
           initialPlayerParams={{

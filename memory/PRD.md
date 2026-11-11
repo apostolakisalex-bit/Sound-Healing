@@ -557,3 +557,7 @@ Delivered 4 user-selected items + a design trial + test-report fixes.
 
 ## Home video autoplay reliability on device (June 2026)
 - `YoutubeCard.native.tsx`: hardened muted autoplay-on-scroll for real devices (Expo Go). Added `ref` + `seekTo(0, true)` in `onReady` (devices often ignore `play={true}` set before the player is ready), `playsinline: true`, broadened the visibility band (y < 85% / bottom > 10%) and faster 300ms polling. Still muted autoplay with the "Ήχος" button to unmute (mobile OSes only allow autoplay when muted). NOTE: validate on a real phone via Expo Go after a new build — the web preview can't run the native player and shows YouTube Error 153.
+
+## Fix: Home video leaked sound on autoplay (June 2026)
+- Root cause: react-native-youtube-iframe@2.4.1 has NO `mute` in its embed playerVars; it mutes via a postMessage AFTER init, and its internal `play` effect is declared before the `mute` effect — so on a muted autoplay the player briefly played WITH sound before the mute command landed.
+- Fix (`YoutubeCard.native.tsx`): keep `play={false}` until the player reports `onReady` AND the card is on screen, then flip `play` true after a 350ms delay so the mute command applies first. Also pass `volume={muted ? 0 : 100}` as extra safety. Result: silent autoplay start, "Ήχος" button unmutes. Needs a fresh build to verify on device (web preview can't run the native player / Error 153).
