@@ -469,7 +469,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       </Text>
       <View style={{ gap: 12 }}>{levels.map(renderLevelCard)}</View>
       {(
-        [["training", t("Εκπαιδευτικά", "Training")]] as [string, string][]
+        [["training", t("Ενεργές Εκδηλώσεις και Εκπαιδευτικά", "Active Events & Training")]] as [string, string][]
       ).map(([section, title]) => (
         <View
           key={section}
