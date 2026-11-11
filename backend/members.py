@@ -61,6 +61,16 @@ class Message(Strict):
 class Avatar(Strict):
     data: str = Field(min_length=1, max_length=11200000)
 
+class SeminarSignup(Strict):
+    ref: str = Field(min_length=1, max_length=200)
+    title: str = Field(min_length=1, max_length=300)
+    start_date: str = Field(default='', max_length=10)
+    end_date: str = Field(default='', max_length=10)
+    date_text: str = Field(default='', max_length=160)
+    location: str = Field(default='', max_length=200)
+    image: str = Field(default='', max_length=2000)
+    url: str = Field(default='', max_length=300)
+
 def build_members_router(db, current_user, admin_user):
     router = APIRouter(prefix='/api')
     async def approved(user=Depends(current_user)):
@@ -119,6 +129,26 @@ def build_members_router(db, current_user, admin_user):
             out = io.BytesIO(); image.save(out, format='WEBP', quality=82)
         uri = 'data:image/webp;base64,' + base64.b64encode(out.getvalue()).decode()
         await db.users.update_one({'id': user['id']}, {'$set': {'profile_image': uri}})
+        return {'ok': True}
+
+    @router.get('/members/me/seminars')
+    async def my_seminars(user=Depends(current_user)):
+        rows = await db.seminar_signups.find({'user_id': user['id']}, {'_id': 0, 'user_id': 0}).sort('start_date', 1).to_list(200)
+        return rows
+
+    @router.post('/members/me/seminars')
+    async def join_seminar(payload: SeminarSignup, user=Depends(current_user)):
+        key = user['id'] + ':' + payload.ref
+        await db.seminar_signups.update_one(
+            {'_id': key},
+            {'$set': {'user_id': user['id'], **payload.model_dump()},
+             '$setOnInsert': {'created_at': datetime.now(timezone.utc)}},
+            upsert=True)
+        return {'ok': True}
+
+    @router.delete('/members/me/seminars/{ref}')
+    async def leave_seminar(ref: str, user=Depends(current_user)):
+        await db.seminar_signups.delete_one({'_id': user['id'] + ':' + ref})
         return {'ok': True}
 
     @router.get('/admin/pending')

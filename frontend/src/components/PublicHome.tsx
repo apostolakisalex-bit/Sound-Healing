@@ -2,6 +2,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SCHOOL_PHOTOS } from "@/src/content/schoolGallery";
 import Svg, { Path } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { useIconSurface, useLanguage } from "./AppNavigation";
 import { SacredMandala } from "./icons/SacredMandala";
@@ -225,6 +226,73 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       },
     ],
   ];
+  const fillAbs = {
+    position: "absolute" as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  };
+  // Frosted "crystal plate" card used for the two intro tiles (glass trial).
+  const renderGlassTile = (card: MosaicCard) => (
+    <Pressable
+      key={card.route}
+      accessibilityRole="link"
+      accessibilityLabel={`${card.label}: ${card.title}`}
+      onPress={() => router.push(card.route as any)}
+      style={({ pressed }) => ({
+        height: compactScreen ? 120 : 140,
+        borderRadius: 24,
+        overflow: "hidden",
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.85)",
+        backgroundColor: "rgba(255,255,255,0.35)",
+        boxShadow: "0px 14px 34px rgba(214,170,120,0.28)",
+        opacity: pressed ? 0.92 : 1,
+      })}
+    >
+      {!!card.image && (
+        <ManagedImage
+          source={{ uri: card.image }}
+          accessibilityLabel={card.title}
+          resizeMode="cover"
+          style={{ ...fillAbs, opacity: 0.55 }}
+        />
+      )}
+      <BlurView intensity={30} tint="light" style={fillAbs} />
+      <LinearGradient
+        colors={["rgba(255,245,232,0.6)", "rgba(255,255,255,0.1)"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={fillAbs}
+      />
+      <View
+        style={{
+          flex: 1,
+          paddingHorizontal: 20,
+          justifyContent: "center",
+          gap: 6,
+        }}
+      >
+        <Text
+          style={[
+            ui.label,
+            { color: wellness.muted, fontSize: 11, letterSpacing: 1.2 },
+          ]}
+        >
+          {card.label}
+        </Text>
+        <Text
+          style={[
+            ui.body,
+            { color: wellness.ink, fontSize: compactScreen ? 18 : 22, fontWeight: "700" },
+          ]}
+        >
+          {card.title} ↗
+        </Text>
+      </View>
+    </Pressable>
+  );
   const renderTile = (card: MosaicCard) => (
     <Pressable
       key={card.route}
@@ -358,12 +426,8 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           />
         </Svg>
       </View>
-      <View style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
-        {introCards.map((card) => (
-          <View key={card.route} style={{ flex: 1 }}>
-            {renderTile(card)}
-          </View>
-        ))}
+      <View style={{ gap: 12 }}>
+        {introCards.map(renderGlassTile)}
       </View>
       <Text style={[ui.heading, { fontWeight: "600" }]}>
         {t("Γνώρισε τη σχολή και τα 4 Levels", "Meet the school and the 4 Levels")}

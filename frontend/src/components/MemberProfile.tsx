@@ -26,6 +26,7 @@ import {
 } from "./Wellness";
 import { useIconSurface, useLanguage } from "./AppNavigation";
 import { ProfileGreeting, UpcomingSessions } from "./UpcomingSessions";
+import { MySeminars } from "./MySeminars";
 
 type Level = {
   cohort_id?: string | null;
@@ -146,6 +147,7 @@ export function MemberProfile({
         (user?.membership_status === "pending" ||
           user?.email_verified === false) && <AccountChecklist />}
       {!staff && <ProfileGreeting name={p.name} image={p.profile_image} />}
+      {!staff && <MySeminars />}
       {!staff && <UpcomingSessions />}
       <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
         {staff && (

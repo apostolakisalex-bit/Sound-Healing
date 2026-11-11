@@ -6,6 +6,7 @@ import { useTheme } from "@/src/theme/ThemeContext";
 import { ManagedImage } from "./ManagedImage";
 import { Shell, useUi, Status, useLoad } from "./Wellness";
 import { addToDeviceCalendar, shareSeminar } from "@/src/utils/seminarActions";
+import { JoinButton, seminarRef } from "./JoinButton";
 import { useLanguage } from "./AppNavigation";
 
 type Training = {
@@ -302,6 +303,26 @@ export function SeminarDetail() {
                 />
               ))}
           </View>
+
+          {t.active && (
+            <JoinButton
+              seminar={{
+                ref: seminarRef({
+                  end: t.end_date || t.start_date,
+                  level: t.level,
+                  title: t.full_title || t.title,
+                  fallback: t.slug,
+                }),
+                title: t.full_title || t.title,
+                start_date: t.start_date,
+                end_date: t.end_date,
+                date_text: t.date,
+                location: t.address || t.location,
+                image: t.image,
+                url: `/seminar/${t.slug}`,
+              }}
+            />
+          )}
 
           <View style={{ flexDirection: "row", gap: 10 }}>
             {t.active && (

@@ -1,6 +1,7 @@
 import { Linking } from "react-native";
 import { useMemo } from "react";
 import { useLoad, type ContentItem } from "@/src/components/Wellness";
+import { useLanguage } from "@/src/components/AppNavigation";
 
 /** A single dated happening (training seminar or CMS event) for the calendar. */
 export type ScheduleEvent = {
@@ -27,8 +28,27 @@ type LiveTraining = {
   start_date?: string;
   end_date?: string;
   location?: string;
+  level?: number | null;
   active?: boolean;
 };
+
+type BlogEventPost = {
+  id: number;
+  title: string;
+  image?: string | null;
+  category: string;
+  event_start?: string | null;
+  event_end?: string | null;
+};
+
+const levelOfTitle = (title: string): number | null => {
+  const low = (title || "").toLowerCase();
+  const m = low.match(/level\s*([1-4])/) || low.match(/([1-4])\s*ο?\s*επίπεδο/);
+  if (m) return Number(m[1]);
+  if (low.includes("βασικό επίπεδο")) return 1;
+  return null;
+};
+const titleGreek = (s: string) => /[\u0370-\u03ff]/.test(s || "");
 
 export const p2 = (n: number) => String(n).padStart(2, "0");
 const isISO = (s?: string) =>
@@ -81,15 +101,20 @@ export function useSchedule(mode: "training" | "events" | "all" = "all") {
     items: [],
   });
   const content = useLoad<ContentItem[]>("/content/public", []);
+  const blog = useLoad<BlogEventPost[]>("/blog?section=all", []);
+  const { language } = useLanguage();
   const today = athensToday();
 
   const events = useMemo<ScheduleEvent[]>(() => {
     const out: ScheduleEvent[] = [];
+    const seen = new Set<string>();
+    const keyOf = (end: string, level: number | null) => `${end}|${level ?? "x"}`;
     if (mode !== "events")
       for (const tr of trainings.data.items) {
         const dateISO = isISO(tr.start_date) || isISO(tr.end_date);
         if (!dateISO) continue;
         const endISO = isISO(tr.end_date) || dateISO;
+        seen.add(keyOf(endISO, tr.level ?? null));
         out.push({
           key: "t-" + tr.slug,
           title: tr.title,
@@ -111,6 +136,7 @@ export function useSchedule(mode: "training" | "events" | "all" = "all") {
         const dateISO = isISO(p.event_date) || isISO(p.event_end_date);
         if (!dateISO) continue;
         const endISO = isISO(p.event_end_date) || dateISO;
+        seen.add(keyOf(endISO, levelOfTitle(p.title)));
         out.push({
           key: "e-" + item.id,
           title: p.title,
@@ -125,12 +151,47 @@ export function useSchedule(mode: "training" | "events" | "all" = "all") {
           url: p.action_url,
         });
       }
+    // Merge live site (blog) seminars/events so every real date shows on the
+    // calendar — de-duplicated against the catalog/CMS and across EN/GR copies.
+    const wantGreek = language !== "en";
+    const blogSorted = [...blog.data].sort(
+      (a, b) =>
+        (titleGreek(a.title) === wantGreek ? 0 : 1) -
+        (titleGreek(b.title) === wantGreek ? 0 : 1),
+    );
+    for (const p of blogSorted) {
+      const wantKind =
+        p.category === "training"
+          ? "training"
+          : p.category === "events"
+            ? "event"
+            : null;
+      if (!wantKind) continue;
+      if (mode === "training" && wantKind !== "training") continue;
+      if (mode === "events" && wantKind !== "event") continue;
+      const dateISO = isISO(p.event_start) || isISO(p.event_end);
+      if (!dateISO) continue;
+      const endISO = isISO(p.event_end) || dateISO;
+      const key = keyOf(endISO, levelOfTitle(p.title));
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({
+        key: "b-" + p.id,
+        title: p.title,
+        dateISO,
+        endISO,
+        image: p.image || undefined,
+        past: endISO < today,
+        kind: wantKind as "training" | "event",
+        url: `/article/${p.id}`,
+      });
+    }
     return out.sort((a, b) => a.dateISO.localeCompare(b.dateISO));
-  }, [trainings.data, content.data, today, mode]);
+  }, [trainings.data, content.data, blog.data, today, mode, language]);
 
   return {
     events,
-    loading: trainings.loading || content.loading,
+    loading: trainings.loading || content.loading || blog.loading,
     today,
   };
 }
@@ -140,5 +201,6 @@ export function openSchedule(
   e: ScheduleEvent,
 ) {
   if (e.kind === "training" && e.slug) router.push(`/seminar/${e.slug}`);
+  else if (e.url && e.url.startsWith("/")) router.push(e.url);
   else if (e.url) void Linking.openURL(e.url);
 }

@@ -179,7 +179,7 @@ export function PublicExperience({ section }: { section?: string }) {
   const seminars = useLoad<{ items: LiveSeminar[] }>("/trainings/catalog", {
     items: [],
   });
-  const blogTraining = useLoad<BlogTrainingPost[]>("/blog?section=training", []);
+  const blogAll = useLoad<BlogTrainingPost[]>("/blog?section=all", []);
   const today = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Athens",
     year: "numeric",
@@ -244,7 +244,7 @@ export function PublicExperience({ section }: { section?: string }) {
   // date + level) wins (it keeps the in-app booking page), and the EN/GR copies
   // of the same post collapse to the current language.
   const blogItems: ContentItem[] = React.useMemo(() => {
-    if (section !== "training") return [];
+    if (section !== "training" && section !== "events") return [];
     const fmtDay = (iso: string) =>
       new Intl.DateTimeFormat(language === "en" ? "en-GB" : "el-GR", {
         day: "numeric",
@@ -257,8 +257,8 @@ export function PublicExperience({ section }: { section?: string }) {
       seminars.data.items.map((s) => keyOf(s.end_date || "", s.level ?? null)),
     );
     const wantGreek = language !== "en";
-    const sorted = [...blogTraining.data]
-      .filter((p) => p.category === "training")
+    const sorted = [...blogAll.data]
+      .filter((p) => p.category === section)
       .sort(
         (a, b) =>
           (titleIsGreek(a.title) === wantGreek ? 0 : 1) -
@@ -282,7 +282,7 @@ export function PublicExperience({ section }: { section?: string }) {
           summary: "",
           body: "",
           kind: "event",
-          section: "training",
+          section,
           image_url: p.image || "",
           event_date: dateLabel,
           event_time: "",
@@ -296,7 +296,7 @@ export function PublicExperience({ section }: { section?: string }) {
       });
     }
     return out;
-  }, [section, blogTraining.data, seminars.data.items, language, t]);
+  }, [section, blogAll.data, seminars.data.items, language, t]);
   return (
     <Shell
       publicPage
@@ -352,7 +352,7 @@ export function PublicExperience({ section }: { section?: string }) {
       {section === "contact" && <MembersChat />}
       <Status state={state} />
       {(section === "events" || section === "training") && (
-        <EventsCalendar mode={section === "training" ? "training" : "all"} />
+        <EventsCalendar mode={section === "training" ? "training" : "events"} />
       )}
       {(section === "events" || section === "training") && (
         <EventGrid
@@ -367,7 +367,7 @@ export function PublicExperience({ section }: { section?: string }) {
       {(section === "events" || section === "training") && (
         <BlogList
           section={section === "training" ? "training" : "events"}
-          articlesOnly={section === "training"}
+          articlesOnly={section === "training" || section === "events"}
         />
       )}
       {entries

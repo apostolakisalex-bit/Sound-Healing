@@ -5,7 +5,9 @@ import Head from "expo-router/head";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { Shell, useUi, useLoad, Status } from "./Wellness";
 import { ManagedImage } from "./ManagedImage";
+import { JoinButton, seminarRef } from "./JoinButton";
 import { useLanguage } from "./AppNavigation";
+import { athensToday } from "@/src/content/schedule";
 
 type Block =
   | { type: "heading"; text: string }
@@ -22,6 +24,8 @@ type Article = {
   link?: string;
   category: string;
   categories: string[];
+  event_start?: string | null;
+  event_end?: string | null;
   blocks: Block[];
 };
 
@@ -84,6 +88,26 @@ export function ArticleReader() {
             </Text>
           )}
           <Text style={ui.title}>{article.title}</Text>
+
+          {!!article.event_start &&
+            (article.event_end || article.event_start)! >= athensToday() &&
+            (article.category === "training" ||
+              article.category === "events") && (
+              <JoinButton
+                seminar={{
+                  ref: seminarRef({
+                    end: article.event_end || article.event_start,
+                    title: article.title,
+                    fallback: `article-${article.id}`,
+                  }),
+                  title: article.title,
+                  start_date: article.event_start,
+                  end_date: article.event_end || article.event_start,
+                  image: article.image || "",
+                  url: `/article/${article.id}`,
+                }}
+              />
+            )}
 
           {article.blocks.map((block, i) => {
             if (block.type === "heading") {

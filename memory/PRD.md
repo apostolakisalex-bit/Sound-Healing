@@ -509,3 +509,14 @@ User asks: (1) reorganize the Εκπαιδευτικά (training) section so ord
 - `theme/index.ts`: light `bg.primary` (app page background) → soft white `#F9F7F3` (was cream `#FBF7F1`); cards stay `#FFFFFF`, warm accents + shadows (effects) untouched. Dark unchanged.
 - Verified via screenshots (light): training order + dedupe, heading placement, soft-white background with effects intact.
 
+
+## v2.8 — Seminar signup, calendar-with-all, events dedupe, Goa image, glass cards (Nov 2026)
+Delivered 4 user-selected items + a design trial + test-report fixes.
+- ITEM1 Goa image: `blog.py` `_first_content_image()` fallback — when a post has no featured image, use the first `<img>` in the content (fixes the Goa card's empty icon). `/blog/{id}` now also returns `event_start`/`event_end`.
+- ITEM2 Calendar with all: `schedule.ts useSchedule` now also merges the live blog seminars/events (parsed ISO dates) into the calendar, de-duplicated against catalog/CMS (key `event_end|level`) and across EN/GR (current language preferred). `openSchedule` pushes internal `/article/{id}` for blog-only seminars. Loading now waits on the blog request too.
+- ITEM3 Events dedupe: `PublicExperience` builds `blogItems` for BOTH training and events (fetches `/blog?section=all`, filters by section), merges into the single EventGrid, and `BlogList articlesOnly` for both sections. Events calendar mode changed `all`→`events`.
+- ITEM4 Δήλωση συμμετοχής: backend `members.py` `SeminarSignup` + `GET/POST/DELETE /api/members/me/seminars` (auth; narrow per-member `_id=user:ref`; idempotent upsert). New `JoinButton.tsx` (auth-aware toggle; routes to /login when logged out) + `seminarRef()` canonical id (`sem-<end>-l<level>`) so catalog + blog copies map to ONE signup. Shown on `SeminarDetail` (active seminars) and `ArticleReader` (dated training/event articles, only when not past). Profile shows `MySeminars.tsx` ("Οι εκδηλώσεις μου") with the joined list + "Επόμενη: in X days" countdown.
+- DESIGN TRIAL: the two intro home cards (Μανώλης Ζωγραφάκης / Ηχοθεραπεία) are now frosted "crystal plate" glass cards (expo-blur BlurView + translucent bg + bright border + warm glow) and STACKED VERTICALLY (was side-by-side). Only these two changed, per user. (Future: extend glass look to all cards if approved.)
+- Test-report (iteration 15) fixes applied: past-event join hidden; canonical-ref dedupe; events calendar mode; profile heading wrap (flexWrap); schedule language + blog loading. KNOWN MINOR (not fixed): the "31 Οκτ & 1 Νοεμ" post parses end=31 Oct only (1 Nov not pinned) — cross-month range.
+- Test creds unchanged: student maria.papadaki@example.com / demo-student-2026.
+

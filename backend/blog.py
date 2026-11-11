@@ -283,6 +283,20 @@ def _featured(post: dict) -> Optional[str]:
     return m.get("source_url")
 
 
+def _first_content_image(post: dict) -> Optional[str]:
+    """Fallback hero: first <img> inside the post body when there is no
+    featured image (some posts, e.g. the Goa seminar, only embed images)."""
+    html_body = (post.get("content") or {}).get("rendered", "")
+    if not html_body:
+        return None
+    soup = BeautifulSoup(html_body, "html.parser")
+    for img in soup.find_all("img"):
+        src = _img_src(img)
+        if src:
+            return src
+    return None
+
+
 def _categories(post: dict) -> list[dict]:
     terms = (post.get("_embedded", {}) or {}).get("wp:term") or []
     out = []
@@ -300,7 +314,7 @@ def _process(post: dict) -> dict:
                       "html.parser").get_text(" ")
     )
     excerpt = re.sub(r"\s*\[.*$", "", excerpt)  # drop trailing "[…]" / "[…] →"
-    hero = _featured(post)
+    hero = _featured(post) or _first_content_image(post)
     cats = _categories(post)
     pub_date = (post.get("date") or "")[:10]
     event_start, event_end = _event_dates(title, pub_date)
@@ -374,6 +388,8 @@ def build_blog_router() -> APIRouter:
             "link": post["link"],
             "category": post["category"],
             "categories": post["categories"],
+            "event_start": post.get("event_start"),
+            "event_end": post.get("event_end"),
             "blocks": _to_blocks(post["content_html"], post["image"]),
         }
 
