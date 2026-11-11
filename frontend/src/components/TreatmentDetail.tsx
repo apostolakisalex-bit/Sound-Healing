@@ -7,6 +7,7 @@ import { useTheme } from "@/src/theme/ThemeContext";
 import { ManagedImage } from "./ManagedImage";
 import { Shell, useUi } from "./Wellness";
 import { treatmentBySlug, TREATMENTS_PHONE } from "@/src/content/treatments";
+import { capsGreek } from "@/src/utils/greek";
 import { useLanguage } from "./AppNavigation";
 
 export function TreatmentDetail() {
@@ -108,12 +109,11 @@ export function TreatmentDetail() {
                   style={{
                     fontSize: 10,
                     letterSpacing: 0.6,
-                    textTransform: "uppercase",
                     color: wellness.slate,
                     textAlign: "center",
                   }}
                 >
-                  {s.label}
+                  {capsGreek(s.label)}
                 </Text>
               </View>
             ))}

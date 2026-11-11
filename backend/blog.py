@@ -314,6 +314,13 @@ def _categories(post: dict) -> list[dict]:
     return out
 
 
+# Curated hero images for specific articles that have no featured/content image
+# on the source site. Values are real soundhealing.gr media photos.
+_ARTICLE_IMAGE_OVERRIDES: dict[int, str] = {
+    6860: "https://www.soundhealing.gr/wp-content/uploads/2026/10/9A2A1303-Medium.jpeg",
+}
+
+
 def _process(post: dict) -> dict:
     title = _clean((post.get("title") or {}).get("rendered", ""))
     excerpt = _clean(
@@ -322,6 +329,8 @@ def _process(post: dict) -> dict:
     )
     excerpt = re.sub(r"\s*\[.*$", "", excerpt)  # drop trailing "[…]" / "[…] →"
     hero = _featured(post) or _first_content_image(post)
+    if not hero:
+        hero = _ARTICLE_IMAGE_OVERRIDES.get(post.get("id"))
     cats = _categories(post)
     pub_date = (post.get("date") or "")[:10]
     event_start, event_end = _event_dates(title, pub_date)

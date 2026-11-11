@@ -31,25 +31,96 @@ const SERIF =
 
 const RING = 300;
 
-// One expanding "cymatic" ring — soft sound wave spreading outward in a loop.
-function Ripple({ delay, maxScale }: { delay: number; maxScale: number }) {
+// One expanding "cymatic" ring — soft sound wave spreading outward in a slow loop.
+function Ripple({
+  delay,
+  duration,
+  maxScale,
+  size,
+  peak,
+  borderWidth,
+  color,
+}: {
+  delay: number;
+  duration: number;
+  maxScale: number;
+  size: number;
+  peak: number;
+  borderWidth: number;
+  color: string;
+}) {
   const p = useSharedValue(0);
   useEffect(() => {
     p.value = withDelay(
       delay,
       withRepeat(
-        withTiming(1, { duration: 5200, easing: Easing.out(Easing.cubic) }),
+        withTiming(1, { duration, easing: Easing.linear }),
         -1,
         false,
       ),
     );
     return () => cancelAnimation(p);
-  }, [delay, p]);
+  }, [delay, duration, p]);
   const style = useAnimatedStyle(() => ({
-    opacity: (1 - p.value) * 0.5,
-    transform: [{ scale: 0.15 + p.value * maxScale }],
+    opacity: (1 - p.value) * peak,
+    transform: [{ scale: 0.1 + p.value * maxScale }],
   }));
-  return <Animated.View style={[styles.ring, style]} />;
+  return (
+    <Animated.View
+      style={[
+        {
+          position: "absolute",
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          borderWidth,
+          borderColor: color,
+        },
+        style,
+      ]}
+    />
+  );
+}
+
+// Slow, multi-layered cymatic field — many concentric sound waves spreading out.
+const OUTER_COUNT = 8;
+const OUTER_DURATION = 9000;
+const INNER_COUNT = 5;
+const INNER_DURATION = 12000;
+
+function CymaticField({ maxScale }: { maxScale: number }) {
+  return (
+    <>
+      <View style={styles.glow} />
+      {Array.from({ length: OUTER_COUNT }).map((_, i) => (
+        <Ripple
+          key={`o${i}`}
+          delay={Math.round((i * OUTER_DURATION) / OUTER_COUNT)}
+          duration={OUTER_DURATION}
+          maxScale={maxScale}
+          size={RING}
+          peak={0.5}
+          borderWidth={i % 2 === 0 ? 1.5 : 1}
+          color={
+            i % 2 === 0 ? "rgba(243,221,178,0.7)" : "rgba(243,221,178,0.45)"
+          }
+        />
+      ))}
+      {/* a slower inner family for a layered, three-dimensional feel */}
+      {Array.from({ length: INNER_COUNT }).map((_, i) => (
+        <Ripple
+          key={`i${i}`}
+          delay={Math.round((i * INNER_DURATION) / INNER_COUNT) + 700}
+          duration={INNER_DURATION}
+          maxScale={maxScale * 0.62}
+          size={RING * 0.62}
+          peak={0.32}
+          borderWidth={1}
+          color="rgba(255,241,214,0.5)"
+        />
+      ))}
+    </>
+  );
 }
 
 /** Opening welcome screen: the gong photo softly blurs and dissolves into a
@@ -104,11 +175,7 @@ export function Welcome({ onStart }: { onStart: () => void }) {
         style={[StyleSheet.absoluteFill, styles.center, cymaticStyle]}
         pointerEvents="none"
       >
-        <View style={styles.glow} />
-        <Ripple delay={0} maxScale={maxScale} />
-        <Ripple delay={1300} maxScale={maxScale} />
-        <Ripple delay={2600} maxScale={maxScale} />
-        <Ripple delay={3900} maxScale={maxScale} />
+        <CymaticField maxScale={maxScale} />
       </Animated.View>
 
       {/* darken the lower half so the title + button stay crisp */}
@@ -187,14 +254,6 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#0E0B08" },
   fill: { width: "100%", height: "100%" },
   center: { alignItems: "center", justifyContent: "center" },
-  ring: {
-    position: "absolute",
-    width: RING,
-    height: RING,
-    borderRadius: RING / 2,
-    borderWidth: 1.4,
-    borderColor: "rgba(243,221,178,0.65)",
-  },
   glow: {
     position: "absolute",
     width: RING * 0.9,

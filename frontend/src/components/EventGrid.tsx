@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Pressable, Text, View, useWindowDimensions } from "react-native";
 import { Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { ContentItem, Field, useUi } from "./Wellness";
+import { ContentItem, useUi } from "./Wellness";
 import { cardShadow } from "@/src/theme";
 import { useLanguage } from "./AppNavigation";
 
@@ -22,7 +22,6 @@ export function EventGrid({
   const ui = useUi();
   const { t } = useLanguage();
   const { width } = useWindowDimensions();
-  const [search, setSearch] = useState("");
   const [archiveOpen, setArchiveOpen] = useState(false);
   const columns = width >= 1100 ? 4 : width >= 760 ? 3 : width >= 540 ? 2 : 1;
   const cardWidth = (Math.min(width - 48, 1072) - (columns - 1) * 20) / columns;
@@ -35,12 +34,7 @@ export function EventGrid({
   const isPast = (it: ContentItem) =>
     it.completed ??
     (!!it.published.event_end_date && it.published.event_end_date < today);
-  const matches = items.filter(({ published: p }) =>
-    [p.title, p.event_location, p.event_date]
-      .join(" ")
-      .toLocaleLowerCase("el")
-      .includes(search.trim().toLocaleLowerCase("el")),
-  );
+  const matches = items;
   const activeItems = matches
     .filter((m) => !isPast(m))
     .sort((a, b) =>
@@ -204,29 +198,17 @@ export function EventGrid({
 
   return (
     <View style={{ gap: 24 }}>
-      <Field
-        label={
-          training
-            ? t("Αναζήτηση σεμιναρίου, χώρου ή ημερομηνίας", "Search by seminar, venue or date")
-            : t("Αναζήτηση εκδήλωσης, χώρου ή ημερομηνίας", "Search by event, venue or date")
-        }
-        value={search}
-        onChange={setSearch}
-      />
-
       {activeItems.length ? (
         <View style={gridStyle}>{activeItems.map(renderCard)}</View>
       ) : (
         <Text accessibilityLiveRegion="polite" style={ui.body}>
-          {search.trim()
-            ? `${training ? t("Δεν βρέθηκαν εκπαιδευτικά.", "No training found.") : t("Δεν βρέθηκαν εκδηλώσεις.", "No events found.")} ${t("Δοκίμασε διαφορετική αναζήτηση.", "Try a different search.")}`
-            : training
-              ? t("Δεν υπάρχουν ενεργά εκπαιδευτικά αυτή τη στιγμή.", "There are no active trainings at the moment.")
-              : t("Δεν υπάρχουν ενεργές εκδηλώσεις αυτή τη στιγμή.", "There are no active events at the moment.")}
+          {training
+            ? t("Δεν υπάρχουν ενεργά εκπαιδευτικά αυτή τη στιγμή.", "There are no active trainings at the moment.")
+            : t("Δεν υπάρχουν ενεργές εκδηλώσεις αυτή τη στιγμή.", "There are no active events at the moment.")}
         </Text>
       )}
 
-      {!!pastItems.length && (
+      {training && !!pastItems.length && (
         <View style={{ gap: 16 }}>
           <Pressable
             accessibilityRole="button"

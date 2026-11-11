@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence, Easing } from 'react-native-reanimated';
 import { fonts, fontSizes, radii, spacing, type Colors } from '@/src/theme';
 import { useTheme } from '@/src/theme/ThemeContext';
+import { capsGreek } from '@/src/utils/greek';
 
 function useStyles() {
   const { colors } = useTheme();
@@ -40,11 +41,12 @@ export function Body({
 // ── Overline (small caps gold label) ──────────────────────────────────
 export function Overline({ children, color, style, testID }: { children: ReactNode; color?: string; style?: TextStyle; testID?: string }) {
   const { colors } = useTheme();
+  const content = typeof children === 'string' ? capsGreek(children) : children;
   return (
     <Text testID={testID} style={[{
       fontFamily: fonts.bodySemi, color: color ?? colors.accent.gold, fontSize: fontSizes.overline,
-      letterSpacing: 3, textTransform: 'uppercase',
-    }, style]}>{children}</Text>
+      letterSpacing: 3,
+    }, style]}>{content}</Text>
   );
 }
 
@@ -88,7 +90,7 @@ export function PrimaryButton({
       />
       {loading
         ? <ActivityIndicator color="#FFFFFF" />
-        : <Text style={styles.primaryBtnText}>{label}</Text>}
+        : <Text style={styles.primaryBtnText}>{capsGreek(label)}</Text>}
     </Pressable>
   );
 }
@@ -104,7 +106,7 @@ export function AuraButton({
       onPress={onPress}
       style={({ pressed }) => [styles.auraBtn, { opacity: pressed ? 0.7 : 1 }, style]}>
       {icon}
-      <Text style={styles.auraBtnText}>{label}</Text>
+      <Text style={styles.auraBtnText}>{capsGreek(label)}</Text>
     </Pressable>
   );
 }
@@ -161,7 +163,6 @@ function makeStyles(colors: Colors) {
       color: '#FFFFFF',
       fontSize: 14,
       letterSpacing: 1.6,
-      textTransform: 'uppercase',
     },
     auraBtn: {
       height: 50,
@@ -180,7 +181,6 @@ function makeStyles(colors: Colors) {
       color: colors.accent.gold,
       fontSize: 13,
       letterSpacing: 1.6,
-      textTransform: 'uppercase',
     },
     xpTrack: {
       height: 8,

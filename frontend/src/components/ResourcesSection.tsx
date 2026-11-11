@@ -16,6 +16,7 @@ import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { Body, Overline, GlowCard, AuraButton } from "@/src/components/UI";
+import { capsGreek } from "@/src/utils/greek";
 import { useAuth } from "@/src/auth/AuthContext";
 import { api } from "@/src/api/client";
 import { spacing, radii, type Colors } from "@/src/theme";
@@ -256,9 +257,9 @@ export function ResourcesSection({
                   size="caption"
                   weight="semi"
                   color={colors.accent.gold}
-                  style={{ letterSpacing: 1, textTransform: "uppercase" }}
+                  style={{ letterSpacing: 1 }}
                 >
-                  {t("Μεταφόρτωση", "Upload")}
+                  {capsGreek(t("Μεταφόρτωση", "Upload"))}
                 </Body>
               </>
             )}

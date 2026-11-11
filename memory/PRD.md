@@ -531,3 +531,7 @@ Delivered 4 user-selected items + a design trial + test-report fixes.
 - WELCOME: new `src/components/Welcome.tsx` shown on app open (gated in `app/index.tsx` via a module-level `seenWelcome` flag that resets each cold start; "Get Started" → renders `PublicScreen`). Full-bleed gong photo (`assets/welcome/gong.webp`, the founder-with-gong image the user sent) that softly blurs + fades (reanimated `prog` 0→1, expo-blur BlurView opacity) and dissolves into an animated "cymatic" field — looping concentric ripple rings (reanimated `Ripple`, staggered) spreading across the whole screen — without distorting the image or touching the text/button. Bottom-left light serif title "Welcome to Sound Healing Greece" (exactly like the reference), bilingual subtitle, a 3D raised cream "Get Started" CTA (gradient + inset highlight + drop shadow), and a terms line. NOTE: the soft-blur dissolve is subtle in the web preview (web BlurView is weak) but full on a real device/Expo Go.
 - Ηχοθεραπεία intro card image swapped to the hxotherapeia page header (`.../2021/02/singing-bowl-4595876_1920-1.jpg`).
 
+
+- Added hero image to article "How to Grow as a Sound Healer" (id 6860) via curated real soundhealing.gr photo fallback in blog.py.
+- Events: hid the inactive/archive section after the calendar (archive now shows only for Trainings).
+- Home: lowered the Manolis Zografakis card photo so his full head is visible.

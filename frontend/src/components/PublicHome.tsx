@@ -219,7 +219,10 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       {
         title: t("Επαγγελματική ανάπτυξη", "Professional development"),
         label: "LEVEL 4",
-        image: photo("L4", SCHOOL_PHOTOS[2]),
+        image: photo(
+          "L4",
+          "https://customer-assets-7cd3h4nn.emergentagent.net/job_healing-universe/artifacts/286fcc6103226d3c_6a6669c30673043717a7169d2d00f8b8.jpg",
+        ),
         route: "/explore/levels?level=4",
         ratio: 0.68,
       },
@@ -233,60 +236,80 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
     bottom: 0,
   };
   // Clear-photo intro tile with depth/volume (no glass, no glow).
-  const renderIntroTile = (card: MosaicCard) => (
-    <Pressable
-      key={card.route}
-      accessibilityRole="link"
-      accessibilityLabel={`${card.label}: ${card.title}`}
-      onPress={() => router.push(card.route as any)}
-      style={({ pressed }) => ({
-        height: compactScreen ? 152 : 184,
-        borderRadius: 22,
-        overflow: "hidden",
-        backgroundColor: wellness.blueMist,
-        boxShadow:
-          "0px 3px 6px rgba(60,48,34,0.16), 0px 22px 38px rgba(60,48,34,0.28)",
-        transform: [{ translateY: pressed ? 1 : 0 }],
-        opacity: pressed ? 0.97 : 1,
-      })}
-    >
-      {!!card.image && (
-        <ManagedImage
-          source={{ uri: card.image }}
-          accessibilityLabel={card.title}
-          resizeMode="cover"
+  const renderIntroTile = (card: MosaicCard) => {
+    // The founder (Manolis) card is a touch taller with a lighter overlay so
+    // his face is more visible.
+    const big = card.route === "/explore/about";
+    return (
+      <Pressable
+        key={card.route}
+        accessibilityRole="link"
+        accessibilityLabel={`${card.label}: ${card.title}`}
+        onPress={() => router.push(card.route as any)}
+        style={({ pressed }) => ({
+          height: big
+            ? compactScreen
+              ? 200
+              : 244
+            : compactScreen
+              ? 152
+              : 184,
+          borderRadius: 22,
+          overflow: "hidden",
+          backgroundColor: wellness.blueMist,
+          boxShadow:
+            "0px 3px 6px rgba(60,48,34,0.16), 0px 22px 38px rgba(60,48,34,0.28)",
+          transform: [{ translateY: pressed ? 1 : 0 }],
+          opacity: pressed ? 0.97 : 1,
+        })}
+      >
+        {!!card.image && (
+          <ManagedImage
+            source={{ uri: card.image }}
+            accessibilityLabel={card.title}
+            resizeMode="cover"
+            style={
+              big
+                ? [fillAbs, { transform: [{ scale: 1.3 }, { translateY: compactScreen ? 26 : 34 }] }]
+                : fillAbs
+            }
+          />
+        )}
+        <LinearGradient
+          colors={["transparent", "rgba(22,30,40,0.78)"]}
+          locations={big ? [0.52, 1] : [0.35, 1]}
           style={fillAbs}
         />
-      )}
-      <LinearGradient
-        colors={["transparent", "rgba(22,30,40,0.78)"]}
-        locations={[0.35, 1]}
-        style={fillAbs}
-      />
-      <View style={{ marginTop: "auto", padding: 18, gap: 5 }}>
-        <Text
-          style={[
-            ui.label,
-            { color: "#FFFFFF", fontSize: 11, letterSpacing: 1.2 },
-          ]}
-        >
-          {card.label}
-        </Text>
-        <Text
-          style={[
-            ui.body,
-            {
-              color: "#FFFFFF",
-              fontSize: compactScreen ? 18 : 22,
-              fontWeight: "700",
-            },
-          ]}
-        >
-          {card.title} ↗
-        </Text>
-      </View>
-    </Pressable>
-  );
+        <View style={{ marginTop: "auto", padding: 18, gap: 5 }}>
+          <Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            style={[
+              ui.label,
+              { color: "#FFFFFF", fontSize: 11, letterSpacing: 1.2 },
+            ]}
+          >
+            {card.label}
+          </Text>
+          <Text
+            numberOfLines={2}
+            adjustsFontSizeToFit
+            minimumFontScale={0.75}
+            style={[
+              ui.body,
+              {
+                color: "#FFFFFF",
+                fontSize: compactScreen ? 18 : 22,
+                fontWeight: "700",
+              },
+            ]}
+          >
+            {card.title} ↗
+          </Text>
+        </View>
+      </Pressable>
+    );
+  };
   const renderTile = (card: MosaicCard) => (
     <Pressable
       key={card.route}
