@@ -247,7 +247,8 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
         borderWidth: 1,
         borderColor: "rgba(255,255,255,0.85)",
         backgroundColor: "rgba(255,255,255,0.35)",
-        boxShadow: "0px 14px 34px rgba(214,170,120,0.28)",
+        boxShadow:
+          "0px 0px 16px 1px rgba(255,201,140,0.55), 0px 0px 40px 10px rgba(255,180,120,0.32), 0px 16px 36px rgba(214,170,120,0.22)",
         opacity: pressed ? 0.92 : 1,
       })}
     >
@@ -426,7 +427,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           />
         </Svg>
       </View>
-      <View style={{ gap: 12 }}>
+      <View style={{ gap: 20 }}>
         {introCards.map(renderGlassTile)}
       </View>
       <Text style={[ui.heading, { fontWeight: "600" }]}>
