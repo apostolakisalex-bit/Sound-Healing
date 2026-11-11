@@ -29,6 +29,7 @@ import { EventGrid } from "./EventGrid";
 import { getServices, serviceSlugByTitle } from "@/src/content/services";
 import { STUDENT_REVIEWS } from "@/src/content/testimonials";
 import { TestimonialsCarousel } from "./TestimonialsCarousel";
+import { AutoScrollCarousel } from "./AutoScrollCarousel";
 import YoutubeCard from "./YoutubeCard";
 type LiveTraining = {
   slug: string;
@@ -139,7 +140,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
     const active = all.filter(
       (i) => !i.published.event_end_date || i.published.event_end_date >= today,
     );
-    return active.slice(0, 4);
+    return active.slice(0, 6);
   };
   const testimonials = items
     .filter((i) => i.published.kind === "testimonial")
@@ -499,10 +500,12 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           </Text>
           {programmes(section).length ? (
             section === "training" ? (
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
-                {programmes(section).map((item) => (
+              <AutoScrollCarousel
+                items={programmes(section)}
+                gap={12}
+                renderItem={(item, key) => (
                   <Pressable
-                    key={item.id}
+                    key={key}
                     onPress={() =>
                       router.push(
                         (item.id.startsWith("active-")
@@ -516,7 +519,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                     style={[
                       ui.card,
                       {
-                        width: width < 350 || fontScale > 1.3 ? "100%" : "48%",
+                        width: width < 380 ? 240 : 280,
                         backgroundColor:
                           item.published.event_end_date &&
                           item.published.event_end_date < today
@@ -661,8 +664,8 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                       )}
                     </View>
                   </Pressable>
-                ))}
-              </View>
+                )}
+              />
             ) : (
               <EventGrid items={programmes(section)} compact />
             )
