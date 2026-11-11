@@ -2,7 +2,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SCHOOL_PHOTOS } from "@/src/content/schoolGallery";
 import Svg, { Path } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";
-import { BlurView } from "expo-blur";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { useIconSurface, useLanguage } from "./AppNavigation";
 import { SacredMandala } from "./icons/SacredMandala";
@@ -233,23 +232,22 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
     right: 0,
     bottom: 0,
   };
-  // Frosted "crystal plate" card used for the two intro tiles (glass trial).
-  const renderGlassTile = (card: MosaicCard) => (
+  // Clear-photo intro tile with depth/volume (no glass, no glow).
+  const renderIntroTile = (card: MosaicCard) => (
     <Pressable
       key={card.route}
       accessibilityRole="link"
       accessibilityLabel={`${card.label}: ${card.title}`}
       onPress={() => router.push(card.route as any)}
       style={({ pressed }) => ({
-        height: compactScreen ? 120 : 140,
-        borderRadius: 24,
+        height: compactScreen ? 152 : 184,
+        borderRadius: 22,
         overflow: "hidden",
-        borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.85)",
-        backgroundColor: "rgba(255,255,255,0.35)",
+        backgroundColor: wellness.blueMist,
         boxShadow:
-          "0px 0px 16px 1px rgba(255,201,140,0.55), 0px 0px 40px 10px rgba(255,180,120,0.32), 0px 16px 36px rgba(214,170,120,0.22)",
-        opacity: pressed ? 0.92 : 1,
+          "0px 3px 6px rgba(60,48,34,0.16), 0px 22px 38px rgba(60,48,34,0.28)",
+        transform: [{ translateY: pressed ? 1 : 0 }],
+        opacity: pressed ? 0.97 : 1,
       })}
     >
       {!!card.image && (
@@ -257,28 +255,19 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           source={{ uri: card.image }}
           accessibilityLabel={card.title}
           resizeMode="cover"
-          style={{ ...fillAbs, opacity: 0.55 }}
+          style={fillAbs}
         />
       )}
-      <BlurView intensity={30} tint="light" style={fillAbs} />
       <LinearGradient
-        colors={["rgba(255,245,232,0.6)", "rgba(255,255,255,0.1)"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        colors={["transparent", "rgba(22,30,40,0.78)"]}
+        locations={[0.35, 1]}
         style={fillAbs}
       />
-      <View
-        style={{
-          flex: 1,
-          paddingHorizontal: 20,
-          justifyContent: "center",
-          gap: 6,
-        }}
-      >
+      <View style={{ marginTop: "auto", padding: 18, gap: 5 }}>
         <Text
           style={[
             ui.label,
-            { color: wellness.muted, fontSize: 11, letterSpacing: 1.2 },
+            { color: "#FFFFFF", fontSize: 11, letterSpacing: 1.2 },
           ]}
         >
           {card.label}
@@ -286,7 +275,11 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
         <Text
           style={[
             ui.body,
-            { color: wellness.ink, fontSize: compactScreen ? 18 : 22, fontWeight: "700" },
+            {
+              color: "#FFFFFF",
+              fontSize: compactScreen ? 18 : 22,
+              fontWeight: "700",
+            },
           ]}
         >
           {card.title} ↗
@@ -427,8 +420,8 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           />
         </Svg>
       </View>
-      <View style={{ gap: 20 }}>
-        {introCards.map(renderGlassTile)}
+      <View style={{ gap: 16 }}>
+        {introCards.map(renderIntroTile)}
       </View>
       <Text style={[ui.heading, { fontWeight: "600" }]}>
         {t("Γνώρισε τη σχολή και τα 4 Levels", "Meet the school and the 4 Levels")}
