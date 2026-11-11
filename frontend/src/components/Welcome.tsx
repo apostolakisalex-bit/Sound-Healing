@@ -202,7 +202,7 @@ export function Welcome({ onStart }: { onStart: () => void }) {
         ]}
       >
         <Text style={[styles.title, { fontSize: compact ? 34 : 42 }]}>
-          Welcome to
+          {t("Καλώς ήρθες στο", "Welcome to")}
         </Text>
         <Text style={[styles.title, { fontSize: compact ? 34 : 42 }]}>
           Sound Healing
@@ -235,7 +235,7 @@ export function Welcome({ onStart }: { onStart: () => void }) {
             end={{ x: 0, y: 1 }}
             style={styles.cta}
           >
-            <Text style={styles.ctaText}>Get Started</Text>
+            <Text style={styles.ctaText}>{t("Ας ξεκινήσουμε", "Get Started")}</Text>
           </LinearGradient>
         </Pressable>
 
