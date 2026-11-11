@@ -41,6 +41,11 @@ type AuthContextType = {
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
   loginWithSession: (sessionId: string) => Promise<User>;
+  loginWithApple: (
+    identityToken: string,
+    name?: string | null,
+    email?: string | null,
+  ) => Promise<User>;
   welcomeName: string | null;
   dismissWelcome: () => void;
   register: (
@@ -158,6 +163,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data.user as User;
   }, []);
 
+  const loginWithApple = useCallback(
+    async (
+      identityToken: string,
+      name?: string | null,
+      email?: string | null,
+    ) => {
+      const { data } = await api.post("/auth/apple", {
+        identity_token: identityToken,
+        name: name || null,
+        email: email || null,
+      });
+      await setAuthToken(data.token);
+      setUser(data.user);
+      // Greet the user right after an Apple sign-in, same as the Google path.
+      setWelcomeName((data.user?.name || "").trim().split(/\s+/)[0] || null);
+      return data.user as User;
+    },
+    [],
+  );
+
   const register = useCallback(
     async (
       email: string,
@@ -202,6 +227,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         login,
         loginWithSession,
+        loginWithApple,
         welcomeName,
         dismissWelcome,
         register,

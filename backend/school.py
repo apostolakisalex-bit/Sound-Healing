@@ -322,6 +322,18 @@ def build_school_router(db, current_user, admin_user):
         await audit(user, 'cohort.create', doc['id'])
         return doc
 
+    @router.delete('/admin/cohorts/{cohort_id}')
+    async def delete_cohort(cohort_id: str, user=Depends(admin_user)):
+        cohort = await db.school_cohorts.find_one({'id': cohort_id}, {'_id': 0})
+        if not cohort:
+            raise HTTPException(404, 'Το τμήμα δεν βρέθηκε.')
+        enrolled = await db.school_enrollments.count_documents({'cohort_id': cohort_id})
+        if enrolled:
+            raise HTTPException(409, 'Το τμήμα έχει εγγεγραμμένους μαθητές και δεν μπορεί να διαγραφεί. Αφαίρεσε πρώτα τις εγγραφές.')
+        await db.school_cohorts.delete_one({'id': cohort_id})
+        await audit(user, 'cohort.delete', cohort_id)
+        return {'ok': True}
+
     @router.post('/admin/enrollments')
     async def enroll(payload: Enrollment, user=Depends(admin_user)):
         cohort = await owns_cohort(payload.cohort_id, user)

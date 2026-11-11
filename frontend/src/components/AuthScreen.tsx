@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Text, TextInput, View, Platform } from "react-native";
 import { Link, useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
+import * as AppleAuthentication from "expo-apple-authentication";
 import { useAuth } from "@/src/auth/AuthContext";
 import { Shell, useUi, Button, Field, Choices } from "@/src/components/Wellness";
 import { useLanguage } from "@/src/components/AppNavigation";
@@ -19,6 +20,15 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
+  const [appleAvailable, setAppleAvailable] = useState(false);
+  const [appleBusy, setAppleBusy] = useState(false);
+  useEffect(() => {
+    // Sign in with Apple is iOS-only; hide the button everywhere else.
+    if (Platform.OS !== "ios") return;
+    AppleAuthentication.isAvailableAsync()
+      .then(setAppleAvailable)
+      .catch(() => setAppleAvailable(false));
+  }, []);
   const [lastName, setLastName] = useState("");
   const [birthMonth, setBirthMonth] = useState("");
   const [birthYear, setBirthYear] = useState("");
@@ -100,6 +110,59 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
       );
     } finally {
       setGoogleBusy(false);
+    }
+  };
+  const appleSignIn = async () => {
+    if (appleBusy) return;
+    setError("");
+    setAppleBusy(true);
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      if (!credential.identityToken) {
+        setError(
+          t(
+            "Η σύνδεση με Apple δεν ολοκληρώθηκε.",
+            "Apple sign-in was not completed.",
+          ),
+        );
+        return;
+      }
+      // Apple only sends the name/email on the FIRST sign-in; forward whatever
+      // we got so the backend can persist it on account creation.
+      const fullName = [
+        credential.fullName?.givenName,
+        credential.fullName?.familyName,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+      const signedIn = await auth.loginWithApple(
+        credential.identityToken,
+        fullName || null,
+        credential.email || null,
+      );
+      router.replace(
+        signedIn.membership_status && signedIn.membership_status !== "approved"
+          ? "/(tabs)/profile"
+          : ["admin", "instructor"].includes(signedIn.role)
+            ? "/admin"
+            : "/(tabs)/sanctuary",
+      );
+    } catch (e: any) {
+      if (e?.code === "ERR_REQUEST_CANCELED") return;
+      setError(
+        t(
+          "Δεν ήταν δυνατή η σύνδεση με Apple.",
+          "Could not sign in with Apple.",
+        ),
+      );
+    } finally {
+      setAppleBusy(false);
     }
   };
   const submit = async () => {
@@ -237,6 +300,21 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
           label={googleBusy ? t("Σύνδεση…", "Signing in…") : t("Σύνδεση με Google", "Sign in with Google")}
           onPress={() => void googleSignIn()}
         />
+        {appleAvailable && (
+          <AppleAuthentication.AppleAuthenticationButton
+            buttonType={
+              registering
+                ? AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP
+                : AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN
+            }
+            buttonStyle={
+              AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+            }
+            cornerRadius={12}
+            style={{ height: 48, width: "100%" }}
+            onPress={() => void appleSignIn()}
+          />
+        )}
         {!registering && (
           <Link href="/account-action" style={ui.body}>
             {t("Ξέχασα τον κωδικό μου", "I forgot my password")}

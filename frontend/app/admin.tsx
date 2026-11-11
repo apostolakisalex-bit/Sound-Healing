@@ -11,7 +11,7 @@ import { FormWorkspace } from "@/src/components/FormWorkspace";
 import { Progress } from "@/src/components/Progress";
 import { Activity } from "@/src/components/Activity";
 import React, { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Alert, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { AdminOverview } from "@/src/components/AdminOverview";
@@ -989,13 +989,46 @@ function WorkspaceScreen() {
               }
             />
           </View>
-          {state.data.cohorts.map((c) => (
-            <View style={ui.card} key={c.id}>
-              <Text style={ui.heading}>
-                {c.level_id} · {c.title}
-              </Text>
-            </View>
-          ))}
+          {state.data.cohorts.map((c) => {
+            const enrolledCount = state.data.enrollments.filter(
+              (e) => e.cohort_id === c.id,
+            ).length;
+            return (
+              <View style={ui.card} key={c.id}>
+                <Text style={ui.heading}>
+                  {c.level_id} · {c.title}
+                </Text>
+                <Text style={ui.body}>
+                  {enrolledCount === 0
+                    ? "Κανένας εγγεγραμμένος μαθητής"
+                    : `${enrolledCount} εγγεγραμμένοι μαθητές`}
+                </Text>
+                <Button
+                  secondary
+                  disabled={busy}
+                  label="Διαγραφή τμήματος"
+                  onPress={() =>
+                    Alert.alert(
+                      "Διαγραφή τμήματος",
+                      `Να διαγραφεί το τμήμα «${c.title}»; Διαγράφεται μόνο αν είναι άδειο.`,
+                      [
+                        { text: "Άκυρο", style: "cancel" },
+                        {
+                          text: "Διαγραφή",
+                          style: "destructive",
+                          onPress: () =>
+                            void run(
+                              () => api.delete(`/admin/cohorts/${c.id}`),
+                              "Το τμήμα διαγράφηκε.",
+                            ),
+                        },
+                      ],
+                    )
+                  }
+                />
+              </View>
+            );
+          })}
         </>
       )}
       {section === "Εγγραφές" && (

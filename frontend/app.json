@@ -10,6 +10,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.emergent.healinguniverse.vqljow",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "NSCalendarsUsageDescription": "Αποθήκευσε σεμινάρια στο ημερολόγιό σου",
         "NSCalendarsWriteOnlyAccessUsageDescription": "Αποθήκευσε σεμινάρια στο ημερολόγιό σου",

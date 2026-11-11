@@ -34,6 +34,9 @@ JWT_SECRET = os.environ['JWT_SECRET']
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
 JWT_ALGO = 'HS256'
 JWT_EXPIRE_DAYS = 30
+APPLE_AUDIENCES = [a.strip() for a in os.environ.get('APPLE_AUDIENCES', '').split(',') if a.strip()]
+APPLE_ISSUER = 'https://appleid.apple.com'
+_apple_jwks = jwt.PyJWKClient('https://appleid.apple.com/auth/keys')
 
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
@@ -109,6 +112,12 @@ class LoginIn(BaseModel):
 
 class SessionIn(BaseModel):
     session_id: str
+
+
+class AppleSignInIn(BaseModel):
+    identity_token: str = Field(min_length=10, max_length=8000)
+    name: Optional[str] = Field(default=None, max_length=120)
+    email: Optional[EmailStr] = None
 
 
 class TokenOut(BaseModel):
@@ -610,7 +619,91 @@ async def google_session(payload: SessionIn, request: Request):
     return {"token": token, "user": serialize_user(user)}
 
 
-@api.post("/auth/logout")
+@api.post("/auth/apple", response_model=TokenOut)
+async def apple_session(payload: AppleSignInIn, request: Request):
+    await throttle(db, request, "apple", limit=20)
+    if not APPLE_AUDIENCES:
+        raise HTTPException(status_code=503, detail="Η σύνδεση με Apple δεν έχει ρυθμιστεί.")
+    # Verify the Apple identity token against Apple's public keys. Never trust
+    # the raw token: check signature (RS256), issuer, audience and expiry.
+    try:
+        signing_key = _apple_jwks.get_signing_key_from_jwt(payload.identity_token)
+        claims = jwt.decode(
+            payload.identity_token,
+            signing_key.key,
+            algorithms=["RS256"],
+            audience=APPLE_AUDIENCES,
+            issuer=APPLE_ISSUER,
+        )
+    except Exception:
+        raise HTTPException(status_code=401, detail="Μη έγκυρη ή ληγμένη σύνδεση Apple.")
+    apple_sub = claims.get("sub")
+    if not apple_sub:
+        raise HTTPException(status_code=401, detail="Μη έγκυρη σύνδεση Apple.")
+    # Apple returns the real email (or a private-relay alias) only on the FIRST
+    # sign-in; on later logins fall back to whatever the client forwarded.
+    token_email = (claims.get("email") or payload.email or "").strip().lower()
+    email_asserted = str(claims.get("email_verified", "false")).lower() == "true"
+
+    # Key the account on the stable Apple subject, not the email (which may be
+    # a rotating relay alias or absent on repeat logins).
+    user = await db.users.find_one({"apple_sub": apple_sub})
+    if not user and token_email:
+        user = await db.users.find_one({"email": token_email})
+    if not user:
+        email = token_email or f"apple-{apple_sub.replace('.', '-')}@privaterelay.appleid.com"
+        name = (payload.name or email.split("@")[0]).strip()
+        parts = name.split(" ", 1)
+        user = {
+            "id": str(uuid.uuid4()),
+            "email": email,
+            "name": name,
+            "apple_sub": apple_sub,
+            "application": {
+                "first_name": parts[0],
+                "last_name": parts[1] if len(parts) > 1 else "",
+                "birth_month": 0,
+                "birth_year": 0,
+                "phone": "",
+                "address": "",
+                "declared_level": "L1",
+                "source": "apple",
+            },
+            "membership_status": "pending",
+            "password_hash": hash_password(secrets.token_urlsafe(32)),
+            "bio": "",
+            "location": "",
+            "profile_image": "",
+            "title": LEVEL_TITLES["L1"],
+            "level": "L1",
+            "xp": 0,
+            "stamps": [],
+            "unlocked_realms": ["temple-of-breath"],
+            "role": "student",
+            "email_verified": email_asserted or bool(token_email),
+            "auth_provider": "apple",
+            "created_at": datetime.now(timezone.utc),
+        }
+        await db.users.insert_one(user)
+        await db.member_notifications.insert_one({
+            "id": str(uuid.uuid4()),
+            "audience": "admin",
+            "user_id": None,
+            "text": "Νέα αίτηση εγγραφής (Apple): " + user["name"],
+            "created_at": datetime.now(timezone.utc),
+            "read_by": [],
+        })
+    elif not user.get("apple_sub"):
+        # Apple proved ownership of this email, so link it to the pre-existing
+        # (password/Google) account. The password stays usable; we just record
+        # the Apple subject and mark the email verified.
+        await db.users.update_one(
+            {"id": user["id"]},
+            {"$set": {"apple_sub": apple_sub, "auth_provider": "apple", "email_verified": True}},
+        )
+        user = await db.users.find_one({"id": user["id"]})
+    token = create_token(user["id"], user.get("token_version", 0))
+    return {"token": token, "user": serialize_user(user)}
 async def logout(user: dict = Depends(get_current_user)):
     await db.users.update_one({"id": user["id"]}, {"$inc": {"token_version": 1}})
     return {"ok": True}
