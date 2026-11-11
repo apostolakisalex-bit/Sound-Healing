@@ -5,7 +5,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { useIconSurface, useLanguage } from "./AppNavigation";
 import { SacredMandala } from "./icons/SacredMandala";
-import { JoinPill } from "./JoinPill";
 import { ManagedImage } from "./ManagedImage";
 import React from "react";
 import {
@@ -226,12 +225,6 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           >
             Sound Healing Greece
           </Text>
-          <View style={{ marginTop: 20 }}>
-            <JoinPill
-              label={t("Ξεκίνα τώρα", "Join now")}
-              onPress={() => router.push("/explore/training" as any)}
-            />
-          </View>
         </View>
         <Svg
           width="100%"
