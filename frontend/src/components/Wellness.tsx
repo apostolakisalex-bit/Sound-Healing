@@ -23,6 +23,7 @@ import { ResourcesSection } from "@/src/components/ResourcesSection";
 import { api } from "@/src/api/client";
 import {
   fonts,
+  cardShadow,
   lightWellness,
   lightColors,
   darkColors,
@@ -70,13 +71,11 @@ export function makeUi(wellness: WellnessPalette, colors: Colors) {
     },
     card: {
       backgroundColor: palette.white,
-      borderRadius: 14,
+      borderRadius: 16,
       padding: 20,
       borderWidth: 1,
       borderColor: palette.line,
-      boxShadow: isDark
-        ? "0 1px 2px rgba(0,0,0,0.3), 0 14px 28px rgba(0,0,0,0.4)"
-        : "0 1px 2px rgba(45,38,66,0.06), 0 14px 28px rgba(45,38,66,0.12)",
+      boxShadow: cardShadow(isDark),
       gap: 12,
     },
     title: {

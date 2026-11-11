@@ -1,4 +1,5 @@
 import { useTheme } from "@/src/theme/ThemeContext";
+import { cardShadow } from "@/src/theme";
 import React from "react";
 import { Linking, Pressable, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -157,7 +158,7 @@ export function LevelSymbol({
 
 export function TrainingLevelCards() {
   const router = useRouter();
-  const { wellness } = useTheme();
+  const { wellness, mode } = useTheme();
   const ui = useUi();
   const { t } = useLanguage();
   const levels = makeLevels(t);
@@ -175,15 +176,12 @@ export function TrainingLevelCards() {
             flexBasis: "46%",
             flexGrow: 1,
             padding: 16,
-            borderRadius: 18,
-            backgroundColor: pressed ? wellness.blueSelected : wellness.ice,
+            borderRadius: 16,
+            backgroundColor: wellness.lavender,
             borderWidth: 1,
-            borderColor: wellness.line,
-            shadowColor: "#635335",
-            shadowOffset: { width: 0, height: 3 },
-            shadowOpacity: 0.07,
-            shadowRadius: 7,
-            elevation: 2,
+            borderColor: wellness.lavenderInk,
+            boxShadow: cardShadow(mode === "dark"),
+            opacity: pressed ? 0.85 : 1,
             gap: 6,
           })}
         >

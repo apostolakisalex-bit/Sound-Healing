@@ -34,6 +34,7 @@ const makeInstruments = (t: Tr) => [
   "Chimes",
   t("Διαπασών", "Tuning forks"),
   t("Φωνή", "Voice"),
+  t("Όργανο Βροχής", "Rain Instrument"),
 ];
 
 type Therapy = {

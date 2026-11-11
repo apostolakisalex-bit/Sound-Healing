@@ -453,3 +453,17 @@ main (its merge-base was my own tip `70720ab`, so all prior session work is pres
 - Open decision: Academy level titles/descriptions come from backend `school.py` (authored curriculum) and remain in authored Greek — consistent with earlier CMS-content boundary.
 
 - Academy level titles/descriptions now bilingual: backend `school.py` LEVELS carry `title_en`/`description_en`, `/school/catalog` returns both, `Experience.tsx` renders by language. CMS lessons remain authored.
+
+## Update (June 2026) — Student data cleanup + sample profiles (v2.2)
+- Requested: admin profile had test-mode records; wanted clean state with only 4 sample student profiles.
+- One-off script `backend/clean_and_seed_students.py`: deleted ALL role=student users (56) and purged per-student collections (enrollments, practices, attendance, member_levels, training_requests, assessment_answers/invitations, member_notifications, member_chat, chat_messages, audit_events, practice_cycles, form_drafts). Admin-authored content (cohorts, CMS content, assessment templates, studio media) kept.
+- Also removed stray demo admin `admin@soundhealing.gr` (Temple Keeper). Only the 2 owner admins remain. SEED_DEMO_CONTENT not set → demo admin won't re-seed.
+- Seeded 4 sample students (approved + email_verified), shared password `demo-student-2026`, each with member_levels progress: Μαρία Παπαδάκη (L1), Γιώργος Νικολάου (L2), Ελένη Κωνσταντίνου (L3), Δημήτρης Αντωνίου (L4).
+- Verified via live preview API: both owner admins log in (200); `/admin/members` returns exactly the 4; profile detail shows level bars; `/admin/pending` all zeros.
+
+## Update — Card aesthetics & content (June 2026)
+- Added "Όργανο Βροχής" / "Rain Instrument" to the ΤΑ ΟΡΓΑΝΑ list (`SoundHealingGuide.tsx`).
+- Unified card look + slightly stronger 3D elevation via shared `cardShadow(isDark)` in `src/theme/index.ts`, applied to the base `ui.card` (`Wellness.tsx`), icon-surface tiles (`useIconSurface` in `AppNavigation.tsx`) and the education Level cards (`TrainingLevels.tsx`).
+- Light/day Services tiles and education Level cards now use the Training card colour (`wellness.lavender` / `lavenderInk` border).
+- Treatments service tile now uses a distinct sacred-geometry symbol (`src/components/icons/SacredStar.tsx`, slate hexagram with dotted ring) matching the other three service symbols' aesthetic.
+

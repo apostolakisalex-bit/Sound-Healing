@@ -1,4 +1,4 @@
-import { wellness as staticWellness } from "@/src/theme";
+import { wellness as staticWellness, cardShadow } from "@/src/theme";
 import { useTheme } from "@/src/theme/ThemeContext";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Image, Platform, Pressable, Text, View } from "react-native";
@@ -62,16 +62,15 @@ export function ForceGreekLanguage({ children }: { children: React.ReactNode }) 
 }
 export const iconSurface = {
   backgroundColor: staticWellness.ice,
-  borderRadius: 15,
-  shadowColor: "#655A42",
-  shadowOpacity: 0.12,
-  shadowRadius: 4,
-  shadowOffset: { width: 0, height: 3 },
-  elevation: 2,
+  borderRadius: 16,
 };
 export function useIconSurface() {
-  const { wellness } = useTheme();
-  return { ...iconSurface, backgroundColor: wellness.ice };
+  const { wellness, mode } = useTheme();
+  return {
+    ...iconSurface,
+    backgroundColor: wellness.ice,
+    boxShadow: cardShadow(mode === "dark"),
+  };
 }
 
 export function HeaderControls({ floating = false }: { floating?: boolean }) {

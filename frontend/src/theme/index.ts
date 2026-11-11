@@ -134,6 +134,13 @@ export const radii = {
   full: 9999,
 };
 
+// Unified card elevation — one consistent, slightly 3D surface shadow across the app.
+export const cardShadow = (isDark: boolean) =>
+  isDark
+    ? '0px 2px 4px rgba(0,0,0,0.35), 0px 10px 24px rgba(0,0,0,0.5)'
+    : '0px 2px 4px rgba(46,42,64,0.1), 0px 10px 24px rgba(46,42,64,0.16)';
+
+
 export const fonts = {
   // Clean sans-serif throughout the active experience
   heading: 'Raleway_600SemiBold',
