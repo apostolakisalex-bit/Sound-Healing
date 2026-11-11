@@ -3,6 +3,7 @@ import { SCHOOL_PHOTOS } from "@/src/content/schoolGallery";
 import Svg, { Path } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "@/src/theme/ThemeContext";
+import { cardShadow } from "@/src/theme";
 import { useIconSurface, useLanguage } from "./AppNavigation";
 import { SacredMandala } from "./icons/SacredMandala";
 import { ManagedImage } from "./ManagedImage";
@@ -25,7 +26,10 @@ import {
 
 } from "@/src/content/public";
 import { ContentItem, Status, useUi, useLoad } from "./Wellness";
-import { EventGrid } from "./EventGrid";
+import {
+  computeActiveTrainingEvents,
+  type BlogTrainingPost,
+} from "@/src/content/trainingEvents";
 import { getServices, serviceSlugByTitle } from "@/src/content/services";
 import { STUDENT_REVIEWS } from "@/src/content/testimonials";
 import { TestimonialsCarousel } from "./TestimonialsCarousel";
@@ -55,7 +59,7 @@ const SERVICE_SYMBOLS = [
 ];
 export function PublicHome({ items }: { items: ContentItem[] }) {
   const router = useRouter();
-  const { wellness } = useTheme();
+  const { wellness, mode } = useTheme();
   const ui = useUi();
   const { t, language } = useLanguage();
   const iconSurface = useIconSurface();
@@ -67,7 +71,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
     { items: [] },
   );
   const cardCalendar = (item: ContentItem) => {
-    const slug = item.id.startsWith("active-") ? item.id.slice(7) : "";
+    const slug = item.id.startsWith("seminar-") ? item.id.slice(8) : "";
     const live = slug
       ? liveTrainings.data.items.find((x) => x.slug === slug)
       : undefined;
@@ -98,50 +102,19 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
-  const allProgrammes = (section: string) =>
-    items.filter(
-      (i) =>
-        i.published.kind === "announcement" && i.published.section === section,
-    );
-  const programmes = (section: string) => {
-    const all = allProgrammes(section);
-    if (section === "training") {
-      const live = liveTrainings.data.items;
-      all.length = 0;
-      const activeSource = live.map((t) => ({
-        id: `active-${t.slug}`,
-        title: t.title,
-        image: t.image,
-        url: t.url,
-        date: t.date,
-        endDate: t.end_date,
-        price: t.price,
-      }));
-      for (const t of activeSource) {
-        if (all.some((item) => item.published.action_url === t.url)) continue;
-        all.push({
-          id: t.id,
-          published: {
-            title: t.title,
-            summary: t.price || "",
-            body: "",
-            kind: "announcement",
-            section: "training",
-            level_id: null,
-            media_url: "",
-            image_url: t.image,
-            action_url: t.url,
-            event_date: t.date,
-            event_end_date: t.endDate,
-          },
-        });
-      }
-    }
-    const active = all.filter(
-      (i) => !i.published.event_end_date || i.published.event_end_date >= today,
-    );
-    return active.slice(0, 6);
-  };
+  const blog = useLoad<BlogTrainingPost[]>("/blog?section=all", []);
+  const trainingEvents = React.useMemo(
+    () =>
+      computeActiveTrainingEvents(
+        items,
+        liveTrainings.data.items,
+        blog.data,
+        today,
+        language,
+        t,
+      ),
+    [items, liveTrainings.data.items, blog.data, today, language, t],
+  );
   const testimonials = items
     .filter((i) => i.published.kind === "testimonial")
     .slice(0, 8);
@@ -326,10 +299,12 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       style={({ pressed }) => ({
         aspectRatio: fontScale > 1.3 ? undefined : card.ratio,
         minHeight: Math.max(108, 82 * fontScale),
-        borderRadius: 14,
+        borderRadius: 16,
         overflow: "hidden",
         backgroundColor: wellness.blueMist,
-        opacity: pressed ? 0.85 : 1,
+        boxShadow: cardShadow(mode === "dark"),
+        transform: [{ translateY: pressed ? 1 : 0 }],
+        opacity: pressed ? 0.92 : 1,
       })}
     >
       <ManagedImage
@@ -470,7 +445,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       </Text>
       <View style={{ gap: 12 }}>{levels.map(renderLevelCard)}</View>
       {(
-        [["training", t("Ενεργές Εκδηλώσεις και Εκπαιδευτικά", "Active Events & Training")]] as [string, string][]
+        [["training", t("Εκδηλώσεις & Εκπαιδευτικά", "Events & Training")]] as [string, string][]
       ).map(([section, title]) => (
         <View
           key={section}
@@ -498,21 +473,16 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                   "Stand-alone sound experiences with Manolis.",
                 )}
           </Text>
-          {programmes(section).length ? (
-            section === "training" ? (
-              <AutoScrollCarousel
-                items={programmes(section)}
+          {trainingEvents.length ? (
+            <AutoScrollCarousel
+                items={trainingEvents.slice(0, 6)}
                 gap={12}
                 renderItem={(item, key) => (
                   <Pressable
                     key={key}
                     onPress={() =>
                       router.push(
-                        (item.id.startsWith("active-")
-                          ? `/seminar/${item.id.slice(7)}`
-                          : item.id.startsWith("archive-")
-                            ? item.published.action_url
-                            : "/explore/training") as any,
+                        (item.published.action_url || "/explore/training") as any,
                       )
                     }
                     accessibilityRole="link"
@@ -666,9 +636,6 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                   </Pressable>
                 )}
               />
-            ) : (
-              <EventGrid items={programmes(section)} compact />
-            )
           ) : (
             <Text style={ui.body}>{t("Το νέο πρόγραμμα θα ανακοινωθεί εδώ.", "The new programme will be announced here.")}</Text>
           )}

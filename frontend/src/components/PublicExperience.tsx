@@ -20,6 +20,7 @@ import {
   useLoad,
 } from "./Wellness";
 import { FOUNDER } from "@/src/content/public";
+import { computeActiveTrainingEvents } from "@/src/content/trainingEvents";
 import { useLanguage } from "./AppNavigation";
 
 const SECTION_KEYS = [
@@ -211,34 +212,6 @@ export function PublicExperience({ section }: { section?: string }) {
   );
   const intro = entries.find((i) => i.published.kind === "page");
   const title = intro?.published.title || page?.title;
-  // Live seminars from the catalog → cards under the training calendar.
-  // Completed seminars (curated `active:false` or past end date) fall into the archive.
-  const seminarItems: ContentItem[] =
-    section === "training"
-      ? seminars.data.items.map((sem) => ({
-          id: "seminar-" + sem.slug,
-          completed:
-            typeof sem.active === "boolean"
-              ? !sem.active
-              : !!sem.end_date && sem.end_date < today,
-          published: {
-            title: sem.title,
-            summary: "",
-            body: "",
-            kind: "event",
-            section: "training",
-            image_url: sem.image,
-            event_date: sem.date,
-            event_time: sem.time,
-            event_location: sem.location,
-            event_end_date: sem.end_date,
-            action_url: `/seminar/${sem.slug}`,
-            action_label: t("Πληροφορίες & εγγραφή", "Details & registration"),
-            level_id: null,
-            media_url: "",
-          },
-        }))
-      : [];
   // Live training announcements from the public site (blog feed). We merge them
   // with the catalog so each seminar appears ONCE: a catalog match (same end
   // date + level) wins (it keeps the in-app booking page), and the EN/GR copies
@@ -301,40 +274,17 @@ export function PublicExperience({ section }: { section?: string }) {
     }
     return out;
   }, [section, blogAll.data, seminars.data.items, language, t]);
-  const eventCmsItems: ContentItem[] =
+  const activeTrainingEvents: ContentItem[] =
     section === "training"
-      ? visibleItems.filter(
-          (i) =>
-            (i.published.section || "") === "events" &&
-            ["event", "announcement"].includes(i.published.kind),
+      ? computeActiveTrainingEvents(
+          state.data,
+          seminars.data.items,
+          blogAll.data,
+          today,
+          language,
+          t,
         )
       : [];
-  const isPastItem = (it: ContentItem) =>
-    it.completed ??
-    (!!it.published.event_end_date && it.published.event_end_date < today);
-  let activeTrainingEvents: ContentItem[] = [];
-  if (section === "training") {
-    const merged = [
-      ...entries.filter((item) => item.id !== intro?.id),
-      ...seminarItems,
-      ...eventCmsItems,
-      ...blogItems,
-    ];
-    const seen = new Set<string>();
-    activeTrainingEvents = merged
-      .filter((it) => !isPastItem(it))
-      .filter((it) => {
-        const k = (it.published.title || "").trim().toLowerCase();
-        if (!k || seen.has(k)) return false;
-        seen.add(k);
-        return true;
-      })
-      .sort((a, b) =>
-        (a.published.event_end_date || "9999").localeCompare(
-          b.published.event_end_date || "9999",
-        ),
-      );
-  }
   return (
     <Shell
       publicPage

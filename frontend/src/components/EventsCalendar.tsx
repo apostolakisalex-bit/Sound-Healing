@@ -54,12 +54,14 @@ export function EventsCalendar({ mode }: { mode?: "training" | "events" | "all" 
   const [selected, setSelected] = useState("");
   const initialized = useRef(false);
 
-  // Jump to the nearest upcoming happening once data loads.
+  // Jump to the nearest upcoming happening once data loads. If nothing is
+  // upcoming, we deliberately surface nothing (no stale/past event card).
   useEffect(() => {
     if (initialized.current || !events.length) return;
     initialized.current = true;
     const upcoming = events.filter((e) => e.endISO >= today);
-    const target = (upcoming[0] || [...events].reverse()[0]).dateISO;
+    if (!upcoming.length) return;
+    const target = upcoming[0].dateISO;
     const [y, m] = target.split("-").map(Number);
     setCursor({ y, m: m - 1 });
     setSelected(target);
