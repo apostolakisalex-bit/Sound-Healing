@@ -16,7 +16,6 @@ export default function YoutubeCard() {
   const { t } = useLanguage();
   const frame = useRef<HTMLIFrameElement | null>(null);
   const host = useRef<any>(null);
-  const started = useRef(false);
   const [muted, setMuted] = useState(true);
 
   const command = (func: string) => {
@@ -32,19 +31,11 @@ export default function YoutubeCard() {
     const obs = new IntersectionObserver(
       (entries) => {
         const e = entries[0];
-        if (
-          e &&
-          e.isIntersecting &&
-          e.intersectionRatio >= 0.4 &&
-          !started.current
-        ) {
-          started.current = true;
-          let tries = 0;
-          const tick = () => {
-            command("playVideo");
-            if (++tries < 4) setTimeout(tick, 600);
-          };
-          tick();
+        if (!e) return;
+        if (e.isIntersecting && e.intersectionRatio >= 0.4) {
+          command("playVideo");
+        } else {
+          command("pauseVideo");
         }
       },
       { threshold: [0, 0.4, 0.75] },

@@ -26,34 +26,44 @@ export default function YoutubeCard() {
   const [ready, setReady] = useState(false);
   const [play, setPlay] = useState(false);
   const [muted, setMuted] = useState(true);
-  const detected = useRef(false);
+  const started = useRef(false);
 
   const playerWidth = Math.min(width - 48, 640);
   const playerHeight = Math.round((playerWidth * 9) / 16);
 
-  // Mark the card visible once it scrolls into view.
+  // Continuously track whether the card is on screen (play when it is,
+  // pause when the user scrolls past it).
   useEffect(() => {
     const id = setInterval(() => {
       const node = hostRef.current;
-      if (!node || detected.current) return;
+      if (!node) return;
       node.measureInWindow((_x, y, _w, h) => {
+        if (!h) return;
         const winH = Dimensions.get("window").height;
-        const onScreen = y < winH * 0.85 && y + h > winH * 0.1;
-        if (onScreen) {
-          detected.current = true;
-          setVisible(true);
-        }
+        const onScreen = y < winH * 0.9 && y + h > winH * 0.1;
+        setVisible((v) => (v === onScreen ? v : onScreen));
       });
-    }, 300);
+    }, 400);
     return () => clearInterval(id);
   }, []);
 
-  // Start playback only AFTER the player is ready and on screen, with a short
-  // delay so the library's mute command lands first — otherwise the player
-  // briefly plays with sound before muting. This guarantees a silent start.
+  // Play/pause with scroll. The very first start is delayed so the library's
+  // mute command lands before playback begins (otherwise sound leaks); later
+  // resumes play immediately (respecting whatever mute state the user chose).
   useEffect(() => {
-    if (!ready || !visible) return;
-    const id = setTimeout(() => setPlay(true), 350);
+    if (!ready) return;
+    if (!visible) {
+      setPlay(false);
+      return;
+    }
+    if (started.current) {
+      setPlay(true);
+      return;
+    }
+    const id = setTimeout(() => {
+      started.current = true;
+      setPlay(true);
+    }, 350);
     return () => clearTimeout(id);
   }, [ready, visible]);
 
