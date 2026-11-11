@@ -643,6 +643,28 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       ))}
       <View
         style={{
+          gap: 16,
+          paddingVertical: 24,
+          borderTopWidth: 1,
+          borderColor: wellness.line,
+        }}
+      >
+        <Text style={ui.heading}>{t("Δες & άκουσε", "Watch & listen")}</Text>
+        <View
+          style={{
+            borderRadius: 20,
+            overflow: "hidden",
+            backgroundColor: "#000000",
+            boxShadow:
+              "0px 3px 6px rgba(60,48,34,0.16), 0px 18px 34px rgba(60,48,34,0.22)",
+          }}
+        >
+          <YoutubeCard />
+        </View>
+      </View>
+
+      <View
+        style={{
           gap: 18,
           paddingTop: 24,
           borderTopWidth: 1,
@@ -790,27 +812,6 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           </View>
         </View>
       )}
-      <View
-        style={{
-          gap: 16,
-          paddingVertical: 24,
-          borderTopWidth: 1,
-          borderColor: wellness.line,
-        }}
-      >
-        <Text style={ui.heading}>{t("Δες & άκουσε", "Watch & listen")}</Text>
-        <View
-          style={{
-            borderRadius: 20,
-            overflow: "hidden",
-            backgroundColor: "#000000",
-            boxShadow:
-              "0px 3px 6px rgba(60,48,34,0.16), 0px 18px 34px rgba(60,48,34,0.22)",
-          }}
-        >
-          <YoutubeCard />
-        </View>
-      </View>
       {settings?.show_socials !== false && (
         <View
           style={{
