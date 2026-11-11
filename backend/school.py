@@ -10,10 +10,10 @@ from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 Level = Literal['L1', 'L2', 'L3', 'L4']
 LEVELS = [
-    {'id': 'L1', 'title': 'Τα θεμέλια της πρακτικής', 'description': 'Θιβετανικές ηχογαβάθες και ατομική πρακτική.'},
-    {'id': 'L2', 'title': 'Εμβάθυνση στην ατομική πρακτική', 'description': 'Εμβάθυνση στις τεχνικές με ηχογαβάθες και πρόσθετα όργανα.'},
-    {'id': 'L3', 'title': 'Ομαδικά Sound Baths', 'description': 'Συντονισμός ομαδικών εμπειριών ήχου.'},
-    {'id': 'L4', 'title': 'Επαγγελματική εκπαίδευση', 'description': 'Συνέχεια της επαγγελματικής σου εκπαίδευσης.'},
+    {'id': 'L1', 'title': 'Τα θεμέλια της πρακτικής', 'title_en': 'The foundations of practice', 'description': 'Θιβετανικές ηχογαβάθες και ατομική πρακτική.', 'description_en': 'Tibetan singing bowls and individual practice.'},
+    {'id': 'L2', 'title': 'Εμβάθυνση στην ατομική πρακτική', 'title_en': 'Deepening individual practice', 'description': 'Εμβάθυνση στις τεχνικές με ηχογαβάθες και πρόσθετα όργανα.', 'description_en': 'Deepening techniques with singing bowls and additional instruments.'},
+    {'id': 'L3', 'title': 'Ομαδικά Sound Baths', 'title_en': 'Group Sound Baths', 'description': 'Συντονισμός ομαδικών εμπειριών ήχου.', 'description_en': 'Facilitating group sound experiences.'},
+    {'id': 'L4', 'title': 'Επαγγελματική εκπαίδευση', 'title_en': 'Professional training', 'description': 'Συνέχεια της επαγγελματικής σου εκπαίδευσης.', 'description_en': 'Continuing your professional training.'},
 ]
 
 class Strict(BaseModel):

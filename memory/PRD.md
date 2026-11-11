@@ -451,3 +451,5 @@ main (its merge-base was my own tip `70720ab`, so all prior session work is pres
 - Static frontend app-copy made bilingual: `content/treatments.ts`, `content/services.ts` (+ consumers TreatmentsOverview/TreatmentDetail/ServiceDetail/PublicHome). Slugs unchanged.
 - Admin stays Greek under global EN via ForceGreekLanguage; ResourcesSection admin strings now bilingual (Greek in forced-Greek admin).
 - Open decision: Academy level titles/descriptions come from backend `school.py` (authored curriculum) and remain in authored Greek — consistent with earlier CMS-content boundary.
+
+- Academy level titles/descriptions now bilingual: backend `school.py` LEVELS carry `title_en`/`description_en`, `/school/catalog` returns both, `Experience.tsx` renders by language. CMS lessons remain authored.

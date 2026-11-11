@@ -178,9 +178,9 @@ export function Home() {
 export function SchoolScreen() {
   const ui = useUi();
   const palette = usePalette();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const catalog = useLoad<
-    { id: string; title: string; description: string; is_enrolled: boolean }[]
+    { id: string; title: string; title_en: string; description: string; description_en: string; is_enrolled: boolean }[]
   >("/school/catalog", []);
   const library = useLoad<ContentItem[]>("/content/library", []);
   return (
@@ -227,8 +227,8 @@ export function SchoolScreen() {
               ? t("ΕΝΕΡΓΗ ΕΓΓΡΑΦΗ", "ACTIVE ENROLMENT")
               : t("ΓΝΩΡΙΣΕ ΤΟ LEVEL", "EXPLORE THE LEVEL")}
           </Text>
-          <Text style={ui.heading}>{l.title}</Text>
-          <Text style={ui.body}>{l.description}</Text>
+          <Text style={ui.heading}>{language === "en" ? l.title_en : l.title}</Text>
+          <Text style={ui.body}>{language === "en" ? l.description_en : l.description}</Text>
         </View>
       ))}
     </Shell>
