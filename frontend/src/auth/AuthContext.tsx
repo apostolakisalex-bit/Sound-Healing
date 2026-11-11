@@ -41,6 +41,8 @@ type AuthContextType = {
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
   loginWithSession: (sessionId: string) => Promise<User>;
+  welcomeName: string | null;
+  dismissWelcome: () => void;
   register: (
     email: string,
     password: string,
@@ -58,6 +60,8 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [welcomeName, setWelcomeName] = useState<string | null>(null);
+  const dismissWelcome = useCallback(() => setWelcomeName(null), []);
 
   const refresh = useCallback(async () => {
     try {
@@ -88,6 +92,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       await setAuthToken(data.token);
       setUser(data.user);
+      // Greet the user right after a Google sign-in (this path is Google-only).
+      setWelcomeName((data.user?.name || "").trim().split(/\s+/)[0] || null);
       return data.user as User;
     })();
     inflightSessions.set(sessionId, run);
@@ -196,6 +202,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         login,
         loginWithSession,
+        welcomeName,
+        dismissWelcome,
         register,
         logout,
         refresh,

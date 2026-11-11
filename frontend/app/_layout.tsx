@@ -17,6 +17,7 @@ import {
   Raleway_700Bold,
 } from "@expo-google-fonts/raleway";
 import { AuthProvider, useAuth } from "@/src/auth/AuthContext";
+import { WelcomeToast } from "@/src/components/WelcomeToast";
 import { colors } from "@/src/theme";
 import { ThemeProvider, useTheme } from "@/src/theme/ThemeContext";
 
@@ -120,6 +121,7 @@ export default function RootLayout() {
         <AuthProvider>
           <ThemedStatusBar />
           <AuthGate />
+          <WelcomeToast />
         </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>
