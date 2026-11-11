@@ -498,3 +498,14 @@ User asks: remove the app-wide purple/lavender look and make it a warm brown "we
 - `TrainingLevels.tsx` `TrainingLevelCards`: restructured to match the home "Εκπαιδευτικά" cards — `ui.card`, 48%/100% width, `wellness.lavender` bg + `lavenderInk` border, padding 0, overflow hidden, photo-top (from `/api/trainings/gallery`, per-level with `LevelSymbol` fallback, height 100/170) then padded block (LEVEL n / title / subtitle / "Γνώρισε το επίπεδο →").
 - Verified via screenshots (light + dark): warm palette everywhere, no purple/blue; Services symbols + texts aligned; education Level cards now photo-top like the home training cards; dark mode is warm espresso and readable.
 
+
+## v2.7 — Training section reorg + dedupe, home heading move, soft-white bg (Nov 2026)
+User asks: (1) reorganize the Εκπαιδευτικά (training) section so order is calendar → active trainings → archive, and DON'T repeat the same seminar that is pulled from different sources; (2) move the "Γνώρισε τη σχολή και τα 4 Levels" heading below the About (Μανώλης Ζωγραφάκης) + Ηχοθεραπεία cards; (3) make the whole app background a soft white, keep the effects.
+- Duplication root cause: on /explore/training the catalog (`/trainings/catalog`, has `/seminar/{slug}` booking pages) AND the live WP blog feed (`/blog?section=training`) both list the same seminars, and the blog has EN+GR copies of each event. EventGrid (catalog+CMS) and BlogList (WP) each rendered them → duplicates.
+- `PublicExperience.tsx`: now fetches `/blog?section=training`, builds a de-duplicated `blogItems` (useMemo): key = `event_end|level` (level parsed from title via `levelFromTitle`), seeded from the catalog so a catalog match is dropped (catalog wins → keeps booking page); EN/GR copies collapse to the current language (`titleIsGreek` + language preference). These merge into the single EventGrid list (active → archive), so each seminar shows once. Added `level` to `LiveSeminar`. Blog-only seminars (e.g. Goa, Feb 2027) link to the in-app `/article/{id}` reader.
+- `BlogList.tsx`: new `articlesOnly` prop — on training it now renders ONLY the "Άρθρα" grid (announcements+archive moved into EventGrid). Events section unchanged (full BlogList).
+- Result order on /explore/training: Levels → Calendar → Active trainings → Αρχείο (archive) → Άρθρα. Verified no repeats (Goa×1, Νοε 28&29×1 from catalog, Δεκ 5&6×1).
+- `PublicHome.tsx`: extracted `renderTile` + split mosaic data into `introCards` (About + Ηχοθεραπεία top row) and `levelCols`; moved the "Γνώρισε τη σχολή και τα 4 Levels" heading to sit between the intro cards and the Level cards.
+- `theme/index.ts`: light `bg.primary` (app page background) → soft white `#F9F7F3` (was cream `#FBF7F1`); cards stay `#FFFFFF`, warm accents + shadows (effects) untouched. Dark unchanged.
+- Verified via screenshots (light): training order + dedupe, heading placement, soft-white background with effects intact.
+

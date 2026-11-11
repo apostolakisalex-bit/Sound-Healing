@@ -46,7 +46,13 @@ const formatWhen = (
 };
 
 /** Live articles from the soundhealing.gr blog, opened in an in-app reader. */
-export function BlogList({ section }: { section: "training" | "events" }) {
+export function BlogList({
+  section,
+  articlesOnly = false,
+}: {
+  section: "training" | "events";
+  articlesOnly?: boolean;
+}) {
   const router = useRouter();
   const { wellness } = useTheme();
   const ui = useUi();
@@ -237,11 +243,11 @@ export function BlogList({ section }: { section: "training" | "events" }) {
   return (
     <View style={{ gap: 16 }}>
       {state.loading && <Status state={state} />}
-      {!!liveOwn.length && (
+      {!articlesOnly && !!liveOwn.length && (
         <View style={gridStyle}>{liveOwn.map(renderCard)}</View>
       )}
 
-      {!!pastOwn.length && (
+      {!articlesOnly && !!pastOwn.length && (
         <View style={{ gap: 16 }}>
           <Pressable
             accessibilityRole="button"

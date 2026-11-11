@@ -22,7 +22,7 @@ export const wellness = lightWellness;
 
 export const lightColors = {
   bg: {
-    primary: lightWellness.white,     // clean white — main background
+    primary: '#F9F7F3',     // soft white — main app background
     secondary: '#FFFFFF',   // pure white — cards
     tertiary: lightWellness.ice,    // ice grey — input chrome
     elevated: '#FFFFFF',

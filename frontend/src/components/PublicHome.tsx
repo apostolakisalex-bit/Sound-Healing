@@ -165,6 +165,125 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
         i.published.section === "services",
     )
     .slice(0, 6);
+  type MosaicCard = {
+    title: string;
+    label: string;
+    image: string;
+    route: string;
+    ratio: number;
+  };
+  const introCards: MosaicCard[] = [
+    {
+      title: t("Μανώλης Ζωγραφάκης", "Manolis Zografakis"),
+      label: t("ΣΧΕΤΙΚΑ", "ABOUT"),
+      image: photo("about", page("about")?.image_url || FOUNDER.photo),
+      route: "/explore/about",
+      ratio: 0.82,
+    },
+    {
+      title: t("Ηχοθεραπεία", "Sound Healing"),
+      label: t("Η ΕΜΠΕΙΡΙΑ", "THE EXPERIENCE"),
+      image: photo(
+        "soundhealing",
+        page("soundhealing")?.image_url || SCHOOL_PHOTOS[4],
+      ),
+      route: "/explore/soundhealing",
+      ratio: 0.82,
+    },
+  ];
+  const levelCols: MosaicCard[][] = [
+    [
+      {
+        title: t("Τα θεμέλια", "The foundations"),
+        label: "LEVEL 1",
+        image: photo("L1", SCHOOL_PHOTOS[0]),
+        route: "/explore/levels?level=1",
+        ratio: 1.35,
+      },
+      {
+        title: t("Ομαδικά Sound Baths", "Group Sound Baths"),
+        label: "LEVEL 3",
+        image: photo("L3", SCHOOL_PHOTOS[3]),
+        route: "/explore/levels?level=3",
+        ratio: 1.05,
+      },
+    ],
+    [
+      {
+        title: t("Εμβάθυνση", "Going deeper"),
+        label: "LEVEL 2",
+        image: photo("L2", SCHOOL_PHOTOS[1]),
+        route: "/explore/levels?level=2",
+        ratio: 1.35,
+      },
+      {
+        title: t("Επαγγελματική ανάπτυξη", "Professional development"),
+        label: "LEVEL 4",
+        image: photo("L4", SCHOOL_PHOTOS[2]),
+        route: "/explore/levels?level=4",
+        ratio: 0.68,
+      },
+    ],
+  ];
+  const renderTile = (card: MosaicCard) => (
+    <Pressable
+      key={card.route}
+      accessibilityRole="link"
+      accessibilityLabel={`${card.label}: ${card.title}`}
+      onPress={() => router.push(card.route as any)}
+      style={({ pressed }) => ({
+        aspectRatio: fontScale > 1.3 ? undefined : card.ratio,
+        minHeight: Math.max(135, 95 * fontScale),
+        borderRadius: 12,
+        overflow: "hidden",
+        backgroundColor: wellness.blueMist,
+        opacity: pressed ? 0.85 : 1,
+      })}
+    >
+      <ManagedImage
+        source={{ uri: card.image }}
+        accessibilityLabel={card.title}
+        resizeMode="cover"
+        style={{ position: "absolute", width: "100%", height: "100%" }}
+      />
+      <LinearGradient
+        colors={["transparent", "rgba(22,30,40,0.82)"]}
+        locations={[0.2, 1]}
+        style={{ position: "absolute", width: "100%", height: "100%" }}
+      />
+      <View
+        style={{
+          marginTop: "auto",
+          padding: compactScreen ? 12 : 20,
+          gap: 5,
+          backgroundColor: "rgba(22,30,40,0.46)",
+        }}
+      >
+        <Text
+          style={[
+            ui.label,
+            { color: "#FFFFFF", fontSize: 10, letterSpacing: 1.1 },
+          ]}
+        >
+          {card.label}
+        </Text>
+        <Text
+          style={[
+            ui.body,
+            {
+              color: "#FFFFFF",
+              fontSize: compactScreen ? 15 : 22,
+              lineHeight: compactScreen ? 20 : 28,
+              fontWeight: "600",
+            },
+          ]}
+        >
+          {card.title} ↗
+        </Text>
+      </View>
+    </Pressable>
+  );
+
   return (
     <View style={{ gap: 28 }}>
       <Status state={liveTrainings} />
@@ -239,128 +358,20 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           />
         </Svg>
       </View>
+      <View style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
+        {introCards.map((card) => (
+          <View key={card.route} style={{ flex: 1 }}>
+            {renderTile(card)}
+          </View>
+        ))}
+      </View>
       <Text style={[ui.heading, { fontWeight: "600" }]}>
         {t("Γνώρισε τη σχολή και τα 4 Levels", "Meet the school and the 4 Levels")}
       </Text>
       <View style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
-        {[
-          [
-            {
-              title: t("Μανώλης Ζωγραφάκης", "Manolis Zografakis"),
-              label: t("ΣΧΕΤΙΚΑ", "ABOUT"),
-              image: photo("about", page("about")?.image_url || FOUNDER.photo),
-              route: "/explore/about",
-              ratio: 0.68,
-            },
-            {
-              title: t("Τα θεμέλια", "The foundations"),
-              label: "LEVEL 1",
-              image: photo("L1", SCHOOL_PHOTOS[0]),
-              route: "/explore/levels?level=1",
-              ratio: 1.35,
-            },
-            {
-              title: t("Ομαδικά Sound Baths", "Group Sound Baths"),
-              label: "LEVEL 3",
-              image: photo("L3", SCHOOL_PHOTOS[3]),
-              route: "/explore/levels?level=3",
-              ratio: 1.05,
-            },
-          ],
-          [
-            {
-              title: t("Ηχοθεραπεία", "Sound Healing"),
-              label: t("Η ΕΜΠΕΙΡΙΑ", "THE EXPERIENCE"),
-              image: photo(
-                "soundhealing",
-                page("soundhealing")?.image_url || SCHOOL_PHOTOS[4],
-              ),
-              route: "/explore/soundhealing",
-              ratio: 0.68,
-            },
-            {
-              title: t("Εμβάθυνση", "Going deeper"),
-              label: "LEVEL 2",
-              image: photo("L2", SCHOOL_PHOTOS[1]),
-              route: "/explore/levels?level=2",
-              ratio: 1.35,
-            },
-            {
-              title: t("Επαγγελματική ανάπτυξη", "Professional development"),
-              label: "LEVEL 4",
-              image: photo("L4", SCHOOL_PHOTOS[2]),
-              route: "/explore/levels?level=4",
-              ratio: 0.68,
-            },
-          ],
-        ].map((column, index) => (
+        {levelCols.map((column, index) => (
           <View key={index} style={{ flex: 1, gap: 12 }}>
-            {column.map((card) => (
-              <Pressable
-                key={card.route}
-                accessibilityRole="link"
-                accessibilityLabel={`${card.label}: ${card.title}`}
-                onPress={() => router.push(card.route as any)}
-                style={({ pressed }) => ({
-                  aspectRatio: fontScale > 1.3 ? undefined : card.ratio,
-                  minHeight: Math.max(135, 95 * fontScale),
-                  borderRadius: 12,
-                  overflow: "hidden",
-                  backgroundColor: wellness.blueMist,
-                  opacity: pressed ? 0.85 : 1,
-                })}
-              >
-                <ManagedImage
-                  source={{ uri: card.image }}
-                  accessibilityLabel={card.title}
-                  resizeMode="cover"
-                  style={{
-                    position: "absolute",
-                    width: "100%",
-                    height: "100%",
-                  }}
-                />
-                <LinearGradient
-                  colors={["transparent", "rgba(22,30,40,0.82)"]}
-                  locations={[0.2, 1]}
-                  style={{
-                    position: "absolute",
-                    width: "100%",
-                    height: "100%",
-                  }}
-                />
-                <View
-                  style={{
-                    marginTop: "auto",
-                    padding: compactScreen ? 12 : 20,
-                    gap: 5,
-                    backgroundColor: "rgba(22,30,40,0.46)",
-                  }}
-                >
-                  <Text
-                    style={[
-                      ui.label,
-                      { color: "#FFFFFF", fontSize: 10, letterSpacing: 1.1 },
-                    ]}
-                  >
-                    {card.label}
-                  </Text>
-                  <Text
-                    style={[
-                      ui.body,
-                      {
-                        color: "#FFFFFF",
-                        fontSize: compactScreen ? 15 : 22,
-                        lineHeight: compactScreen ? 20 : 28,
-                        fontWeight: "600",
-                      },
-                    ]}
-                  >
-                    {card.title} ↗
-                  </Text>
-                </View>
-              </Pressable>
-            ))}
+            {column.map(renderTile)}
           </View>
         ))}
       </View>

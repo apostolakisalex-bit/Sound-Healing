@@ -126,8 +126,27 @@ type LiveSeminar = {
   time?: string;
   end_date?: string;
   location?: string;
+  level?: number | null;
   active?: boolean;
 };
+type BlogTrainingPost = {
+  id: number;
+  title: string;
+  image?: string | null;
+  date?: string;
+  event_start?: string | null;
+  event_end?: string | null;
+  category: string;
+};
+// Level parsed from a seminar/blog title ("Level 1", "2ο Επίπεδο", "Βασικό Επίπεδο").
+const levelFromTitle = (title: string): number | null => {
+  const low = (title || "").toLowerCase();
+  const m = low.match(/level\s*([1-4])/) || low.match(/([1-4])\s*ο?\s*επίπεδο/);
+  if (m) return Number(m[1]);
+  if (low.includes("βασικό επίπεδο")) return 1;
+  return null;
+};
+const titleIsGreek = (s: string) => /[\u0370-\u03ff]/.test(s || "");
 function NavLink({
   href,
   children,
@@ -154,12 +173,13 @@ function NavLink({
 }
 export function PublicExperience({ section }: { section?: string }) {
   const ui = useUi();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const sections = makeSections(t);
   const state = useLoad<ContentItem[]>("/content/public", []);
   const seminars = useLoad<{ items: LiveSeminar[] }>("/trainings/catalog", {
     items: [],
   });
+  const blogTraining = useLoad<BlogTrainingPost[]>("/blog?section=training", []);
   const today = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Athens",
     year: "numeric",
@@ -219,6 +239,64 @@ export function PublicExperience({ section }: { section?: string }) {
           },
         }))
       : [];
+  // Live training announcements from the public site (blog feed). We merge them
+  // with the catalog so each seminar appears ONCE: a catalog match (same end
+  // date + level) wins (it keeps the in-app booking page), and the EN/GR copies
+  // of the same post collapse to the current language.
+  const blogItems: ContentItem[] = React.useMemo(() => {
+    if (section !== "training") return [];
+    const fmtDay = (iso: string) =>
+      new Intl.DateTimeFormat(language === "en" ? "en-GB" : "el-GR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(new Date(iso + "T00:00:00"));
+    const keyOf = (end: string, level: number | null) =>
+      `${end}|${level ?? "x"}`;
+    const seen = new Set(
+      seminars.data.items.map((s) => keyOf(s.end_date || "", s.level ?? null)),
+    );
+    const wantGreek = language !== "en";
+    const sorted = [...blogTraining.data]
+      .filter((p) => p.category === "training")
+      .sort(
+        (a, b) =>
+          (titleIsGreek(a.title) === wantGreek ? 0 : 1) -
+          (titleIsGreek(b.title) === wantGreek ? 0 : 1),
+      );
+    const out: ContentItem[] = [];
+    for (const p of sorted) {
+      const start = p.event_start || p.date || "";
+      const end = p.event_end || start;
+      const key = keyOf(end, levelFromTitle(p.title));
+      if (!start || seen.has(key)) continue;
+      seen.add(key);
+      const dateLabel =
+        p.event_end && p.event_end !== start
+          ? `${fmtDay(start)} – ${fmtDay(p.event_end)}`
+          : fmtDay(start);
+      out.push({
+        id: "blog-" + p.id,
+        published: {
+          title: p.title,
+          summary: "",
+          body: "",
+          kind: "event",
+          section: "training",
+          image_url: p.image || "",
+          event_date: dateLabel,
+          event_time: "",
+          event_location: "",
+          event_end_date: end,
+          action_url: `/article/${p.id}`,
+          action_label: t("Πληροφορίες", "Details"),
+          level_id: null,
+          media_url: "",
+        },
+      });
+    }
+    return out;
+  }, [section, blogTraining.data, seminars.data.items, language, t]);
   return (
     <Shell
       publicPage
@@ -282,11 +360,15 @@ export function PublicExperience({ section }: { section?: string }) {
           items={[
             ...entries.filter((item) => item.id !== intro?.id),
             ...seminarItems,
+            ...blogItems,
           ]}
         />
       )}
       {(section === "events" || section === "training") && (
-        <BlogList section={section === "training" ? "training" : "events"} />
+        <BlogList
+          section={section === "training" ? "training" : "events"}
+          articlesOnly={section === "training"}
+        />
       )}
       {entries
         .filter(
