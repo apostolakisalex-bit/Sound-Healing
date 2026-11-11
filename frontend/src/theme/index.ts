@@ -137,8 +137,8 @@ export const radii = {
 // Unified card elevation — one consistent, slightly 3D surface shadow across the app.
 export const cardShadow = (isDark: boolean) =>
   isDark
-    ? '0px 2px 4px rgba(0,0,0,0.35), 0px 10px 24px rgba(0,0,0,0.5)'
-    : '0px 2px 4px rgba(60,48,34,0.1), 0px 10px 24px rgba(60,48,34,0.16)';
+    ? '0px 2px 6px rgba(0,0,0,0.45), 0px 18px 34px rgba(0,0,0,0.6)'
+    : '0px 1px 2px rgba(60,48,34,0.10), 0px 6px 14px rgba(60,48,34,0.12), 0px 18px 32px rgba(60,48,34,0.18)';
 
 
 export const fonts = {

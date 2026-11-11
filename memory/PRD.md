@@ -520,3 +520,9 @@ Delivered 4 user-selected items + a design trial + test-report fixes.
 - Test-report (iteration 15) fixes applied: past-event join hidden; canonical-ref dedupe; events calendar mode; profile heading wrap (flexWrap); schedule language + blog loading. KNOWN MINOR (not fixed): the "31 Οκτ & 1 Νοεμ" post parses end=31 Oct only (1 Nov not pinned) — cross-month range.
 - Test creds unchanged: student maria.papadaki@example.com / demo-student-2026.
 
+
+## v2.9 — Card volume everywhere, real Goa photo, multi-wave header (Nov 2026)
+- VOLUME: strengthened the shared `cardShadow()` (theme/index.ts) to a layered embossed elevation — this propagates to every `ui.card` (level cards, treatments, profile, seminar detail) and to `useIconSurface` (service/profile/admin icon tiles). Also added `boxShadow: cardShadow(mode==='dark')` to the inline card surfaces that had none: EventGrid cards (replaced the old faint shadow* props), BlogList announcement + article cards, MySeminars rows. Intro home tiles keep their own stronger hero shadow.
+- GOA PHOTO: `blog.py _first_content_image` now skips logo/badge images (`_SKIP_IMG`: accredited|logo|badge|seal|iphm|icon|…) so the Goa card uses the real seminar photo (Sound-Healing-Training-in-Goa-India-7) instead of the IPHM accreditation logo. (WP featured image for that post is broken/null.)
+- HEADER WAVE: replaced the single bottom SVG wave on the home hero with a 3-layer "waves" divider (two translucent white wave bands + solid front), matching the layered wave look of soundhealing.gr's footer/about-me page.
+

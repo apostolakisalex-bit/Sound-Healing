@@ -409,13 +409,23 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
         </View>
         <Svg
           width="100%"
-          height={60}
-          viewBox="0 0 1200 60"
+          height={72}
+          viewBox="0 0 1200 72"
           preserveAspectRatio="none"
           style={{ position: "absolute", bottom: -1 }}
         >
           <Path
-            d="M0 28 C100 0 150 56 250 28 S400 0 500 28 S650 56 750 28 S900 0 1000 28 S1150 56 1200 28 L1200 60 L0 60 Z"
+            d="M0 22 C150 -8 250 52 400 22 S650 -8 800 22 S1050 52 1200 22 L1200 72 L0 72 Z"
+            fill={wellness.white}
+            fillOpacity={0.35}
+          />
+          <Path
+            d="M0 36 C150 10 250 62 400 36 S650 10 800 36 S1050 62 1200 36 L1200 72 L0 72 Z"
+            fill={wellness.white}
+            fillOpacity={0.6}
+          />
+          <Path
+            d="M0 48 C150 26 250 68 400 48 S650 26 800 48 S1050 68 1200 48 L1200 72 L0 72 Z"
             fill={wellness.white}
           />
         </Svg>

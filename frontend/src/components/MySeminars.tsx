@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { useUi, useLoad } from "./Wellness";
+import { cardShadow } from "@/src/theme";
 import { ManagedImage } from "./ManagedImage";
 import { useLanguage } from "./AppNavigation";
 import { athensToday } from "@/src/content/schedule";
@@ -31,7 +32,7 @@ const daysBetween = (fromISO: string, toISO: string) => {
  * clear countdown to the next upcoming one. Renders nothing when empty. */
 export function MySeminars() {
   const router = useRouter();
-  const { wellness } = useTheme();
+  const { wellness, mode } = useTheme();
   const ui = useUi();
   const { t, language } = useLanguage();
   const locale = language === "en" ? "en-GB" : "el-GR";
@@ -128,6 +129,7 @@ export function MySeminars() {
               borderWidth: 1,
               borderColor: s.ref === next?.ref ? wellness.lavenderInk : wellness.line,
               padding: 10,
+              boxShadow: cardShadow(mode === "dark"),
               opacity: pressed ? 0.9 : past ? 0.6 : 1,
             })}
           >

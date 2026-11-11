@@ -5,6 +5,7 @@ import { Pressable, Text, View, useWindowDimensions } from "react-native";
 import { Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { ContentItem, Field, useUi } from "./Wellness";
+import { cardShadow } from "@/src/theme";
 import { useLanguage } from "./AppNavigation";
 
 /** Photo-led cards based on soundhealing.gr, with CMS-owned event details. */
@@ -17,7 +18,7 @@ export function EventGrid({
   training?: boolean;
   compact?: boolean;
 }) {
-  const { wellness } = useTheme();
+  const { wellness, mode } = useTheme();
   const ui = useUi();
   const { t } = useLanguage();
   const { width } = useWindowDimensions();
@@ -76,11 +77,7 @@ export function EventGrid({
         backgroundColor: wellness.white,
         borderWidth: 1,
         borderColor: wellness.line,
-        shadowColor: "#24211B",
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.035,
-        shadowRadius: 12,
-        elevation: 3,
+        boxShadow: cardShadow(mode === "dark"),
       }}
     >
       {p.image_url ? (

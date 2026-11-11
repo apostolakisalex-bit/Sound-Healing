@@ -283,16 +283,23 @@ def _featured(post: dict) -> Optional[str]:
     return m.get("source_url")
 
 
+_SKIP_IMG = re.compile(
+    r"(accredited|logo|badge|seal|sprite|icon|iphm|placeholder|avatar|favicon|spacer|pixel)",
+    re.IGNORECASE,
+)
+
+
 def _first_content_image(post: dict) -> Optional[str]:
-    """Fallback hero: first <img> inside the post body when there is no
-    featured image (some posts, e.g. the Goa seminar, only embed images)."""
+    """Fallback hero: first real <img> inside the post body when there is no
+    featured image. Skips logos/badges (e.g. accreditation seals) so cards
+    show an actual seminar photo."""
     html_body = (post.get("content") or {}).get("rendered", "")
     if not html_body:
         return None
     soup = BeautifulSoup(html_body, "html.parser")
     for img in soup.find_all("img"):
         src = _img_src(img)
-        if src:
+        if src and not _SKIP_IMG.search(src):
             return src
     return None
 

@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { ManagedImage } from "./ManagedImage";
 import { useUi, useLoad, Status } from "./Wellness";
+import { cardShadow } from "@/src/theme";
 import { useLanguage } from "./AppNavigation";
 
 export type BlogPost = {
@@ -54,7 +55,7 @@ export function BlogList({
   articlesOnly?: boolean;
 }) {
   const router = useRouter();
-  const { wellness } = useTheme();
+  const { wellness, mode } = useTheme();
   const ui = useUi();
   const { t, language } = useLanguage();
   const dateLocale = language === "en" ? "en-GB" : "el-GR";
@@ -124,6 +125,7 @@ export function BlogList({
         backgroundColor: wellness.white,
         borderWidth: 1,
         borderColor: wellness.line,
+        boxShadow: cardShadow(mode === "dark"),
       }}
     >
       {post.image ? (
@@ -203,6 +205,7 @@ export function BlogList({
         backgroundColor: wellness.white,
         borderWidth: 1,
         borderColor: wellness.line,
+        boxShadow: cardShadow(mode === "dark"),
       }}
     >
       {post.image ? (
