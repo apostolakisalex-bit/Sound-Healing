@@ -388,6 +388,7 @@ export function PublicExperience({ section }: { section?: string }) {
       {section === "soundhealing" && !intro && <SoundHealingGuide />}
       {section === "contact" && <MembersChat />}
       <Status state={state} />
+      {section === "training" && <EventsCalendar mode="training" />}
       {section === "training" && <ActiveList items={activeTrainingEvents} />}
       {section === "events" && <EventsCalendar mode="events" />}
       {section === "events" && (
