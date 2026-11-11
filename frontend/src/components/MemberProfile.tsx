@@ -25,6 +25,7 @@ import {
   useLoad,
 } from "./Wellness";
 import { useIconSurface, useLanguage } from "./AppNavigation";
+import { ProfileGreeting, UpcomingSessions } from "./UpcomingSessions";
 
 type Level = {
   cohort_id?: string | null;
@@ -89,7 +90,7 @@ export function MemberProfile({
   cohorts?: { id: string; title: string; level_id: string }[];
 }) {
   const { user, updateProfile, logout, refresh } = useAuth();
-  const { wellness } = useTheme();
+  const { wellness, mode } = useTheme();
   const ui = useUi();
   const iconSurface = useIconSurface();
   const router = useRouter();
@@ -144,49 +145,62 @@ export function MemberProfile({
       {!staff &&
         (user?.membership_status === "pending" ||
           user?.email_verified === false) && <AccountChecklist />}
+      {!staff && <ProfileGreeting name={p.name} image={p.profile_image} />}
+      {!staff && <UpcomingSessions />}
       <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
-        <View
-          style={[
-            iconSurface,
-            {
-              width: 84,
-              height: 84,
-              borderRadius: 42,
-              alignItems: "center",
-              justifyContent: "center",
-            },
-          ]}
-        >
-          {p.profile_image ? (
-            <Image
-              source={{ uri: p.profile_image }}
-              style={{ width: 80, height: 80, borderRadius: 40 }}
-            />
-          ) : (
-            <Ionicons name="person-outline" size={36} color={wellness.muted} />
-          )}
-        </View>
-        <View style={{ flex: 1, gap: 8 }}>
-          <Text
+        {staff && (
+          <View
             style={[
-              ui.body,
-              { fontWeight: "600", color: wellness.ink, fontSize: 17 },
+              iconSurface,
+              {
+                width: 84,
+                height: 84,
+                borderRadius: 42,
+                alignItems: "center",
+                justifyContent: "center",
+              },
             ]}
           >
-            {p.name}
-          </Text>
+            {p.profile_image ? (
+              <Image
+                source={{ uri: p.profile_image }}
+                style={{ width: 80, height: 80, borderRadius: 40 }}
+              />
+            ) : (
+              <Ionicons name="person-outline" size={36} color={wellness.muted} />
+            )}
+          </View>
+        )}
+        <View style={{ flex: 1, gap: 8 }}>
+          {staff ? (
+            <Text
+              style={[
+                ui.body,
+                { fontWeight: "600", color: wellness.ink, fontSize: 17 },
+              ]}
+            >
+              {p.name}
+            </Text>
+          ) : (
+            <Text style={[ui.body, { color: wellness.muted, fontSize: 13 }]}>
+              {t("Πρόοδος ανά επίπεδο", "Progress by level")}
+            </Text>
+          )}
           {p.levels.map((l) => (
             <View
               key={l.level_id}
               style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
             >
-              <Text style={{ fontSize: 11, width: 20 }}>{l.level_id}</Text>
+              <Text style={{ fontSize: 11, width: 20, color: wellness.muted }}>
+                {l.level_id}
+              </Text>
               <View
                 style={{
                   flex: 1,
                   height: 7,
                   borderRadius: 5,
-                  backgroundColor: "#E3E0DA",
+                  backgroundColor:
+                    mode === "dark" ? "rgba(255,255,255,0.14)" : "#E3E0DA",
                   overflow: "hidden",
                 }}
               >
@@ -198,7 +212,7 @@ export function MemberProfile({
                   }}
                 />
               </View>
-              <Text style={{ fontSize: 10 }}>
+              <Text style={{ fontSize: 10, color: wellness.muted }}>
                 {l.enabled
                   ? l.target
                     ? `${l.completed}/${l.target}`

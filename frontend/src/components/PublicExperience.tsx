@@ -274,7 +274,7 @@ export function PublicExperience({ section }: { section?: string }) {
       {section === "contact" && <MembersChat />}
       <Status state={state} />
       {(section === "events" || section === "training") && (
-        <EventsCalendar mode={section === "training" ? "training" : "events"} />
+        <EventsCalendar mode={section === "training" ? "training" : "all"} />
       )}
       {(section === "events" || section === "training") && (
         <EventGrid

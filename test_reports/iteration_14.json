@@ -1,0 +1,41 @@
+{
+  "summary": "Frontend-only test of the warm 'Bliss' redesign (Events calendar, featured card, Join pill, student profile greeting/upcoming) at 375x667, light+dark, EL+EN. All 7 requested flows WORK: calendar renders (month label, weekday headers, rounded cells, today outline), chevrons change month (Nov->Dec->Aug 2026), event days (from /api/trainings/catalog ISO start_date) are bold with a dot and selectable (dark fill), Όλα/Επερχόμενα filter toggles highlights (past Aug days disappear under Επερχόμενα), featured card defaults to nearest upcoming 'ekpaideftiko-...-28-29-noemvriou-athina' (10:00 – 18:00, 28 Νοεμβρίου, Αθήνα, photo, 'Πληροφορίες & εγγραφή' split pill), updates on selecting Aug 1 (Level 1 · Χανιά) and navigates to /seminar/<slug>. /explore/training shows 'Ημερολόγιο εκπαιδευτικών' with trainings only. Home 'Ξεκίνα τώρα' pill -> /explore/training. Student login (maria.papadaki) -> profile shows 'Καλησπέρα 😊' + 'Μαρία Παπαδάκη' + 'Η διαδρομή σου στον ήχο', 'Επερχόμενα' featured card ('Συμμετοχή' -> /seminar/...), then L1-L4 bars and 'Καταγραφή & επιβεβαιωμένη πρόοδος'. EN translations OK. One real dark-mode bug: on the profile the L1-L4 level-bar labels and values (2/7, —) render rgb(0,0,0) on the dark navy background, so they can't be seen. No page errors or red screens (one transient 'Failed to load split bundle' on a single load that did not happen again on retry). No deprecated Expo packages detected.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "MemberProfile level bars", "issue": "In dark mode the L1-L4 labels and the progress values ('2/7', '—') have no color set and render black rgb(0,0,0) on dark navy, so they can't be seen. Reference: /app/frontend/src/components/MemberProfile.tsx:186 and :204 (add color: wellness.ink / wellness.muted). The bar track is also hardcoded '#E3E0DA' (:192) and looks very bright in dark mode.", "testID": "n/a", "priority": "HIGH"},
+      {"component": "EventsCalendar selected day vs filter", "issue": "After selecting a past day (e.g. 1 Aug) and switching to 'Επερχόμενα', that day keeps the dark 'selected' fill even though it has no events under the filter (featured falls back to Athens/'Επόμενη εκδήλωση'). Reset `selected` when it is not in byDay after a filter change. Reference: EventsCalendar.tsx:52,81,267", "testID": "n/a", "priority": "MEDIUM"},
+      {"component": "EventsCalendar multi-day sessions", "issue": "2-day seminars (28-29 Nov, 1-2 Aug, 3-4 Aug) are pinned only on the start day. endISO is computed in schedule.ts but never used, so days 29 / 2 / 4 appear empty. Reference: schedule.ts:72, EventsCalendar.tsx:44", "testID": "n/a", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Student profile", "issues": ["Identity is duplicated: the new ProfileGreeting card (avatar + 'Μαρία Παπαδάκη') is followed, right after the Upcoming card, by the old 84px avatar + name + level bars block, so there are two avatars and the name appears twice. Consider moving the level bars into a 'progress' soft card and removing the old avatar/name row (MemberProfile.tsx:148-214).", "Greeting uses the device-local hour (UpcomingSessions.tsx:187) while the schedule uses Europe/Athens. Minor inconsistency."]},
+      {"screen": "Events / Profile warm theme", "issues": ["warm.bg (#FBF7F0 / #17140F) is defined but never used. Screens keep the app-wide background (navy in dark mode) and light-mode cards are pure #FFFFFF, so the 'beige/sand' look shows up mostly on pills and day cells.", "Featured card photo: the promo PNG has a white background, so in dark mode a bright white tile sits inside the dark card (the cropped baked-in text was noted as expected by E1)."]},
+      {"screen": "Events calendar touch targets", "issues": ["Filter pills are ~54x29px and day cells ~38x38px at 375 width (below 44pt). Chevrons are 36px with hitSlop 10 (OK)."]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": ["/app/.screenshots (ev1-ev5, sem, tr, home, prof1-3, dprof1-2, dev1-2, en)"],
+  "action_items": [
+    "HIGH: Set explicit theme colors on the MemberProfile level-bar Text (lines 186, 204) and theme the track color (line 192) so L1-L4 / 2/7 show up in dark mode.",
+    "MEDIUM: In EventsCalendar reset `selected` (or skip the dark fill) when the selected day has no events under the active filter.",
+    "LOW: Show multi-day sessions across start_date..end_date in the calendar.",
+    "LOW: Remove the duplicated avatar/name block on the student profile below the greeting card.",
+    "LOW: Add testIDs to calendar chevrons, filter pills, day cells, FeaturedEvent, UpcomingRow, JoinPill and ProfileGreeting (none today; tested via accessibilityLabel/text).",
+    "LOW: Optionally apply warm.bg to the Events/Profile screen containers."
+  ],
+  "critical_code_review_comments": [
+    "No testID on any new component (EventsCalendar, FeaturedEvent, UpcomingRow, JoinPill, ProfileGreeting).",
+    "EventsCalendar.tsx:83 nextUpcoming requires dateISO >= today, so an active training that has already started (ongoing multi-day) can never be the default featured item.",
+    "useSchedule is called separately by EventsCalendar and UpcomingSessions, so /trainings/catalog and /content/public are fetched twice when both mount. Consider caching.",
+    "MemberProfile.tsx is 958 lines and PublicHome.tsx is 775 lines (>700). Both should be split.",
+    "Loading/empty texts in EventsCalendar use ui.body (app palette) instead of warm.muted. Minor inconsistency."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (not requested)", "frontend": "90% - all 7 requested flows work; dark-mode contrast fails for the profile level bars"},
+  "seed_data_creation": "None. Only logged in as the existing seeded student maria.papadaki@example.com; no data modified.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Container date is 2026-11-11 (Athens). Catalog: Nov 28-29 2026 Athens (active=true), Aug 1-2 and Aug 3-4 2026 Chania (active=false -> 'Completed'). No CMS events with dates. Calendar elements have no testIDs; use aria-labels: 'Προηγούμενος μήνας'/'Επόμενος μήνας', day cells '<d>, 1 εκδήλωση/εις', theme toggle 'Νυχτερινό θέμα', language 'Switch to English', home pill 'Ξεκίνα τώρα'. The month label is role=heading (2nd heading on /explore/events).",
+  "rca_of_issue": "Dark-mode level labels can't be seen: the Text elements at MemberProfile.tsx:186/204 set only fontSize and no color, so RN-web defaults to black whatever the theme."
+}

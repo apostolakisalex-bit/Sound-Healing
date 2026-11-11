@@ -467,3 +467,15 @@ main (its merge-base was my own tip `70720ab`, so all prior session work is pres
 - Light/day Services tiles and education Level cards now use the Training card colour (`wellness.lavender` / `lavenderInk` border).
 - Treatments service tile now uses a distinct sacred-geometry symbol (`src/components/icons/SacredMandala.tsx`, slate two-ring lotus/mandala with petals and dotted outer ring) matching the other three service symbols' aesthetic. (User rejected earlier gong logo and hexagram/Merkaba variants; mandala with petals chosen by user.)
 
+
+## v2.4 — Warm "Bliss"-inspired Events + Student Profile redesign
+Goal: apply a soft, warm beige/sand, tactile pill aesthetic ONLY to the Events + Student Profile surfaces, while keeping the app-wide palette + dark mode everywhere else. Events must pull REAL dates so upcoming sessions stay current.
+- New warm surface palette (light + dark variants) in `src/theme/warm.ts` (`useWarm()`), mapped onto the existing theme so dark mode stays readable.
+- New shared schedule hook `src/content/schedule.ts` (`useSchedule('training'|'events'|'all')`, `openSchedule`, `eachISO`, `longDate`, `monthLabel`): normalises `GET /api/trainings/catalog` (ISO start/end dates, active flag) + `GET /api/content/public` events into dated `ScheduleEvent`s, sorted, with past/upcoming derived from real dates (Athens tz). No hardcoded dates.
+- `src/components/EventsCalendar.tsx` fully redesigned (warm card, month nav, "Όλα"/"Επερχόμενα" filter pills, rounded day cells with dark-fill selection, multi-day pins via `eachISO`, legend). Below it a large featured next-event card (defaults to nearest upcoming/ongoing; updates on day select). `PublicExperience.tsx` now calls it with `mode="all"` on `/explore/events` (CMS events currently have no dates, so trainings populate the calendar) and `mode="training"` on `/explore/training`.
+- `src/components/UpcomingSessions.tsx`: reusable `FeaturedEvent` (photo + big time + date + title + location + Join pill), `UpcomingRow`, `ProfileGreeting`, and `UpcomingSessions` (profile list).
+- `src/components/JoinPill.tsx`: split-pill "Join now" CTA (arrow chip + label); renders non-interactive when no `onPress` (used decoratively inside already-pressable cards).
+- Student profile (`MemberProfile.tsx`, `!staff` only): warm greeting card (time-of-day greeting + name + tagline) + "Επερχόμενα" upcoming sessions on top; the old duplicate avatar+name header is hidden for students (kept for staff), level bars relabelled "Πρόοδος ανά επίπεδο"; level-bar label/value colours + track now theme-aware (fixed black-on-navy dark-mode bug).
+- Home hero (`PublicHome.tsx`): added "Ξεκίνα τώρα" / "Join now" split-pill CTA → `/explore/training`.
+- Verified (screenshots + testing_agent iteration_14 + follow-up fixes): calendar real dates/month nav/filters, featured card → `/seminar/<slug>`, multi-day pins (28 & 29 Nov), profile greeting+upcoming+progress, light & dark readability.
+
