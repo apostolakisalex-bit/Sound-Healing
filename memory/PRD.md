@@ -526,3 +526,8 @@ Delivered 4 user-selected items + a design trial + test-report fixes.
 - GOA PHOTO: `blog.py _first_content_image` now skips logo/badge images (`_SKIP_IMG`: accredited|logo|badge|seal|iphm|icon|…) so the Goa card uses the real seminar photo (Sound-Healing-Training-in-Goa-India-7) instead of the IPHM accreditation logo. (WP featured image for that post is broken/null.)
 - HEADER WAVE: replaced the single bottom SVG wave on the home hero with a 3-layer "waves" divider (two translucent white wave bands + solid front), matching the layered wave look of soundhealing.gr's footer/about-me page.
 
+
+## v3.0 — Welcome/onboarding screen + Ηχοθεραπεία card image (Nov 2026)
+- WELCOME: new `src/components/Welcome.tsx` shown on app open (gated in `app/index.tsx` via a module-level `seenWelcome` flag that resets each cold start; "Get Started" → renders `PublicScreen`). Full-bleed gong photo (`assets/welcome/gong.webp`, the founder-with-gong image the user sent) that softly blurs + fades (reanimated `prog` 0→1, expo-blur BlurView opacity) and dissolves into an animated "cymatic" field — looping concentric ripple rings (reanimated `Ripple`, staggered) spreading across the whole screen — without distorting the image or touching the text/button. Bottom-left light serif title "Welcome to Sound Healing Greece" (exactly like the reference), bilingual subtitle, a 3D raised cream "Get Started" CTA (gradient + inset highlight + drop shadow), and a terms line. NOTE: the soft-blur dissolve is subtle in the web preview (web BlurView is weak) but full on a real device/Expo Go.
+- Ηχοθεραπεία intro card image swapped to the hxotherapeia page header (`.../2021/02/singing-bowl-4595876_1920-1.jpg`).
+

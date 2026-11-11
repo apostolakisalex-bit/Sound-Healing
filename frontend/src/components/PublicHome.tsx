@@ -185,7 +185,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       label: t("Η ΕΜΠΕΙΡΙΑ", "THE EXPERIENCE"),
       image: photo(
         "soundhealing",
-        page("soundhealing")?.image_url || SCHOOL_PHOTOS[4],
+        "https://www.soundhealing.gr/wp-content/uploads/2021/02/singing-bowl-4595876_1920-1.jpg",
       ),
       route: "/explore/soundhealing",
       ratio: 0.82,
