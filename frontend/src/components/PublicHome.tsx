@@ -27,6 +27,9 @@ import {
 import { ContentItem, Status, useUi, useLoad } from "./Wellness";
 import { EventGrid } from "./EventGrid";
 import { getServices, serviceSlugByTitle } from "@/src/content/services";
+import { STUDENT_REVIEWS } from "@/src/content/testimonials";
+import { TestimonialsCarousel } from "./TestimonialsCarousel";
+import YoutubeCard from "./YoutubeCard";
 type LiveTraining = {
   slug: string;
   title: string;
@@ -151,7 +154,19 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
   };
   const testimonials = items
     .filter((i) => i.published.kind === "testimonial")
-    .slice(0, 3);
+    .slice(0, 8);
+  const reviewCards = [
+    ...testimonials.map((i) => ({
+      quote: i.published.summary,
+      name: i.published.title,
+      avatar: i.published.image_url,
+    })),
+    ...STUDENT_REVIEWS.map((r) => ({
+      quote: language === "el" ? r.el : r.en,
+      name: language === "el" ? r.name_el : r.name_en,
+      avatar: r.avatar,
+    })),
+  ];
   const partners = items
     .filter((i) => i.published.kind === "partner" && i.published.image_url)
     .slice(0, 8);
@@ -191,42 +206,38 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       ratio: 0.82,
     },
   ];
-  const levelCols: MosaicCard[][] = [
-    [
-      {
-        title: t("Τα θεμέλια", "The foundations"),
-        label: "LEVEL 1",
-        image: photo("L1", SCHOOL_PHOTOS[0]),
-        route: "/explore/levels?level=1",
-        ratio: 1.35,
-      },
-      {
-        title: t("Ομαδικά Sound Baths", "Group Sound Baths"),
-        label: "LEVEL 3",
-        image: photo("L3", SCHOOL_PHOTOS[3]),
-        route: "/explore/levels?level=3",
-        ratio: 1.05,
-      },
-    ],
-    [
-      {
-        title: t("Εμβάθυνση", "Going deeper"),
-        label: "LEVEL 2",
-        image: photo("L2", SCHOOL_PHOTOS[1]),
-        route: "/explore/levels?level=2",
-        ratio: 1.35,
-      },
-      {
-        title: t("Επαγγελματική ανάπτυξη", "Professional development"),
-        label: "LEVEL 4",
-        image: photo(
-          "L4",
-          "https://customer-assets-7cd3h4nn.emergentagent.net/job_healing-universe/artifacts/286fcc6103226d3c_6a6669c30673043717a7169d2d00f8b8.jpg",
-        ),
-        route: "/explore/levels?level=4",
-        ratio: 0.68,
-      },
-    ],
+  const levels: MosaicCard[] = [
+    {
+      title: t("Τα θεμέλια", "The foundations"),
+      label: "LEVEL 1",
+      image: photo("L1", SCHOOL_PHOTOS[0]),
+      route: "/explore/levels?level=1",
+      ratio: 2.6,
+    },
+    {
+      title: t("Εμβάθυνση", "Going deeper"),
+      label: "LEVEL 2",
+      image: photo("L2", SCHOOL_PHOTOS[1]),
+      route: "/explore/levels?level=2",
+      ratio: 2.6,
+    },
+    {
+      title: t("Ομαδικά Sound Baths", "Group Sound Baths"),
+      label: "LEVEL 3",
+      image: photo("L3", SCHOOL_PHOTOS[3]),
+      route: "/explore/levels?level=3",
+      ratio: 2.6,
+    },
+    {
+      title: t("Επαγγελματική ανάπτυξη", "Professional development"),
+      label: "LEVEL 4",
+      image: photo(
+        "L4",
+        "https://customer-assets-7cd3h4nn.emergentagent.net/job_healing-universe/artifacts/c3d1215cc5ffd685_Screenshot%202026-11-11%20220351.png",
+      ),
+      route: "/explore/levels?level=4",
+      ratio: 2.6,
+    },
   ];
   const fillAbs = {
     position: "absolute" as const,
@@ -249,8 +260,8 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
         style={({ pressed }) => ({
           height: big
             ? compactScreen
-              ? 200
-              : 244
+              ? 300
+              : 360
             : compactScreen
               ? 152
               : 184,
@@ -270,7 +281,13 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
             resizeMode="cover"
             style={
               big
-                ? [fillAbs, { transform: [{ scale: 1.3 }, { translateY: compactScreen ? 26 : 34 }] }]
+                ? {
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    aspectRatio: 1204 / 1432,
+                  }
                 : fillAbs
             }
           />
@@ -310,7 +327,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       </Pressable>
     );
   };
-  const renderTile = (card: MosaicCard) => (
+  const renderLevelCard = (card: MosaicCard) => (
     <Pressable
       key={card.route}
       accessibilityRole="link"
@@ -318,8 +335,8 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       onPress={() => router.push(card.route as any)}
       style={({ pressed }) => ({
         aspectRatio: fontScale > 1.3 ? undefined : card.ratio,
-        minHeight: Math.max(135, 95 * fontScale),
-        borderRadius: 12,
+        minHeight: Math.max(108, 82 * fontScale),
+        borderRadius: 14,
         overflow: "hidden",
         backgroundColor: wellness.blueMist,
         opacity: pressed ? 0.85 : 1,
@@ -329,25 +346,24 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
         source={{ uri: card.image }}
         accessibilityLabel={card.title}
         resizeMode="cover"
-        style={{ position: "absolute", width: "100%", height: "100%" }}
+        style={fillAbs}
       />
       <LinearGradient
-        colors={["transparent", "rgba(22,30,40,0.82)"]}
-        locations={[0.2, 1]}
-        style={{ position: "absolute", width: "100%", height: "100%" }}
+        colors={["transparent", "rgba(22,30,40,0.85)"]}
+        locations={[0.25, 1]}
+        style={fillAbs}
       />
       <View
         style={{
           marginTop: "auto",
-          padding: compactScreen ? 12 : 20,
-          gap: 5,
-          backgroundColor: "rgba(22,30,40,0.46)",
+          padding: compactScreen ? 14 : 20,
+          gap: 4,
         }}
       >
         <Text
           style={[
             ui.label,
-            { color: "#FFFFFF", fontSize: 10, letterSpacing: 1.1 },
+            { color: "#FFFFFF", fontSize: 10, letterSpacing: 1.4 },
           ]}
         >
           {card.label}
@@ -357,8 +373,8 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
             ui.body,
             {
               color: "#FFFFFF",
-              fontSize: compactScreen ? 15 : 22,
-              lineHeight: compactScreen ? 20 : 28,
+              fontSize: compactScreen ? 16 : 22,
+              lineHeight: compactScreen ? 21 : 28,
               fontWeight: "600",
             },
           ]}
@@ -410,7 +426,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
             // Drop the wordmark below the floating language/theme controls
             // (which sit at insets.top + 12 and are ~40px tall) so the two
             // icons never touch the word "Greece".
-            paddingTop: insets.top + (compactScreen ? 62 : 72),
+            paddingTop: insets.top + (compactScreen ? 104 : 130),
           }}
         >
           <Text
@@ -423,7 +439,10 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                 fontSize: compactScreen ? 30 : 46,
                 lineHeight: compactScreen ? 40 : 56,
                 letterSpacing: 2.5,
-                color: wellness.ink,
+                color: "#15100A",
+                textShadowColor: "rgba(43,34,22,0.45)",
+                textShadowOffset: { width: 0, height: 2 },
+                textShadowRadius: 5,
               },
             ]}
           >
@@ -459,18 +478,9 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       <Text style={[ui.heading, { fontWeight: "600" }]}>
         {t("Γνώρισε τη σχολή και τα 4 Levels", "Meet the school and the 4 Levels")}
       </Text>
-      <View style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
-        {levelCols.map((column, index) => (
-          <View key={index} style={{ flex: 1, gap: 12 }}>
-            {column.map(renderTile)}
-          </View>
-        ))}
-      </View>
+      <View style={{ gap: 12 }}>{levels.map(renderLevelCard)}</View>
       {(
-        [
-          ["training", t("Εκπαιδευτικά", "Training")],
-          ["events", t("Ενεργές εκδηλώσεις", "Active events")],
-        ] as [string, string][]
+        [["training", t("Εκπαιδευτικά", "Training")]] as [string, string][]
       ).map(([section, title]) => (
         <View
           key={section}
@@ -787,36 +797,8 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       {settings?.show_testimonials !== false && (
         <View style={{ gap: 18 }}>
           <Text style={ui.heading}>{t("Οι εμπειρίες των μαθητών", "Student experiences")}</Text>
-          <View style={[ui.row, { alignItems: "stretch" }]}>
-            {testimonials.length ? (
-              testimonials.map((i) => (
-                <View
-                  key={i.id}
-                  style={[ui.card, { flexBasis: 260, flexGrow: 1 }]}
-                >
-                  <Text style={ui.body}>“{i.published.summary}”</Text>
-                  <Text style={ui.label}>{i.published.title}</Text>
-                  {!!i.published.action_url && (
-                    <Link href={i.published.action_url as any} style={ui.body}>
-                      {t("Πηγή ↗", "Source ↗")}
-                    </Link>
-                  )}
-                </View>
-              ))
-            ) : (
-              <View style={[ui.card, { maxWidth: 620 }]}>
-                <Text style={ui.body}>
-                  {t("«Ήταν πολλά παραπάνω από ένα εκπαιδευτικό!»", "\u201cIt was so much more than a training!\u201d")}
-                </Text>
-                <Text style={ui.label}>Eleni Z.</Text>
-                <Link
-                  href="https://www.soundhealing.gr/training-seminars/"
-                  style={ui.body}
-                >
-                  {t("Διάβασε την εμπειρία της ↗", "Read her experience ↗")}
-                </Link>
-              </View>
-            )}
+          <View style={{ marginHorizontal: -24 }}>
+            <TestimonialsCarousel reviews={reviewCards} />
           </View>
         </View>
       )}
@@ -849,6 +831,27 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           </View>
         </View>
       )}
+      <View
+        style={{
+          gap: 16,
+          paddingVertical: 24,
+          borderTopWidth: 1,
+          borderColor: wellness.line,
+        }}
+      >
+        <Text style={ui.heading}>{t("Δες & άκουσε", "Watch & listen")}</Text>
+        <View
+          style={{
+            borderRadius: 20,
+            overflow: "hidden",
+            backgroundColor: "#000000",
+            boxShadow:
+              "0px 3px 6px rgba(60,48,34,0.16), 0px 18px 34px rgba(60,48,34,0.22)",
+          }}
+        >
+          <YoutubeCard />
+        </View>
+      </View>
       {settings?.show_socials !== false && (
         <View
           style={{

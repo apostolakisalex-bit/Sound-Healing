@@ -535,3 +535,12 @@ Delivered 4 user-selected items + a design trial + test-report fixes.
 - Added hero image to article "How to Grow as a Sound Healer" (id 6860) via curated real soundhealing.gr photo fallback in blog.py.
 - Events: hid the inactive/archive section after the calendar (archive now shows only for Trainings).
 - Home: lowered the Manolis Zografakis card photo so his full head is visible.
+
+## Home & Trainings redesign + YouTube video (June 2026)
+- Home Levels: four equal-size wide/elongated horizontal cards stacked vertically (renderLevelCard, ratio 2.6); Level 4 now uses the uploaded overhead crystal-bowl group photo (artifact #1).
+- Removed the Home "Ενεργές εκδηλώσεις" preview block (the "Εκπαιδευτικά" training preview stays).
+- Header wordmark "Sound Healing Greece" forced to black (#15100A) in both light and dark mode (keeps subtle 3D shadow).
+- Testimonials: new gently auto-scrolling horizontal carousel (TestimonialsCarousel.tsx) using real soundhealing.gr student reviews (src/content/testimonials.ts); pauses on touch/drag, resumes after ~1.4s.
+- Public "Εκπαιδευτικά" section renamed to "Εκπαιδευτικά και Εκδηλώσεις"; now shows ONLY active trainings+events as wide stacked cards (ActiveList.tsx). Removed level cards / calendar / event grid / article list from that page (Events page unchanged). blogItems for training now also pulls category "events"; eventCmsItems pulls CMS section "events".
+- Added YouTube video card "Δες & άκουσε" above "Ας μείνουμε σε επαφή" on Home: react-native-youtube-iframe (native) + iframe (web). Autoplays muted when scrolled into view, sound-toggle button, native fullscreen. Video id X74zlekpNbA.
+  NOTE: In the sandboxed web preview YouTube shows "Video unavailable / Error 153" because the datacenter IP is bot-flagged by YouTube (same error for any video, incl. first-ever YouTube video). oEmbed confirms the video is public & embeddable; it plays on real devices/browsers.

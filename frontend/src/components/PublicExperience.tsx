@@ -1,5 +1,5 @@
-import { TrainingLevelCards } from "./TrainingLevels";
 import { MembersChat } from "./MembersChat";
+import { ActiveList } from "./ActiveList";
 import { PublicHome } from "./PublicHome";
 import { EventGrid } from "./EventGrid";
 import React from "react";
@@ -59,7 +59,7 @@ const makeSections = (t: (el: string, en: string) => string) => ({
   },
   training: {
     title: t("Μάθε. Εξασκήσου. Εξελίξου.", "Learn. Practise. Grow."),
-    label: t("Εκπαιδευτικά", "Training"),
+    label: t("Εκπαιδευτικά και Εκδηλώσεις", "Training & Events"),
     summary: t(
       "Τέσσερα προοδευτικά Levels που συνδυάζουν θεωρία, βιωματική μάθηση και πρακτική.",
       "Four progressive Levels that combine theory, experiential learning and practice.",
@@ -258,7 +258,11 @@ export function PublicExperience({ section }: { section?: string }) {
     );
     const wantGreek = language !== "en";
     const sorted = [...blogAll.data]
-      .filter((p) => p.category === section)
+      .filter((p) =>
+        section === "training"
+          ? p.category === "training" || p.category === "events"
+          : p.category === section,
+      )
       .sort(
         (a, b) =>
           (titleIsGreek(a.title) === wantGreek ? 0 : 1) -
@@ -282,7 +286,7 @@ export function PublicExperience({ section }: { section?: string }) {
           summary: "",
           body: "",
           kind: "event",
-          section,
+          section: p.category,
           image_url: p.image || "",
           event_date: dateLabel,
           event_time: "",
@@ -297,6 +301,40 @@ export function PublicExperience({ section }: { section?: string }) {
     }
     return out;
   }, [section, blogAll.data, seminars.data.items, language, t]);
+  const eventCmsItems: ContentItem[] =
+    section === "training"
+      ? visibleItems.filter(
+          (i) =>
+            (i.published.section || "") === "events" &&
+            ["event", "announcement"].includes(i.published.kind),
+        )
+      : [];
+  const isPastItem = (it: ContentItem) =>
+    it.completed ??
+    (!!it.published.event_end_date && it.published.event_end_date < today);
+  let activeTrainingEvents: ContentItem[] = [];
+  if (section === "training") {
+    const merged = [
+      ...entries.filter((item) => item.id !== intro?.id),
+      ...seminarItems,
+      ...eventCmsItems,
+      ...blogItems,
+    ];
+    const seen = new Set<string>();
+    activeTrainingEvents = merged
+      .filter((it) => !isPastItem(it))
+      .filter((it) => {
+        const k = (it.published.title || "").trim().toLowerCase();
+        if (!k || seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      })
+      .sort((a, b) =>
+        (a.published.event_end_date || "9999").localeCompare(
+          b.published.event_end_date || "9999",
+        ),
+      );
+  }
   return (
     <Shell
       publicPage
@@ -337,7 +375,6 @@ export function PublicExperience({ section }: { section?: string }) {
       {!section && !state.loading && !state.error && (
         <PublicHome items={state.data} />
       )}
-      {section === "training" && <TrainingLevelCards />}
       {section === "services" && (
         <NavLink href="https://www.soundhealing.gr/el/epipleon-yphresies/">
           {t("Αναλυτικά οι υπηρεσίες και οι συνεργασίες ↗", "All services and collaborations in detail ↗")}
@@ -351,25 +388,18 @@ export function PublicExperience({ section }: { section?: string }) {
       {section === "soundhealing" && !intro && <SoundHealingGuide />}
       {section === "contact" && <MembersChat />}
       <Status state={state} />
-      {(section === "events" || section === "training") && (
-        <EventsCalendar mode={section === "training" ? "training" : "events"} />
-      )}
-      {(section === "events" || section === "training") && (
+      {section === "training" && <ActiveList items={activeTrainingEvents} />}
+      {section === "events" && <EventsCalendar mode="events" />}
+      {section === "events" && (
         <EventGrid
-          training={section === "training"}
+          training={false}
           items={[
             ...entries.filter((item) => item.id !== intro?.id),
-            ...seminarItems,
             ...blogItems,
           ]}
         />
       )}
-      {(section === "events" || section === "training") && (
-        <BlogList
-          section={section === "training" ? "training" : "events"}
-          articlesOnly={section === "training" || section === "events"}
-        />
-      )}
+      {section === "events" && <BlogList section="events" articlesOnly />}
       {entries
         .filter(
           (item) =>
