@@ -33,10 +33,15 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
       return m ? decodeURIComponent(m[1]) : null;
     };
     try {
+      // Return to the public /login route (not a protected route): on Android
+      // the redirect arrives as a normal deep link, so expo-router navigates to
+      // this path before auth state is set. /login is allowed for logged-out
+      // users, so the root AuthGate drives the post-login navigation instead of
+      // bouncing to the landing page.
       const redirectUrl =
         Platform.OS === "web"
-          ? window.location.origin + "/profile"
-          : Linking.createURL("profile");
+          ? window.location.origin + "/login"
+          : Linking.createURL("login");
       const authUrl =
         "https://auth.emergentagent.com/?redirect=" +
         encodeURIComponent(redirectUrl);

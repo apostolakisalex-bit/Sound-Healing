@@ -10,7 +10,7 @@ import { Platform } from "react-native";
 import * as Linking from "expo-linking";
 import { api, setAuthToken, getAuthToken } from "@/src/api/client";
 
-const processedSessions = new Set<string>();
+const inflightSessions = new Map<string, Promise<User>>();
 function extractSessionId(url?: string | null): string | null {
   if (!url) return null;
   const m = url.match(/[?#&]session_id=([^&#]+)/);
@@ -75,16 +75,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const loginWithSession = useCallback(async (sessionId: string) => {
-    if (processedSessions.has(sessionId)) {
-      const { data } = await api.get("/auth/me");
-      setUser(data);
-      return data as User;
+    // Exchange each session_id exactly once and share that single in-flight
+    // promise with every caller — the auth-session result, the hot deep-link
+    // listener and the cold-start handler can all surface the same id. Without
+    // this, a second caller would race ahead to /auth/me before the token is
+    // stored and fail with a 401.
+    const existing = inflightSessions.get(sessionId);
+    if (existing) return existing;
+    const run = (async () => {
+      const { data } = await api.post("/auth/session", {
+        session_id: sessionId,
+      });
+      await setAuthToken(data.token);
+      setUser(data.user);
+      return data.user as User;
+    })();
+    inflightSessions.set(sessionId, run);
+    try {
+      return await run;
+    } catch (e) {
+      inflightSessions.delete(sessionId);
+      throw e;
     }
-    processedSessions.add(sessionId);
-    const { data } = await api.post("/auth/session", { session_id: sessionId });
-    await setAuthToken(data.token);
-    setUser(data.user);
-    return data.user as User;
   }, []);
 
   useEffect(() => {

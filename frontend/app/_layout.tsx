@@ -41,12 +41,14 @@ function AuthGate() {
       return;
     }
 
-    // Authenticated: send to sanctuary from auth screens always
+    // Authenticated: send off the auth screens to the right landing spot.
     if (user && onAuthScreen) {
       router.replace(
-        user.role === "admin" || user.role === "instructor"
-          ? "/admin"
-          : "/(tabs)/profile",
+        user.membership_status && user.membership_status !== "approved"
+          ? "/(tabs)/profile"
+          : user.role === "admin" || user.role === "instructor"
+            ? "/admin"
+            : "/(tabs)/sanctuary",
       );
       return;
     }
