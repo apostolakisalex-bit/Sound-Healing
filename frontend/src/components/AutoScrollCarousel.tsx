@@ -1,9 +1,10 @@
 import React, { useEffect, useRef } from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView } from "react-native";
 
 // A horizontal row that drifts gently on its own and pauses the moment the user
-// touches / drags it, resuming shortly after they let go. Content is rendered
-// twice so the drift loops seamlessly.
+// touches / drags it, resuming shortly after they let go. Each card is rendered
+// ONCE (no duplicates); when the drift reaches the end it jumps back to the
+// start and begins again.
 export function AutoScrollCarousel<T>({
   items,
   renderItem,
@@ -18,14 +19,20 @@ export function AutoScrollCarousel<T>({
   const scrollRef = useRef<ScrollView>(null);
   const offset = useRef(0);
   const paused = useRef(false);
-  const setW = useRef(0);
+  const maxScroll = useRef(0);
+  const contentW = useRef(0);
+  const viewW = useRef(0);
   const resume = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const recompute = () => {
+    maxScroll.current = Math.max(0, contentW.current - viewW.current);
+  };
 
   useEffect(() => {
     const id = setInterval(() => {
-      if (paused.current || setW.current <= 0) return;
+      if (paused.current || maxScroll.current <= 0) return;
       offset.current += speed;
-      if (offset.current >= setW.current) offset.current -= setW.current;
+      if (offset.current >= maxScroll.current) offset.current = 0;
       scrollRef.current?.scrollTo({ x: offset.current, animated: false });
     }, 16);
     return () => {
@@ -53,6 +60,14 @@ export function AutoScrollCarousel<T>({
       horizontal
       showsHorizontalScrollIndicator={false}
       scrollEventThrottle={16}
+      onLayout={(e) => {
+        viewW.current = e.nativeEvent.layout.width;
+        recompute();
+      }}
+      onContentSizeChange={(w) => {
+        contentW.current = w;
+        recompute();
+      }}
       onScroll={(e) => {
         offset.current = e.nativeEvent.contentOffset.x;
       }}
@@ -64,17 +79,7 @@ export function AutoScrollCarousel<T>({
       onMomentumScrollEnd={resumeSoon}
       contentContainerStyle={{ gap }}
     >
-      <View
-        style={{ flexDirection: "row", gap }}
-        onLayout={(e) => {
-          setW.current = e.nativeEvent.layout.width + gap;
-        }}
-      >
-        {items.map((it, i) => renderItem(it, "a" + i))}
-      </View>
-      <View style={{ flexDirection: "row", gap }}>
-        {items.map((it, i) => renderItem(it, "b" + i))}
-      </View>
+      {items.map((it, i) => renderItem(it, "c" + i))}
     </ScrollView>
   );
 }

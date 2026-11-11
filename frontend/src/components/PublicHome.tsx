@@ -3,7 +3,6 @@ import { SCHOOL_PHOTOS } from "@/src/content/schoolGallery";
 import Svg, { Path } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "@/src/theme/ThemeContext";
-import { cardShadow } from "@/src/theme";
 import { useIconSurface, useLanguage } from "./AppNavigation";
 import { SacredMandala } from "./icons/SacredMandala";
 import { ManagedImage } from "./ManagedImage";
@@ -59,11 +58,11 @@ const SERVICE_SYMBOLS = [
 ];
 export function PublicHome({ items }: { items: ContentItem[] }) {
   const router = useRouter();
-  const { wellness, mode } = useTheme();
+  const { wellness } = useTheme();
   const ui = useUi();
   const { t, language } = useLanguage();
   const iconSurface = useIconSurface();
-  const { width, fontScale } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const compactScreen = width < 600;
   const liveTrainings = useLoad<{ items: LiveTraining[] }>(
@@ -290,65 +289,58 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       </Pressable>
     );
   };
-  const renderLevelCard = (card: MosaicCard) => (
-    <Pressable
-      key={card.route}
-      accessibilityRole="link"
-      accessibilityLabel={`${card.label}: ${card.title}`}
-      onPress={() => router.push(card.route as any)}
-      style={({ pressed }) => ({
-        aspectRatio: fontScale > 1.3 ? undefined : card.ratio,
-        minHeight: Math.max(108, 82 * fontScale),
-        borderRadius: 16,
-        overflow: "hidden",
-        backgroundColor: wellness.blueMist,
-        boxShadow: cardShadow(mode === "dark"),
-        transform: [{ translateY: pressed ? 1 : 0 }],
-        opacity: pressed ? 0.92 : 1,
-      })}
-    >
-      <ManagedImage
-        source={{ uri: card.image }}
-        accessibilityLabel={card.title}
-        resizeMode="cover"
-        style={fillAbs}
-      />
-      <LinearGradient
-        colors={["transparent", "rgba(22,30,40,0.85)"]}
-        locations={[0.25, 1]}
-        style={fillAbs}
-      />
-      <View
-        style={{
-          marginTop: "auto",
-          padding: compactScreen ? 14 : 20,
-          gap: 4,
-        }}
+  const renderLevelCard = (card: MosaicCard) => {
+    const cardWidth = (width - 48 - 12) / 2;
+    return (
+      <Pressable
+        key={card.route}
+        accessibilityRole="link"
+        accessibilityLabel={`${card.label}: ${card.title}`}
+        onPress={() => router.push(card.route as any)}
+        style={({ pressed }) => [
+          ui.card,
+          {
+            width: cardWidth,
+            backgroundColor: wellness.lavender,
+            borderColor: wellness.lavenderInk,
+            borderWidth: 1.5,
+            padding: 0,
+            overflow: "hidden",
+            gap: 8,
+            opacity: pressed ? 0.92 : 1,
+          },
+        ]}
       >
-        <Text
-          style={[
-            ui.label,
-            { color: "#FFFFFF", fontSize: 10, letterSpacing: 1.4 },
-          ]}
-        >
-          {card.label}
-        </Text>
-        <Text
-          style={[
-            ui.body,
-            {
-              color: "#FFFFFF",
-              fontSize: compactScreen ? 16 : 22,
-              lineHeight: compactScreen ? 21 : 28,
-              fontWeight: "600",
-            },
-          ]}
-        >
-          {card.title} ↗
-        </Text>
-      </View>
-    </Pressable>
-  );
+        <ManagedImage
+          source={{ uri: card.image }}
+          accessibilityLabel={card.title}
+          resizeMode="cover"
+          style={{ width: "100%", height: compactScreen ? 118 : 150 }}
+        />
+        <View style={{ padding: 10, gap: 5 }}>
+          <Text
+            style={{
+              fontSize: 10,
+              fontWeight: "700",
+              color: wellness.lavenderInk,
+              letterSpacing: 1.4,
+            }}
+          >
+            {card.label}
+          </Text>
+          <Text
+            numberOfLines={2}
+            style={[ui.body, { fontWeight: "600", fontSize: 14 }]}
+          >
+            {card.title}
+          </Text>
+          <Text style={{ fontSize: 12, color: wellness.slate }}>
+            {t("Περισσότερα →", "More →")}
+          </Text>
+        </View>
+      </Pressable>
+    );
+  };
 
   return (
     <View style={{ gap: 28 }}>
@@ -443,7 +435,9 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
       <Text style={[ui.heading, { fontWeight: "600" }]}>
         {t("Γνώρισε τη σχολή και τα 4 Levels", "Meet the school and the 4 Levels")}
       </Text>
-      <View style={{ gap: 12 }}>{levels.map(renderLevelCard)}</View>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
+        {levels.map(renderLevelCard)}
+      </View>
       {(
         [["training", t("Εκδηλώσεις & Εκπαιδευτικά", "Events & Training")]] as [string, string][]
       ).map(([section, title]) => (
