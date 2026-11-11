@@ -489,3 +489,12 @@ User asks (verbatim intent): rename "From the blog" → "Articles" everywhere; A
 - `TreatmentsOverview.tsx` (title + Head) and `TreatmentDetail.tsx` (back link + a11y) now show "Θεραπείες" in Greek.
 - Verified via live preview: `/api/blog` event dates correct for all 30 posts; training section shows Goa as "Εκπαιδευτικό · 8 Φεβρουαρίου 2027 – 14 Φεβρουαρίου 2027"; Articles grid renders after archive on both /explore/training and /explore/events; article reader opens (back/hero/date/title/body); home tile reads "Θεραπείες".
 
+
+## v2.6 — Warm "wellness" palette (no purple), Services alignment, Level cards (Nov 2026)
+User asks: remove the app-wide purple/lavender look and make it a warm brown "wellness" theme like the Bliss reference photo (taupe page, cream cards, espresso/caramel accents); align the Services tile symbols AND their texts at the same height inside the cards; make the education Level cards identical to the home "Εκπαιδευτικά" section cards; also removed the hero "Ξεκίνα τώρα"/"Join now" CTA.
+- `src/theme/index.ts`: rewrote `lightWellness`/`darkWellness` tokens from lavender/blue to warm browns — light: page `ice #ECE3D8`, card `white #FBF7F1`, accent `lavenderInk #6B5540` (coffee), `slate #7C6650`, ink `#2F2823`, soft surfaces `lavender/blueMist/sage` → warm sand/greige; dark: espresso page `#1A1511`, card `#262019`, warm-sand accents. Warmed the derived `accent.cyan/turquoise/indigo`, `border.glow`, and `cardShadow` tint. All components read these tokens via `useTheme()`, so the whole app shifts. (`warm.ts` for Events/Profile was already warm — unchanged.)
+- Hardcoded dark-mode purple button `#7A68A0` → warm `#7A6450` in `Wellness.tsx` + `AdminHome.tsx`.
+- `PublicHome.tsx` Services tiles: `justifyContent` center → `flex-start` and labels `numberOfLines={2}` + `minHeight:32`, so every symbol sits at the same top position and all texts align regardless of 1- vs 2-line titles. Removed hero `JoinPill` CTA + unused import.
+- `TrainingLevels.tsx` `TrainingLevelCards`: restructured to match the home "Εκπαιδευτικά" cards — `ui.card`, 48%/100% width, `wellness.lavender` bg + `lavenderInk` border, padding 0, overflow hidden, photo-top (from `/api/trainings/gallery`, per-level with `LevelSymbol` fallback, height 100/170) then padded block (LEVEL n / title / subtitle / "Γνώρισε το επίπεδο →").
+- Verified via screenshots (light + dark): warm palette everywhere, no purple/blue; Services symbols + texts aligned; education Level cards now photo-top like the home training cards; dark mode is warm espresso and readable.
+

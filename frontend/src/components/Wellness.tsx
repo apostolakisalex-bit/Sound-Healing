@@ -117,9 +117,9 @@ export function makeUi(wellness: WellnessPalette, colors: Colors) {
       minHeight: 48,
     },
     button: {
-      backgroundColor: isDark ? "#7A68A0" : wellness.lavenderInk,
+      backgroundColor: isDark ? "#7A6450" : wellness.lavenderInk,
       borderWidth: 1,
-      borderColor: isDark ? "#7A68A0" : wellness.lavenderInk,
+      borderColor: isDark ? "#7A6450" : wellness.lavenderInk,
       paddingHorizontal: 20,
       paddingVertical: 14,
       borderRadius: 24,

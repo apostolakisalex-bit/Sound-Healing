@@ -1,20 +1,20 @@
-// Modern wellness: white, ice grey and pale blue, with the owner's reference palette.
+// Warm "wellness" palette: taupe/greige page, cream cards, espresso + caramel accents.
 export const lightWellness = {
-  lavender: '#E9E3F3', lavenderInk: '#69577F', sage: '#E8F0E9', sageInk: '#4F6D59', champagne: '#D9CDB5', champagneInk: '#78613D',
-  white: '#FFFFFF', ice: '#F3F6F8', blueMist: '#E8F1F7', blueSelected: '#DCEAF4',
-  slate: '#545F7A', ink: '#293344', muted: '#617083', line: '#DCE3E9',
+  lavender: '#EADCC8', lavenderInk: '#6B5540', sage: '#E8E0D2', sageInk: '#6E5D45', champagne: '#D9CDB5', champagneInk: '#78613D',
+  white: '#FBF7F1', ice: '#ECE3D8', blueMist: '#EFE6D9', blueSelected: '#E3D5C1',
+  slate: '#7C6650', ink: '#2F2823', muted: '#8A7C6C', line: '#E2D8C9',
   rust: '#8F3D20', clay: '#CB865E', earth: '#522113', taupe: '#C2A9A5',
-  sand: '#9A7F59', oat: '#D9CDB5', stone: '#E5E5E5', cream: '#E7DDD1',
+  sand: '#9A7F59', oat: '#D9CDB5', stone: '#E6DED3', cream: '#E7DDD1',
 };
 export type Wellness = typeof lightWellness;
 
-// Calm, spa-like night palette. "white" = card surface, "ink" = primary (light) text.
+// Calm, spa-like warm night palette. "white" = card surface, "ink" = primary (light) text.
 export const darkWellness: Wellness = {
-  lavender: '#2E2A40', lavenderInk: '#BCAEDB', sage: '#20302A', sageInk: '#8FBF9E', champagne: '#33302A', champagneInk: '#D8C39A',
-  white: '#1C2030', ice: '#141824', blueMist: '#1F2636', blueSelected: '#2A3344',
-  slate: '#9FB0CE', ink: '#EDEFF5', muted: '#9AA6B8', line: '#2E3648',
+  lavender: '#332B22', lavenderInk: '#D8C2A2', sage: '#2A271F', sageInk: '#C7B79A', champagne: '#33302A', champagneInk: '#D8C39A',
+  white: '#262019', ice: '#1A1511', blueMist: '#262019', blueSelected: '#352C22',
+  slate: '#C6B096', ink: '#F1EAE0', muted: '#A89A86', line: '#332B22',
   rust: '#C96A47', clay: '#D79A74', earth: '#6B3A28', taupe: '#C2A9A5',
-  sand: '#C2A878', oat: '#D9CDB5', stone: '#3A3F4D', cream: '#2A2A30',
+  sand: '#C2A878', oat: '#D9CDB5', stone: '#3A352C', cream: '#2A251F',
 };
 
 // Back-compat default (light) for any module-scope usage not yet themed.
@@ -43,18 +43,18 @@ export const lightColors = {
     goldDeep: lightWellness.slate,
     goldSoft: lightWellness.blueSelected,
     bronze: lightWellness.sand,
-    cyan: '#3D8B9C',        // muted teal — refined complement
-    purple: lightWellness.lavenderInk,      // soft heather
+    cyan: '#B08A5A',        // warm caramel
+    purple: lightWellness.lavenderInk,      // warm coffee accent
     coral: lightWellness.clay,       // earthy clay
-    turquoise: '#4A9CA8',
+    turquoise: '#A8894A',
     lavender: lightWellness.lavender,
-    indigo: '#2C2A4A',
+    indigo: '#3A2E22',
   },
   border: {
     default: lightWellness.line,
     subtle: 'rgba(21, 21, 21, 0.08)',
     strong: 'rgba(21, 21, 21, 0.18)',
-    glow: 'rgba(84, 95, 122, 0.25)',
+    glow: 'rgba(124, 102, 80, 0.25)',
   },
   status: {
     success: '#5A8A5C',
@@ -87,18 +87,18 @@ export const darkColors: Colors = {
     goldDeep: darkWellness.slate,
     goldSoft: darkWellness.blueSelected,
     bronze: darkWellness.sand,
-    cyan: '#59A6B6',
+    cyan: '#C9A878',
     purple: darkWellness.lavenderInk,
     coral: darkWellness.clay,
-    turquoise: '#5FB2BE',
+    turquoise: '#C6A86A',
     lavender: darkWellness.lavender,
-    indigo: '#C7C4E8',
+    indigo: '#D8C2A2',
   },
   border: {
     default: darkWellness.line,
     subtle: 'rgba(255, 255, 255, 0.08)',
     strong: 'rgba(255, 255, 255, 0.18)',
-    glow: 'rgba(159, 176, 206, 0.28)',
+    glow: 'rgba(198, 176, 150, 0.28)',
   },
   status: {
     success: '#6FB071',
@@ -138,7 +138,7 @@ export const radii = {
 export const cardShadow = (isDark: boolean) =>
   isDark
     ? '0px 2px 4px rgba(0,0,0,0.35), 0px 10px 24px rgba(0,0,0,0.5)'
-    : '0px 2px 4px rgba(46,42,64,0.1), 0px 10px 24px rgba(46,42,64,0.16)';
+    : '0px 2px 4px rgba(60,48,34,0.1), 0px 10px 24px rgba(60,48,34,0.16)';
 
 
 export const fonts = {

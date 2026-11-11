@@ -617,9 +617,11 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                 style={{ width: 42, height: 42, tintColor: wellness.slate }}
               />
               <Text
+                numberOfLines={2}
                 style={{
                   fontSize: 11,
                   lineHeight: 16,
+                  minHeight: 32,
                   textAlign: "center",
                   color: wellness.ink,
                 }}
@@ -639,7 +641,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                 minHeight: compactScreen ? 116 : 140,
                 padding: 12,
                 alignItems: "center",
-                justifyContent: "center",
+                justifyContent: "flex-start",
                 gap: 12,
                 borderWidth: 1,
                 backgroundColor: wellness.lavender,
@@ -658,9 +660,11 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
               <SacredMandala size={40} color={wellness.slate} strokeWidth={1} />
             </View>
             <Text
+              numberOfLines={2}
               style={{
                 fontSize: 11,
                 lineHeight: 16,
+                minHeight: 32,
                 textAlign: "center",
                 color: wellness.ink,
               }}

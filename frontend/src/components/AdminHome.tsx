@@ -133,7 +133,7 @@ export function AdminHome({
 
 const makeStyles = (wellness: Wellness) => {
   const isDark = wellness === darkWellness;
-  const strong = isDark ? "#7A68A0" : wellness.lavenderInk;
+  const strong = isDark ? "#7A6450" : wellness.lavenderInk;
   return StyleSheet.create({
   teacherBadge: {
     alignSelf: "flex-start",

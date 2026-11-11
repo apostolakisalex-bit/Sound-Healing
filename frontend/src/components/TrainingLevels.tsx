@@ -1,7 +1,6 @@
 import { useTheme } from "@/src/theme/ThemeContext";
-import { cardShadow } from "@/src/theme";
 import React from "react";
-import { Linking, Pressable, Text, View } from "react-native";
+import { Linking, Pressable, Text, View, useWindowDimensions } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Head from "expo-router/head";
 import { Ionicons } from "@expo/vector-icons";
@@ -158,10 +157,19 @@ export function LevelSymbol({
 
 export function TrainingLevelCards() {
   const router = useRouter();
-  const { wellness, mode } = useTheme();
+  const { wellness } = useTheme();
   const ui = useUi();
   const { t } = useLanguage();
+  const { width, fontScale } = useWindowDimensions();
+  const compactScreen = width < 600;
   const levels = makeLevels(t);
+  const photoState = useLoad<{ photos: Photo[] }>("/trainings/gallery", {
+    photos: [],
+  });
+  const heroFor = (n: number) => {
+    const ps = photoState.data.photos;
+    return (ps.find((p) => p.level === n) || ps[n - 1])?.uri;
+  };
   return (
     <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
       {levels.map((level, index) => (
@@ -172,30 +180,59 @@ export function TrainingLevelCards() {
           onPress={() =>
             router.push(`/explore/levels?level=${index + 1}` as any)
           }
-          style={({ pressed }) => ({
-            flexBasis: "46%",
-            flexGrow: 1,
-            padding: 16,
-            borderRadius: 16,
-            backgroundColor: wellness.lavender,
-            borderWidth: 1,
-            borderColor: wellness.lavenderInk,
-            boxShadow: cardShadow(mode === "dark"),
-            opacity: pressed ? 0.85 : 1,
-            gap: 6,
-          })}
+          style={({ pressed }) => [
+            ui.card,
+            {
+              width: width < 350 || fontScale > 1.3 ? "100%" : "48%",
+              backgroundColor: wellness.lavender,
+              borderColor: wellness.lavenderInk,
+              borderWidth: 1.5,
+              padding: 0,
+              overflow: "hidden",
+              gap: 8,
+              opacity: pressed ? 0.9 : 1,
+            },
+          ]}
         >
-          <LevelSymbol level={index + 1} />
-          <Text style={[ui.label, { fontSize: 11 }]}>LEVEL {index + 1}</Text>
-          <Text style={[ui.body, { fontSize: 15, fontWeight: "600" }]}>
-            {level.title}
-          </Text>
-          <Text style={[ui.body, { fontSize: 12, lineHeight: 18 }]}>
-            {level.subtitle}
-          </Text>
-          <Text style={[ui.body, { fontSize: 12, color: wellness.slate }]}>
-            {t("Γνώρισε το επίπεδο →", "Explore this level →")}
-          </Text>
+          {heroFor(index + 1) ? (
+            <ManagedImage
+              source={{ uri: heroFor(index + 1)! }}
+              accessibilityLabel={level.title}
+              resizeMode="cover"
+              style={{ width: "100%", height: compactScreen ? 100 : 170 }}
+            />
+          ) : (
+            <View
+              style={{
+                width: "100%",
+                height: compactScreen ? 100 : 170,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: wellness.white,
+              }}
+            >
+              <LevelSymbol level={index + 1} size={compactScreen ? 64 : 88} />
+            </View>
+          )}
+          <View style={{ padding: 10, gap: 5 }}>
+            <Text style={[ui.label, { fontSize: 11, color: wellness.lavenderInk }]}>
+              LEVEL {index + 1}
+            </Text>
+            <Text
+              numberOfLines={2}
+              style={[ui.body, { fontWeight: "600", fontSize: 13 }]}
+            >
+              {level.title}
+            </Text>
+            <Text numberOfLines={2} style={[ui.body, { fontSize: 11 }]}>
+              {level.subtitle}
+            </Text>
+            <Text
+              style={{ fontSize: 11, fontWeight: "700", color: wellness.slate }}
+            >
+              {t("Γνώρισε το επίπεδο →", "Explore this level →")}
+            </Text>
+          </View>
         </Pressable>
       ))}
     </View>
