@@ -8,6 +8,7 @@ import { ManagedImage } from "./ManagedImage";
 import { Shell, useUi } from "./Wellness";
 import { treatmentBySlug, TREATMENTS_PHONE } from "@/src/content/treatments";
 import { capsGreek } from "@/src/utils/greek";
+import { SoundSpiral } from "./icons/SoundSpiral";
 import { useLanguage } from "./AppNavigation";
 
 export function TreatmentDetail() {
@@ -51,7 +52,11 @@ export function TreatmentDetail() {
                 justifyContent: "center",
               }}
             >
-              <Ionicons name={t.icon} size={32} color={wellness.lavenderInk} />
+              {t.slug === "sound-bath" ? (
+                <SoundSpiral size={34} color={wellness.lavenderInk} strokeWidth={1.8} />
+              ) : (
+                <Ionicons name={t.icon} size={32} color={wellness.lavenderInk} />
+              )}
             </View>
             <Text style={[ui.title, { textAlign: "center" }]}>{t.title}</Text>
             <Text

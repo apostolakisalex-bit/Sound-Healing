@@ -22,28 +22,37 @@ export default function YoutubeCard() {
   const { t } = useLanguage();
   const { width } = useWindowDimensions();
   const hostRef = useRef<View>(null);
-  const [playing, setPlaying] = useState(false);
+  const playerRef = useRef<any>(null);
+  const [visible, setVisible] = useState(false);
+  const [ready, setReady] = useState(false);
   const [muted, setMuted] = useState(true);
-  const started = useRef(false);
+  const detected = useRef(false);
 
   const playerWidth = Math.min(width - 48, 640);
   const playerHeight = Math.round((playerWidth * 9) / 16);
 
+  // Start playing once the card scrolls into view.
   useEffect(() => {
     const id = setInterval(() => {
       const node = hostRef.current;
-      if (!node || started.current) return;
+      if (!node || detected.current) return;
       node.measureInWindow((_x, y, _w, h) => {
         const winH = Dimensions.get("window").height;
-        const visible = y < winH * 0.78 && y + h > winH * 0.18;
-        if (visible) {
-          started.current = true;
-          setPlaying(true);
+        const onScreen = y < winH * 0.85 && y + h > winH * 0.1;
+        if (onScreen) {
+          detected.current = true;
+          setVisible(true);
         }
       });
-    }, 500);
+    }, 300);
     return () => clearInterval(id);
   }, []);
+
+  // Some devices ignore play={true} set before the player reports ready;
+  // nudge playback with a seek once both the player is ready and on screen.
+  useEffect(() => {
+    if (ready && visible) playerRef.current?.seekTo(0, true);
+  }, [ready, visible]);
 
   return (
     <View
@@ -53,15 +62,18 @@ export default function YoutubeCard() {
     >
       <View style={{ height: playerHeight, backgroundColor: "#000000" }}>
         <YoutubePlayer
+          ref={playerRef}
           height={playerHeight}
           width={playerWidth}
-          play={playing}
+          play={visible}
           mute={muted}
           videoId={VIDEO_ID}
+          onReady={() => setReady(true)}
           initialPlayerParams={{
             controls: true,
             modestbranding: true,
             rel: false,
+            playsinline: true,
           }}
           webViewProps={{
             allowsFullscreenVideo: true,

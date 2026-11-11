@@ -320,6 +320,11 @@ export function EventsCalendar({ mode }: { mode?: "training" | "events" | "all" 
       {/* Featured event for the selected day (or next upcoming) */}
       {featured && (
         <View style={{ gap: 10 }}>
+          {mode === "training" && (
+            <Text style={[ui.heading, { color: warm.ink }]}>
+              {t("Τι ακολουθεί", "What's Next")}
+            </Text>
+          )}
           <Text style={[ui.label, { color: warm.ink }]}>
             {selectedEvents.length
               ? longDate(selected, dateLocale)

@@ -28,6 +28,10 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
   const googleSignIn = async () => {
     setError("");
     setGoogleBusy(true);
+    const extractSid = (url?: string | null): string | null => {
+      const m = url ? url.match(/[?#&]session_id=([^&#]+)/) : null;
+      return m ? decodeURIComponent(m[1]) : null;
+    };
     try {
       const redirectUrl =
         Platform.OS === "web"
@@ -40,22 +44,38 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
         window.location.href = authUrl;
         return;
       }
-      const result = await WebBrowser.openAuthSessionAsync(
-        authUrl,
-        redirectUrl,
-      );
+      // Android (Expo Go) often delivers the redirect as a hot deep link while
+      // openAuthSessionAsync returns "dismiss" with no URL. Capture it here.
+      let capturedUrl: string | null = null;
+      const sub = Linking.addEventListener("url", ({ url }) => {
+        if (url && /session_id=/.test(url)) capturedUrl = url;
+      });
       let sid: string | null = null;
-      if (result.type === "success" && result.url) {
-        const m = result.url.match(/[?#&]session_id=([^&#]+)/);
-        sid = m ? decodeURIComponent(m[1]) : null;
+      try {
+        const result = await WebBrowser.openAuthSessionAsync(
+          authUrl,
+          redirectUrl,
+        );
+        if (result.type === "success" && "url" in result) {
+          sid = extractSid(result.url);
+        }
+        // dismiss/cancel may still mean success: check listener + initial URL.
+        if (!sid) sid = extractSid(capturedUrl);
+        if (!sid) {
+          await new Promise((r) => setTimeout(r, 500));
+          sid = extractSid(capturedUrl);
+        }
+        if (!sid) sid = extractSid(await Linking.getInitialURL());
+      } finally {
+        sub.remove();
       }
       if (!sid) {
-        const initial = await Linking.getInitialURL();
-        const m = initial ? initial.match(/[?#&]session_id=([^&#]+)/) : null;
-        sid = m ? decodeURIComponent(m[1]) : null;
-      }
-      if (!sid) {
-        setError(t("Η σύνδεση με Google δεν ολοκληρώθηκε.", "Google sign-in was not completed."));
+        setError(
+          t(
+            "Η σύνδεση με Google δεν ολοκληρώθηκε.",
+            "Google sign-in was not completed.",
+          ),
+        );
         return;
       }
       const signedIn = await auth.loginWithSession(sid);
@@ -67,7 +87,12 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
             : "/(tabs)/sanctuary",
       );
     } catch {
-      setError(t("Δεν ήταν δυνατή η σύνδεση με Google.", "Could not sign in with Google."));
+      setError(
+        t(
+          "Δεν ήταν δυνατή η σύνδεση με Google.",
+          "Could not sign in with Google.",
+        ),
+      );
     } finally {
       setGoogleBusy(false);
     }

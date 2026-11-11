@@ -201,7 +201,12 @@ export function Welcome({ onStart }: { onStart: () => void }) {
           { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 26 },
         ]}
       >
-        <Text style={[styles.title, { fontSize: compact ? 34 : 42 }]}>
+        <Text
+          style={[
+            styles.title,
+            { fontSize: compact ? 22 : 26, lineHeight: compact ? 28 : 32 },
+          ]}
+        >
           {t("Καλώς ήρθες στο", "Welcome to")}
         </Text>
         <Text style={[styles.title, { fontSize: compact ? 34 : 42 }]}>
@@ -214,8 +219,8 @@ export function Welcome({ onStart }: { onStart: () => void }) {
         </Text>
         <Text style={styles.subtitle}>
           {t(
-            "Βυθίσου στον κόσμο της ηχοθεραπείας\nκαι ξεκίνα το ταξίδι σου.",
-            "Immerse yourself in the world of sound\nhealing and begin your journey.",
+            "Βυθίσου στον κόσμο της ηχοθεραπείας.",
+            "Immerse yourself in the world of sound healing.",
           )}
         </Text>
 
@@ -275,8 +280,8 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     color: "#CFC3AC",
-    fontSize: 14,
-    lineHeight: 21,
+    fontSize: 17,
+    lineHeight: 25,
   },
   cta: {
     borderRadius: 30,
