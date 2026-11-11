@@ -638,7 +638,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
           <Pressable
             onPress={() => router.push("/treatments" as any)}
             accessibilityRole="link"
-            accessibilityLabel={t("Treatments. Δείτε τις θεραπείες", "Treatments. See the treatments")}
+            accessibilityLabel={t("Θεραπείες. Δείτε τις θεραπείες", "Treatments. See the treatments")}
             style={[
               iconSurface,
               {
@@ -654,7 +654,16 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
               },
             ]}
           >
-            <SacredMandala size={44} color={wellness.slate} />
+            <View
+              style={{
+                height: 42,
+                width: 42,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <SacredMandala size={40} color={wellness.slate} strokeWidth={1} />
+            </View>
             <Text
               style={{
                 fontSize: 11,
@@ -663,7 +672,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
                 color: wellness.ink,
               }}
             >
-              Treatments
+              {t("Θεραπείες", "Treatments")}
             </Text>
           </Pressable>
         </View>

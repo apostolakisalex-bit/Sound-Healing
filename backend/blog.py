@@ -12,6 +12,7 @@ import html
 import logging
 import re
 import time
+from datetime import date, datetime
 from typing import Optional
 from urllib.parse import urljoin
 
@@ -72,6 +73,112 @@ def _classify(cats: list[dict], title: str) -> str:
     if EVENT_TITLE.search(title or ""):
         return "events"
     return "general"
+
+
+# --- event-date detection -------------------------------------------------
+# Titles carry the real session date (e.g. "8-14 February 2027",
+# "December 5 & 6", "28 & 29 Νοεμβρίου"). We parse it so the app can tell an
+# *upcoming* seminar/event apart from an old post whose publish date is in the
+# past (a seminar announced months before it happens).
+_MONTHS = {
+    "january": 1, "february": 2, "march": 3, "april": 4, "may": 5,
+    "june": 6, "july": 7, "august": 8, "september": 9, "october": 10,
+    "november": 11, "december": 12,
+    "jan": 1, "feb": 2, "mar": 3, "apr": 4, "jun": 6, "jul": 7,
+    "aug": 8, "sep": 9, "sept": 9, "oct": 10, "nov": 11, "dec": 12,
+    "ιανουαρίου": 1, "ιανουάριος": 1, "ιαν": 1,
+    "φεβρουαρίου": 2, "φεβρουάριος": 2, "φεβ": 2,
+    "μαρτίου": 3, "μάρτιος": 3, "μαρ": 3,
+    "απριλίου": 4, "απρίλιος": 4, "απρ": 4,
+    "μαΐου": 5, "μάιος": 5, "μαϊ": 5, "μαη": 5,
+    "ιουνίου": 6, "ιούνιος": 6, "ιουν": 6,
+    "ιουλίου": 7, "ιούλιος": 7, "ιουλ": 7,
+    "αυγούστου": 8, "αύγουστος": 8, "αυγ": 8,
+    "σεπτεμβρίου": 9, "σεπτέμβριος": 9, "σεπτ": 9, "σεπ": 9,
+    "οκτωβρίου": 10, "οκτώβριος": 10, "οκτ": 10,
+    "νοεμβρίου": 11, "νοέμβριος": 11, "νοεμ": 11, "νοε": 11,
+    "δεκεμβρίου": 12, "δεκέμβριος": 12, "δεκ": 12,
+}
+_MONTH_ALT = "|".join(sorted(_MONTHS.keys(), key=len, reverse=True))
+_SEP = r"(?:[-–—&]|\s|και|to|έως)*"
+# day(s) then month: "8-14 February 2027", "28 & 29 Νοεμβρίου", "19 September"
+_DMY = re.compile(
+    r"(\d{1,2})(?!\d)\s*" + _SEP + r"\s*(\d{1,2})?(?!\d)\s*(" + _MONTH_ALT + r")\.?\s*(\d{4})?"
+)
+# month then day(s): "December 5 & 6", "October 25 & 26 2025"
+_MDY = re.compile(
+    r"(" + _MONTH_ALT + r")\.?\s*(\d{1,2})(?!\d)\s*" + _SEP + r"\s*(\d{1,2})?(?!\d)\s*(\d{4})?"
+)
+
+
+def _mk_date(year: int, month: int, day: int) -> Optional[date]:
+    try:
+        return date(year, month, day)
+    except ValueError:
+        return None
+
+
+def _event_dates(title: str, pub_iso: str) -> tuple[Optional[str], Optional[str]]:
+    low = (title or "").lower()
+    dmy = _DMY.search(low)
+    mdy = _MDY.search(low)
+
+    def unpack(m, order: str):
+        if order == "dmy":
+            d1, d2, mon, yr = m.group(1), m.group(2), m.group(3), m.group(4)
+        else:
+            mon, d1, d2, yr = m.group(1), m.group(2), m.group(3), m.group(4)
+        month = _MONTHS.get(mon)
+        if not month:
+            return None
+        day1 = int(d1)
+        day2 = int(d2) if d2 else day1
+        if not (1 <= day1 <= 31):
+            return None
+        return {"d1": day1, "d2": day2 if day2 >= day1 else day1,
+                "month": month, "year": int(yr) if yr else None,
+                "range": bool(d2), "pos": m.start()}
+
+    cands = []
+    if dmy:
+        c = unpack(dmy, "dmy")
+        if c:
+            cands.append(c)
+    if mdy:
+        c = unpack(mdy, "mdy")
+        if c:
+            cands.append(c)
+    if not cands:
+        return None, None
+
+    # Prefer a day-range (real events list "5 & 6"), then an explicit year,
+    # then the earliest match in the title.
+    cands.sort(key=lambda c: (not c["range"], c["year"] is None, c["pos"]))
+    best = cands[0]
+    month, day1, day2 = best["month"], best["d1"], best["d2"]
+    year = best["year"]
+
+    if year is None:
+        pub = None
+        try:
+            pub = date.fromisoformat((pub_iso or "")[:10])
+        except ValueError:
+            pub = None
+        base_year = pub.year if pub else datetime.now().year
+        year = base_year
+        cand = _mk_date(year, month, day1)
+        # Event listed clearly before the publish date → it's next year.
+        if cand and pub and (pub - cand).days > 60:
+            year = base_year + 1
+
+    if year < 2024 or year > datetime.now().year + 3:
+        return None, None
+
+    start = _mk_date(year, month, day1)
+    if not start:
+        return None, None
+    end = _mk_date(year, month, day2) or start
+    return start.isoformat(), end.isoformat()
 
 
 # --- html -> blocks -------------------------------------------------------
@@ -195,12 +302,16 @@ def _process(post: dict) -> dict:
     excerpt = re.sub(r"\s*\[.*$", "", excerpt)  # drop trailing "[…]" / "[…] →"
     hero = _featured(post)
     cats = _categories(post)
+    pub_date = (post.get("date") or "")[:10]
+    event_start, event_end = _event_dates(title, pub_date)
     return {
         "id": post.get("id"),
         "slug": post.get("slug"),
         "title": title,
         "excerpt": excerpt,
-        "date": (post.get("date") or "")[:10],
+        "date": pub_date,
+        "event_start": event_start,
+        "event_end": event_end,
         "image": hero,
         "link": post.get("link"),
         "category": _classify(cats, title),

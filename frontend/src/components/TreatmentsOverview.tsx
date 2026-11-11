@@ -19,7 +19,7 @@ export function TreatmentsOverview() {
   return (
     <Shell publicPage eyebrow="" title="">
       <Head>
-        <title>Treatments · Sound Healing Greece</title>
+        <title>{tr("Θεραπείες", "Treatments")} · Sound Healing Greece</title>
         <meta
           name="description"
           content="Ατομικές & ομαδικές συνεδρίες ηχοθεραπείας."
@@ -40,7 +40,7 @@ export function TreatmentsOverview() {
       </Pressable>
 
       <View style={{ gap: 8 }}>
-        <Text style={ui.title}>Treatments</Text>
+        <Text style={ui.title}>{tr("Θεραπείες", "Treatments")}</Text>
         <Text style={[ui.body, { color: wellness.slate }]}>
           {tr(
             "Ατομικές & ομαδικές συνεδρίες ηχοθεραπείας. Επίλεξε μια θεραπεία για να δεις όλες τις πληροφορίες.",

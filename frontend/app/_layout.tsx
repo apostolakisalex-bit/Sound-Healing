@@ -33,7 +33,7 @@ function AuthGate() {
     const onAuthScreen = segments[0] === "login" || segments[0] === "register";
     const isPublicFeedback =
       segments[0] === "feedback" || segments[0] === "evaluation";
-    if (isPublicFeedback || segments[0] === "explore" || segments[0] === "seminar" || segments[0] === "service" || segments[0] === "treatment" || segments[0] === "treatments" || segments[0] === "account-action") return;
+    if (isPublicFeedback || segments[0] === "explore" || segments[0] === "seminar" || segments[0] === "service" || segments[0] === "treatment" || segments[0] === "treatments" || segments[0] === "article" || segments[0] === "account-action") return;
 
     // Unauthenticated: protect non-public routes
     if (!user && !onLandingRoot && !onAuthScreen) {
@@ -52,7 +52,7 @@ function AuthGate() {
     }
   }, [user, loading, segments, router]);
 
-  const publicRoute = segments[0] === undefined || segments[0] === "explore" || segments[0] === "seminar" || segments[0] === "service" || segments[0] === "treatment" || segments[0] === "treatments" || segments[0] === "account-action";
+  const publicRoute = segments[0] === undefined || segments[0] === "explore" || segments[0] === "seminar" || segments[0] === "service" || segments[0] === "treatment" || segments[0] === "treatments" || segments[0] === "article" || segments[0] === "account-action";
   if (loading && !publicRoute) {
     return (
       <View style={styles.loader}>
@@ -79,6 +79,7 @@ function AuthGate() {
       <Stack.Screen name="service/[slug]" />
       <Stack.Screen name="treatment/[slug]" />
       <Stack.Screen name="treatments/index" />
+      <Stack.Screen name="article/[id]" />
       <Stack.Screen name="practice/new" options={{ presentation: "modal" }} />
       <Stack.Screen name="practice/[id]" />
       <Stack.Screen name="feedback/[token]" />

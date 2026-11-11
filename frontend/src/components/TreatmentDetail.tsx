@@ -26,12 +26,12 @@ export function TreatmentDetail() {
 
       <Pressable
         accessibilityRole="link"
-        accessibilityLabel={tr("Πίσω στα Treatments", "Back to Treatments")}
+        accessibilityLabel={tr("Πίσω στις Θεραπείες", "Back to Treatments")}
         onPress={() => router.push("/treatments")}
         style={{ minHeight: 44, justifyContent: "center", paddingVertical: 6 }}
       >
         <Text style={[ui.body, { color: wellness.lavenderInk, fontWeight: "700" }]}>
-          ← Treatments
+          {tr("← Θεραπείες", "← Treatments")}
         </Text>
       </Pressable>
 
