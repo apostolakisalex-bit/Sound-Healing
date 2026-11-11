@@ -465,5 +465,5 @@ main (its merge-base was my own tip `70720ab`, so all prior session work is pres
 - Added "Όργανο Βροχής" / "Rain Instrument" to the ΤΑ ΟΡΓΑΝΑ list (`SoundHealingGuide.tsx`).
 - Unified card look + slightly stronger 3D elevation via shared `cardShadow(isDark)` in `src/theme/index.ts`, applied to the base `ui.card` (`Wellness.tsx`), icon-surface tiles (`useIconSurface` in `AppNavigation.tsx`) and the education Level cards (`TrainingLevels.tsx`).
 - Light/day Services tiles and education Level cards now use the Training card colour (`wellness.lavender` / `lavenderInk` border).
-- Treatments service tile now uses a distinct sacred-geometry symbol (`src/components/icons/SacredStar.tsx`, slate hexagram with dotted ring) matching the other three service symbols' aesthetic.
+- Treatments service tile now uses a distinct sacred-geometry symbol (`src/components/icons/SacredMandala.tsx`, slate two-ring lotus/mandala with petals and dotted outer ring) matching the other three service symbols' aesthetic. (User rejected earlier gong logo and hexagram/Merkaba variants; mandala with petals chosen by user.)
 

@@ -4,7 +4,7 @@ import Svg, { Path } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { useIconSurface, useLanguage } from "./AppNavigation";
-import { SacredStar } from "./icons/SacredStar";
+import { SacredMandala } from "./icons/SacredMandala";
 import { ManagedImage } from "./ManagedImage";
 import React from "react";
 import {
@@ -647,7 +647,7 @@ export function PublicHome({ items }: { items: ContentItem[] }) {
               },
             ]}
           >
-            <SacredStar size={44} color={wellness.slate} />
+            <SacredMandala size={44} color={wellness.slate} />
             <Text
               style={{
                 fontSize: 11,
