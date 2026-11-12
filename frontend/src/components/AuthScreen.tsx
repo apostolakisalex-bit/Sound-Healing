@@ -43,11 +43,17 @@ export function AuthScreen({ registering = false }: { registering?: boolean }) {
       return m ? decodeURIComponent(m[1]) : null;
     };
     try {
-      // Return to the public /login route (not a protected route): on Android
-      // the redirect arrives as a normal deep link, so expo-router navigates to
-      // this path before auth state is set. /login is allowed for logged-out
-      // users, so the root AuthGate drives the post-login navigation instead of
-      // bouncing to the landing page.
+      // Redirect target for the Emergent OAuth hand-off. On native we return to
+      // the public /login route: on a cold-start deep link the app relaunches on
+      // this screen and the root AuthGate drives post-login navigation (the gate
+      // only moves authenticated users off /login|/register, not off the landing
+      // root). The session_id is also captured globally by AuthContext. On web
+      // we return to the same existing route so the mount-time parser reads it.
+      // NOTE: Sign in with Google relies on the browser redirecting back to the
+      // app via its URL scheme. In Expo Go that scheme is exp:// and the return
+      // is unreliable (the in-app browser can stay open) — this flow is reliable
+      // only in a real iOS/Android build, where the custom scheme (frontend://)
+      // is registered with the OS.
       const redirectUrl =
         Platform.OS === "web"
           ? window.location.origin + "/login"
