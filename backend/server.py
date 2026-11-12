@@ -704,6 +704,9 @@ async def apple_session(payload: AppleSignInIn, request: Request):
         user = await db.users.find_one({"id": user["id"]})
     token = create_token(user["id"], user.get("token_version", 0))
     return {"token": token, "user": serialize_user(user)}
+
+
+@api.post("/auth/logout")
 async def logout(user: dict = Depends(get_current_user)):
     await db.users.update_one({"id": user["id"]}, {"$inc": {"token_version": 1}})
     return {"ok": True}
