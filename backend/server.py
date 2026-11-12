@@ -116,8 +116,10 @@ class SessionIn(BaseModel):
 
 class AppleSignInIn(BaseModel):
     identity_token: str = Field(min_length=10, max_length=8000)
+    # Display-only name Apple returns to the client on first sign-in. We never
+    # accept an email here: the account email must come only from the verified
+    # identity token (see /auth/apple), never from client input.
     name: Optional[str] = Field(default=None, max_length=120)
-    email: Optional[EmailStr] = None
 
 
 class TokenOut(BaseModel):
@@ -640,18 +642,37 @@ async def apple_session(payload: AppleSignInIn, request: Request):
     apple_sub = claims.get("sub")
     if not apple_sub:
         raise HTTPException(status_code=401, detail="Μη έγκυρη σύνδεση Apple.")
-    # Apple returns the real email (or a private-relay alias) only on the FIRST
-    # sign-in; on later logins fall back to whatever the client forwarded.
-    token_email = (claims.get("email") or payload.email or "").strip().lower()
-    email_asserted = str(claims.get("email_verified", "false")).lower() == "true"
+    # SECURITY: trust ONLY what Apple cryptographically asserts in the verified
+    # token. The client-supplied payload.email / payload.name are mere display
+    # hints for a brand-new account and are NEVER used to find or link an
+    # existing account. (Trusting a client-supplied email let anyone with any
+    # Apple ID claim an arbitrary email — including an admin's — and take over
+    # that account.)
+    claim_email = (claims.get("email") or "").strip().lower()
+    claim_email_verified = str(claims.get("email_verified", "false")).lower() == "true"
+    # An email we may use to match/link a pre-existing account: it must be
+    # present AND verified inside the signed token.
+    verified_email = claim_email if (claim_email and claim_email_verified) else ""
 
-    # Key the account on the stable Apple subject, not the email (which may be
-    # a rotating relay alias or absent on repeat logins).
+    # Key the account on the stable Apple subject first.
     user = await db.users.find_one({"apple_sub": apple_sub})
-    if not user and token_email:
-        user = await db.users.find_one({"email": token_email})
+    # Link to a pre-existing (password/Google) account ONLY when Apple itself
+    # asserts a verified email for this token — never a client-supplied email.
+    if not user and verified_email:
+        existing = await db.users.find_one({"email": verified_email})
+        if existing:
+            if existing.get("apple_sub") and existing.get("apple_sub") != apple_sub:
+                raise HTTPException(status_code=401, detail="Μη έγκυρη σύνδεση Apple.")
+            if not existing.get("apple_sub"):
+                await db.users.update_one(
+                    {"id": existing["id"]},
+                    {"$set": {"apple_sub": apple_sub, "auth_provider": "apple", "email_verified": True}},
+                )
+            user = await db.users.find_one({"id": existing["id"]})
     if not user:
-        email = token_email or f"apple-{apple_sub.replace('.', '-')}@privaterelay.appleid.com"
+        # Brand-new account keyed on apple_sub. Use the Apple-verified email when
+        # present, else a stable private-relay placeholder derived from the sub.
+        email = verified_email or f"apple-{apple_sub.replace('.', '-')}@privaterelay.appleid.com"
         name = (payload.name or email.split("@")[0]).strip()
         parts = name.split(" ", 1)
         user = {
@@ -680,7 +701,7 @@ async def apple_session(payload: AppleSignInIn, request: Request):
             "stamps": [],
             "unlocked_realms": ["temple-of-breath"],
             "role": "student",
-            "email_verified": email_asserted or bool(token_email),
+            "email_verified": bool(verified_email),
             "auth_provider": "apple",
             "created_at": datetime.now(timezone.utc),
         }
@@ -693,15 +714,6 @@ async def apple_session(payload: AppleSignInIn, request: Request):
             "created_at": datetime.now(timezone.utc),
             "read_by": [],
         })
-    elif not user.get("apple_sub"):
-        # Apple proved ownership of this email, so link it to the pre-existing
-        # (password/Google) account. The password stays usable; we just record
-        # the Apple subject and mark the email verified.
-        await db.users.update_one(
-            {"id": user["id"]},
-            {"$set": {"apple_sub": apple_sub, "auth_provider": "apple", "email_verified": True}},
-        )
-        user = await db.users.find_one({"id": user["id"]})
     token = create_token(user["id"], user.get("token_version", 0))
     return {"token": token, "user": serialize_user(user)}
 
