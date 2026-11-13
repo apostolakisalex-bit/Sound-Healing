@@ -1,0 +1,44 @@
+{
+  "summary": "Iteration 15: tested the seminar signup API (6/6 pytest pass) and all 4 user items on a 375px mobile web viewport. ITEM1: the Goa card now shows an image, but it is the IPHM accreditation logo cropped to 'HM ... Accre', not a seminar photo. ITEM2: the training calendar marks Nov 6-8 and 28-29, Dec 5-6 and Feb 8-14 2027. Tapping a Goa day's featured card opens /article/7317. ITEM3/3b: section order is right on both pages, each seminar appears once (Goa x1, 28&29 x1, 5&6 Dec x1), the archives (training 8, events 4) have no duplicates, and BlogList shows only the Άρθρα grid. ITEM4: joining from the seminar page works (label changes, '· Ακύρωση' hint shows). Profile 'Οι εκδηλώσεις μου' shows the row with date and location and the chip 'Επόμενη: σε 17 ημέρες'. Tapping the row opens the seminar, and canceling removes it from the profile. ITEM4b: joining from the Goa article shows 'σε 89 ημέρες'. ITEM4c: logged-out tap goes to /login. EN label is 'Register your spot'. Bug: the join button also shows on PAST dated articles. No deprecated Expo packages in the files reviewed.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/blog (id 6656)", "issue": "'31 Οκτ & 1 Νοεμ' is parsed as event_end=2026-10-31. The cross-month end date is lost, so Nov 1 is not marked and the archive shows only '31 Οκτωβρίου 2026'."},
+      {"endpoint": "DELETE /api/members/me/seminars/{ref}", "issue": "ref is a path segment; a ref containing '/' would break deletion (current refs are slugs or 'article-<id>', so this is a latent risk only)."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "ArticleReader JoinButton", "issue": "'Δήλωση συμμετοχής' renders on PAST dated training/event articles (verified /article/6508 6-8 Nov 2026 and /article/6005 Oct 2025), so users can register for seminars that already ended. The condition at ArticleReader.tsx:91 checks only event_start + category; it should also require (event_end||event_start) >= athensToday(). SeminarDetail correctly checks t.active.", "testID": "join-seminar-button", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [
+      {"flow": "Join same seminar from two sources", "issue": "Catalog seminar uses ref=<slug>, but its blog copy (e.g. 28&29 Νοε = article 7256 / 7067) uses ref=article-<id>. Opening the article and joining creates a second signup for the same seminar, so the profile can show duplicates. Consider reusing the schedule de-dup key (end_date|level) as the ref, or checking it.", "affected_testIDs": ["join-seminar-button", "my-seminars-section"]}
+    ],
+    "design_issues": [
+      {"screen": "Training/Article (Goa)", "issues": ["The Goa image is the IPHM accreditation logo, cropped by resizeMode cover to 'HM ... Accre'. It reads as broken, not as a photo. Prefer a real photo, or use resizeMode contain on a neutral background."]},
+      {"screen": "Profile – Οι εκδηλώσεις μου", "issues": ["At 375px the heading wraps to 2 lines ('Οι εκδηλώσεις / μου') because of the countdown chip. Allow the chip to drop below the heading, or shrink it."]},
+      {"screen": "/explore/events", "issues": ["The calendar uses mode='all', so it shows trainings (featured 'Level 1 · Αθήνα', 'Επερχόμενα 3'), while the list below says 'Δεν υπάρχουν ενεργές εκδηλώσεις αυτή τη στιγμή.' This is confusing; consider mode='events' or a clearer label."]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/test_seminar_signups.py", "/app/test_reports/pytest/pytest_iter15.xml"],
+  "action_items": [
+    "Hide JoinButton in ArticleReader.tsx when the article's event has ended ((event_end||event_start) < athensToday()).",
+    "Prevent duplicate signups for the same seminar via catalog slug vs blog article-<id> ref.",
+    "Fix the blog date parser for cross-month ranges like '31 Οκτ & 1 Νοεμ' (event_end should be 2026-11-01).",
+    "Replace or contain the Goa fallback image (accreditation logo is cropped).",
+    "Optional: schedule.ts wantGreek is hard-coded true, so EN users get the Greek copy in the calendar. Use the current language as the agent note intended. useSchedule's loading also ignores blog.loading."
+  ],
+  "critical_code_review_comments": [
+    "schedule.ts:154 const wantGreek = true ignores the UI language ('current language preferred' is not implemented).",
+    "schedule.ts:192 loading excludes blog.loading, so the 'no dates' text can flash while the blog loads.",
+    "JoinButton swallows GET errors silently; if the list fails it shows 'Δήλωση συμμετοχής' even if already joined (re-POST is idempotent, so this is harmless).",
+    "MySeminars returns null on load error with no error state."
+  ],
+  "updated_files": ["/app/frontend/src/components/JoinButton.tsx (testID join-seminar-button)", "/app/frontend/src/components/MySeminars.tsx (testIDs my-seminars-section, my-seminars-countdown, my-seminar-row-<ref>)", "/app/backend/tests/test_seminar_signups.py (new)"],
+  "success_rate": {"backend": "100% (6/6)", "frontend": "~90% (all requested flows pass; 1 bug: join button on past articles)"},
+  "seed_data_creation": "None persisted. Maria's signups were joined then canceled; final state is [] (verified). The pytest TEST_ref_* signups are deleted.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "System date is 2026-11-11. Goa article id 7317 (countdown 89 days), catalog Athens slug ekpaideftiko-seminario-ixotherapias-level1-28-29-noemvriou-athina (17 days). Calendar day buttons have aria-label '<day>, N εκδήλωση/εις'; month arrows are labeled 'Επόμενος μήνας'/'Προηγούμενος μήνας'. Don't force-click the join button when it sits under the bottom tab bar: scroll it up first."
+}

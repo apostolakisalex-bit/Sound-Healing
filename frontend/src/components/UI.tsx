@@ -1,14 +1,22 @@
 // Tiny shared UI primitives for Sound Healing Greece — cinematic, glowing, breathing.
-import React, { ReactNode, useEffect } from 'react';
+import React, { ReactNode, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, ViewStyle, TextStyle, Pressable, ActivityIndicator, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence, Easing } from 'react-native-reanimated';
-import { colors, fonts, fontSizes, radii, spacing } from '@/src/theme';
+import { fonts, fontSizes, radii, spacing, type Colors } from '@/src/theme';
+import { useTheme } from '@/src/theme/ThemeContext';
+import { capsGreek } from '@/src/utils/greek';
+
+function useStyles() {
+  const { colors } = useTheme();
+  return useMemo(() => makeStyles(colors), [colors]);
+}
 
 // ── Heading (serif, editorial) ────────────────────────────────────────
 export function Heading({
   children, size = 'h2', style, testID,
 }: { children: ReactNode; size?: 'h1' | 'h2' | 'h3' | 'h4'; style?: TextStyle; testID?: string }) {
+  const { colors } = useTheme();
   return (
     <Text testID={testID} style={[
       { fontFamily: fonts.heading, color: colors.text.primary, fontSize: fontSizes[size], letterSpacing: -0.5 },
@@ -19,28 +27,32 @@ export function Heading({
 
 // ── Body ──────────────────────────────────────────────────────────────
 export function Body({
-  children, color, size = 'body', weight = 'regular', style, testID,
-}: { children: ReactNode; color?: string; size?: 'bodyLg' | 'body' | 'small' | 'caption'; weight?: 'regular' | 'medium' | 'semi' | 'bold'; style?: TextStyle; testID?: string }) {
+  children, color, size = 'body', weight = 'regular', style, testID, numberOfLines,
+}: { children: ReactNode; numberOfLines?: number; color?: string; size?: 'bodyLg' | 'body' | 'small' | 'caption'; weight?: 'regular' | 'medium' | 'semi' | 'bold'; style?: TextStyle; testID?: string }) {
+  const { colors } = useTheme();
   const family = weight === 'regular' ? fonts.body : weight === 'medium' ? fonts.bodyMed : weight === 'semi' ? fonts.bodySemi : fonts.bodyBold;
   return (
-    <Text testID={testID} style={[{ fontFamily: family, color: color || colors.text.secondary, fontSize: fontSizes[size] }, style]}>
+    <Text numberOfLines={numberOfLines} testID={testID} style={[{ fontFamily: family, color: color || colors.text.secondary, fontSize: fontSizes[size] }, style]}>
       {children}
     </Text>
   );
 }
 
 // ── Overline (small caps gold label) ──────────────────────────────────
-export function Overline({ children, color = colors.accent.gold, style, testID }: { children: ReactNode; color?: string; style?: TextStyle; testID?: string }) {
+export function Overline({ children, color, style, testID }: { children: ReactNode; color?: string; style?: TextStyle; testID?: string }) {
+  const { colors } = useTheme();
+  const content = typeof children === 'string' ? capsGreek(children) : children;
   return (
     <Text testID={testID} style={[{
-      fontFamily: fonts.bodySemi, color, fontSize: fontSizes.overline,
-      letterSpacing: 3, textTransform: 'uppercase',
-    }, style]}>{children}</Text>
+      fontFamily: fonts.bodySemi, color: color ?? colors.accent.gold, fontSize: fontSizes.overline,
+      letterSpacing: 3,
+    }, style]}>{content}</Text>
   );
 }
 
 // ── GlowCard ──────────────────────────────────────────────────────────
 export function GlowCard({ children, style, testID }: { children: ReactNode; style?: ViewStyle; testID?: string }) {
+  const styles = useStyles();
   return (
     <View testID={testID} style={[styles.glowCard, style]}>
       <LinearGradient
@@ -58,6 +70,8 @@ export function GlowCard({ children, style, testID }: { children: ReactNode; sty
 export function PrimaryButton({
   label, onPress, loading, disabled, testID, style,
 }: { label: string; onPress: () => void; loading?: boolean; disabled?: boolean; testID?: string; style?: ViewStyle }) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   return (
     <Pressable
       testID={testID}
@@ -76,7 +90,7 @@ export function PrimaryButton({
       />
       {loading
         ? <ActivityIndicator color="#FFFFFF" />
-        : <Text style={styles.primaryBtnText}>{label}</Text>}
+        : <Text style={styles.primaryBtnText}>{capsGreek(label)}</Text>}
     </Pressable>
   );
 }
@@ -85,13 +99,14 @@ export function PrimaryButton({
 export function AuraButton({
   label, onPress, testID, style, icon,
 }: { label: string; onPress: () => void; testID?: string; style?: ViewStyle; icon?: ReactNode }) {
+  const styles = useStyles();
   return (
     <Pressable
       testID={testID}
       onPress={onPress}
       style={({ pressed }) => [styles.auraBtn, { opacity: pressed ? 0.7 : 1 }, style]}>
       {icon}
-      <Text style={styles.auraBtnText}>{label}</Text>
+      <Text style={styles.auraBtnText}>{capsGreek(label)}</Text>
     </Pressable>
   );
 }
@@ -110,6 +125,8 @@ export function BreathingGlow({ children, style }: { children: ReactNode; style?
 
 // ── XP Bar ────────────────────────────────────────────────────────────
 export function XPBar({ xp, nextThreshold, prevThreshold, testID }: { xp: number; nextThreshold: number; prevThreshold: number; testID?: string }) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const range = Math.max(1, nextThreshold - prevThreshold);
   const ratio = Math.max(0, Math.min(1, (xp - prevThreshold) / range));
   return (
@@ -121,62 +138,62 @@ export function XPBar({ xp, nextThreshold, prevThreshold, testID }: { xp: number
   );
 }
 
-const styles = StyleSheet.create({
-  glowCard: {
-    backgroundColor: colors.bg.secondary,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.border.subtle,
-    padding: spacing.lg,
-    overflow: 'hidden',
-    ...(Platform.OS === 'web'
-      ? ({ boxShadow: '0px 4px 16px rgba(21, 21, 21, 0.06)' } as any)
-      : { elevation: 2 }),
-  },
-  primaryBtn: {
-    height: 54,
-    borderRadius: radii.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  primaryBtnText: {
-    fontFamily: fonts.bodySemi,
-    color: '#FFFFFF',
-    fontSize: 14,
-    letterSpacing: 1.6,
-    textTransform: 'uppercase',
-  },
-  auraBtn: {
-    height: 50,
-    borderRadius: radii.full,
-    borderWidth: 1,
-    borderColor: colors.accent.gold,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    backgroundColor: 'transparent',
-    flexDirection: 'row',
-    gap: 8,
-  },
-  auraBtnText: {
-    fontFamily: fonts.bodySemi,
-    color: colors.accent.gold,
-    fontSize: 13,
-    letterSpacing: 1.6,
-    textTransform: 'uppercase',
-  },
-  xpTrack: {
-    height: 8,
-    borderRadius: radii.full,
-    backgroundColor: colors.bg.tertiary,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.border.subtle,
-  },
-  xpFill: {
-    height: '100%',
-    borderRadius: radii.full,
-    overflow: 'hidden',
-  },
-});
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
+    glowCard: {
+      backgroundColor: colors.bg.secondary,
+      borderRadius: radii.lg,
+      borderWidth: 1,
+      borderColor: colors.border.subtle,
+      padding: spacing.lg,
+      overflow: 'hidden',
+      ...(Platform.OS === 'web'
+        ? ({ boxShadow: '0px 4px 16px rgba(21, 21, 21, 0.06)' } as any)
+        : { elevation: 2 }),
+    },
+    primaryBtn: {
+      height: 54,
+      borderRadius: radii.full,
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+    },
+    primaryBtnText: {
+      fontFamily: fonts.bodySemi,
+      color: '#FFFFFF',
+      fontSize: 14,
+      letterSpacing: 1.6,
+    },
+    auraBtn: {
+      height: 50,
+      borderRadius: radii.full,
+      borderWidth: 1,
+      borderColor: colors.accent.gold,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: spacing.lg,
+      backgroundColor: 'transparent',
+      flexDirection: 'row',
+      gap: 8,
+    },
+    auraBtnText: {
+      fontFamily: fonts.bodySemi,
+      color: colors.accent.gold,
+      fontSize: 13,
+      letterSpacing: 1.6,
+    },
+    xpTrack: {
+      height: 8,
+      borderRadius: radii.full,
+      backgroundColor: colors.bg.tertiary,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: colors.border.subtle,
+    },
+    xpFill: {
+      height: '100%',
+      borderRadius: radii.full,
+      overflow: 'hidden',
+    },
+  });
+}

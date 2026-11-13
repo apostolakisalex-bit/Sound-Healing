@@ -1,0 +1,41 @@
+{
+  "summary": "Tested 3 things: owner admin login, admin staying Greek with EN on, and static public content in both languages. Backend: 5/5 pytest pass. Both owner accounts (manoliszografakis@gmail.com, apostolakisalex@gmail.com / matestzografakis_11.11) log in with role=admin and reach /api/admin/workspace and /api/admin/pending. Login works with an uppercase email. A wrong password gives 401. Frontend (390x844, languagePreference=en): both owners logged in through the UI and landed on /admin. I scanned the DOM for Latin-only text in the overview and all 11 sections (Μέλη + member detail, Ημερολόγιο, Φωτογραφίες, Εγγραφές, Περιεχόμενο, Τμήματα, Φόρμες, Ιστορικό, Αξιολογήσεις, Πρόοδος, Παρουσίες). The overview and sections render Greek, including the Shell footer 'Χανιά · Αθήνα · Online', the bottom tabs (Αρχική/Ηχοθεραπεία/Εκπαιδευτικά/Εκδηλώσεις/Προφίλ), Πρόοδος staff, the MemberProfile staff detail and Αξιολογήσεις. The non-admin 'Περιορισμένη πρόσβαση' screen is Greek too. The only Latin text was user data, CMS data, raw enum chips and one hard-coded English 'Upload' button in ResourcesSection. With EN on, /treatments, /treatment/{sound-bath,ihomasaz,breathwork} and /service/{ergastiria-omilies,xenodocheia-spa,etairikes-ekdiloseis} render fully in English (titles, taglines, intro, DURATION/FORMAT/EXPERIENCE labels, body). The home Services grid shows English tiles and the founder card reads 'Manolis Zografakis'. Toggling back to EL shows Greek. Regression: home, soundhealing, training, levels, events and the member tabs switch to EN, and CMS seminar and blog text stays in its authored Greek. One gap remains: the level titles on member /academy are Greek-only static backend constants.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/school/catalog", "issue": "Level titles and descriptions come from the hard-coded LEVELS constant in backend/school.py:12-17 and are Greek only. They are static app copy, not CMS content, so member /academy shows 'Τα θεμέλια της πρακτικής', 'Εμβάθυνση στην ατομική πρακτική', 'Ομαδικά Sound Baths', 'Επαγγελματική εκπαίδευση' and their descriptions in Greek when EN is on."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "ResourcesSection (admin attachments under Περιεχόμενο)", "issue": "Admin-only English text despite ForceGreekLanguage: the 'Upload' button label (ResourcesSection.tsx:~261) and the Alert strings 'File too large'/'Max 12 MB per file.', 'Uploaded', 'Upload failed', 'Try again', 'Resource locked', 'Open failed', 'Remove resource?', 'Delete', 'Cancel', 'Delete failed' (ResourcesSection.tsx ~110-215). The admin area must always be Greek.", "testID": "upload-resource-btn", "priority": "MEDIUM"},
+      {"component": "Member Academy (Experience.tsx SchoolScreen)", "issue": "With EN on, the L1-L4 level titles and descriptions from /school/catalog stay Greek. Map them by level id to bilingual frontend strings, or return el/en fields from the backend.", "testID": "", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "/admin header", "issues": ["Inside admin, the globe language-toggle still shows 'EN' but does nothing, because ForceGreekLanguage sets toggle to a no-op. Either hide it in admin or let it change the global preference (affecting public pages only) and give feedback, so admins are not confused."]},
+      {"screen": "/admin Περιεχόμενο", "issues": ["The Τύπος and Δημόσια ενότητα chips show raw enum values (page, lesson, announcement, site_settings, home, services ...). Greek labels already exist in the helper text; consider Greek chip labels.", "Ιστορικό shows raw action keys (member.level_verify, calendar.create, media.upload) and raw UUID entity ids. These should be Greek labels."]},
+      {"screen": "/treatment/<slug> (EL)", "issues": ["The back link is '← Treatments' in both languages (TreatmentDetail.tsx:34). The same goes for the TreatmentsOverview title and <title>. This may be intended branding; confirm with the owner."]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/test_owner_admins.py", "/app/test_reports/pytest/pytest_owner_admins.xml"],
+  "action_items": [
+    "Translate the admin-only strings in ResourcesSection.tsx to Greek: the 'Upload' button and all Alert.alert titles, messages and button texts. Use t() so the forced-Greek context applies, or hard-code Greek since this branch is admin-only.",
+    "Make the static level catalogue (backend/school.py LEVELS, shown via /school/catalog on member /academy) bilingual, e.g. a frontend map by level id using t().",
+    "Optional UX: hide the language-toggle in the admin workspace, or make it work, since it currently shows 'EN' and is a no-op.",
+    "Optional: show Greek labels instead of raw enum and action keys in the admin Περιεχόμενο chips and Ιστορικό list."
+  ],
+  "critical_code_review_comments": [
+    "seed_admins.py keeps the shared owner password in plain text in source control (ADMIN_SEED_PASSWORD). This is per the owner's request, but consider moving it to an env var.",
+    "seed_admins uses $set role=admin on any existing user with those emails and writes password_hash only on insert. If one of these emails had registered earlier with a different password, it becomes admin and keeps the old password, not the shared one. That does not apply today, since both logins work.",
+    "ForceGreekLanguage overrides the Language context correctly, and Shell and BottomNavigation are inside it, so the footer and tabs are Greek."
+  ],
+  "updated_files": ["/app/backend/tests/test_owner_admins.py"],
+  "success_rate": {"backend": "100% (5/5)", "frontend": "~93%: all requested flows pass; 2 remaining bilingual gaps (ResourcesSection admin English strings, academy level titles Greek in EN)"},
+  "seed_data_creation": "None created. Used the existing owner admin accounts and uitest_167043@test.gr (read-only browsing).",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Owner admins: manoliszografakis@gmail.com / apostolakisalex@gmail.com, password matestzografakis_11.11. To force EN, set localStorage languagePreference='en' then reload. Login inputs: input[aria-label=Email] and input[aria-label=Password] (EN), button text 'Sign in'. Admin sections open via [aria-label='Άνοιγμα: <Section>'], back via [aria-label='Πίσω στις ενότητες']; member cards via [aria-label^='Προφίλ:']. For admin users, /sanctuary, /academy and /profile render the admin workspace. Seminar dates and cities (e.g. '28 & 29 Νοεμβρίου 2026', 'Αθήνα') and blog posts are CMS data and stay Greek by design.",
+  "rca_of_issue": "ResourcesSection was written with hard-coded English for the admin upload controls and Alerts, so ForceGreekLanguage cannot affect them. Academy level titles come from a backend constant with no language variant."
+}

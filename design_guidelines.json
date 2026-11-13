@@ -1,198 +1,167 @@
 {
-  "theme": "DARK",
-  "archetype": "Jewel & Luxury mixed with spiritual aesthetics",
-  "colors": {
-    "background": {
-      "primary": "#05050A",
-      "secondary": "#0B0C15",
-      "tertiary": "#121421",
-      "tabBar": "#05050A"
-    },
-    "text": {
-      "primary": "#F7F5F0",
-      "secondary": "#B0AEAA",
-      "accent": "#CCA352",
-      "inverse": "#05050A"
-    },
-    "accent": {
-      "gold": "#CCA352",
-      "bronze": "#A57743",
-      "cyan": "#4DD0E1",
-      "purple": "#9D4CDD",
-      "coral": "#FF7A59",
-      "turquoise": "#00B4D8",
-      "lavender": "#B39DDB"
-    },
-    "border": {
-      "default": "rgba(204, 163, 82, 0.2)",
-      "subtle": "rgba(247, 245, 240, 0.08)",
-      "glow": "rgba(77, 208, 225, 0.5)"
+  "app_name": "Sound Healing Greece - Events & Profile",
+  "personality": "8 Hand-Drawn warmth fused with 4 Tactile pill shapes",
+  "personality_one_liner": "A warm, deeply calming, and softly structured experience focused on organic shapes, sunrise tones, and tactile pill-shaped components.",
+  "color": {
+    "surface": "#FDFBF7",
+    "onSurface": "#1A1C1E",
+    "surfaceSecondary": "#FFFFFF",
+    "onSurfaceSecondary": "#1A1C1E",
+    "surfaceTertiary": "#F4F0EA",
+    "onSurfaceTertiary": "#1A1C1E",
+    "surfaceInverse": "#1A1C1E",
+    "onSurfaceInverse": "#FDFBF7",
+    "brand": "#E8DCC8",
+    "brandPrimary": "#1A1C1E",
+    "onBrandPrimary": "#FFFFFF",
+    "brandSecondary": "#D7C9B1",
+    "onBrandSecondary": "#1A1C1E",
+    "brandTertiary": "#E8DCC8",
+    "onBrandTertiary": "#1A1C1E",
+    "success": "#4CAF50",
+    "onSuccess": "#FFFFFF",
+    "warning": "#FF9800",
+    "onWarning": "#FFFFFF",
+    "error": "#F44336",
+    "onError": "#FFFFFF",
+    "info": "#2196F3",
+    "onInfo": "#FFFFFF",
+    "border": "#E5E0D8",
+    "borderStrong": "#C2BAB0",
+    "divider": "#E5E0D8",
+    "muted": "#737577",
+    "onBrand": "#1A1C1E",
+    "dark_mode_overrides": {
+      "surface": "#1A1C1E",
+      "onSurface": "#FDFBF7",
+      "surfaceSecondary": "#2C2E30",
+      "onSurfaceSecondary": "#FDFBF7",
+      "surfaceTertiary": "#3A3C3E",
+      "onSurfaceTertiary": "#FDFBF7",
+      "surfaceInverse": "#FDFBF7",
+      "onSurfaceInverse": "#1A1C1E",
+      "brandPrimary": "#E8DCC8",
+      "onBrandPrimary": "#1A1C1E",
+      "border": "#3A3C3E",
+      "divider": "#3A3C3E",
+      "muted": "#A2A4A6"
     }
   },
   "typography": {
-    "fonts": {
-      "heading": "CormorantGaramond_600SemiBold",
-      "title": "CormorantGaramond_500Medium",
-      "body": "Inter_400Regular",
-      "bodyMedium": "Inter_500Medium",
-      "button": "Inter_600SemiBold"
-    },
-    "sizes": {
-      "h1": 48,
-      "h2": 36,
-      "h3": 28,
-      "h4": 22,
-      "bodyLarge": 18,
-      "body": 16,
-      "bodySmall": 14,
-      "caption": 12,
-      "overline": 10
-    },
-    "letterSpacing": {
-      "tight": -0.5,
-      "normal": 0,
-      "wide": 1.5,
-      "widest": 3
+    "displayFontFamily": "Raleway",
+    "textFontFamily": "Raleway",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24,
+      "3xl": 32
     }
   },
   "spacing": {
-    "xs": 4,
-    "sm": 8,
-    "md": 16,
-    "lg": 24,
-    "xl": 32,
+    "rule": "Generous and airy spacing, letting soft shapes breathe. Cards should never touch screen edges.",
+    "xs": 8,
+    "sm": 16,
+    "md": 24,
+    "lg": 32,
+    "xl": 40,
     "2xl": 48,
-    "3xl": 64,
-    "4xl": 96
+    "3xl": 64
   },
-  "radii": {
+  "radius_tokens": {
     "sm": 8,
     "md": 16,
     "lg": 24,
     "xl": 32,
-    "full": 9999
+    "pill": 999
   },
-  "components": {
-    "cards": {
-      "default": {
-        "backgroundColor": "colors.background.secondary",
-        "borderRadius": "radii.lg",
-        "borderWidth": 1,
-        "borderColor": "colors.border.subtle",
-        "padding": "spacing.lg"
+  "shadow_tier": "1",
+  "navigation": "bottom_tabs",
+  "icon_set": "Feather",
+  "glassmorphism": {
+    "enabled": true,
+    "do's": [
+      "Use glassy overlays on warm beige backgrounds for depth",
+      "Apply to sticky headers, tab bars, and the translucent part of the Join Now pill button",
+      "Keep the blur soft to preserve the airy feel"
+    ],
+    "dont's": [
+      "Don't blur forms or dense body text",
+      "Don't stack multiple layers of glassmorphism"
+    ]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-glass-effect",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "Hero/Onboarding",
+      "purpose": "Introduce the app visually with a warm sunrise and a prominent, split-pill CTA.",
+      "states": {
+        "loading": "Spinner in center over sunrise.",
+        "empty": "N/A",
+        "error": "Error message with retry button."
       },
-      "glowing": {
-        "backgroundColor": "colors.background.tertiary",
-        "borderRadius": "radii.xl",
-        "borderWidth": 1,
-        "borderColor": "colors.border.default",
-        "shadowColor": "colors.accent.gold",
-        "shadowOffset": {
-          "width": 0,
-          "height": 0
-        },
-        "shadowOpacity": 0.3,
-        "shadowRadius": 15,
-        "elevation": 10
-      }
+      "layout": "Full-bleed hero image with vertical gradient scrim at the bottom (transparent to surfaceInverse). Small 'Bliss App' label above large stacked display title 'Discover a new world of wellness and serenity' in bottom-left. Sticky bottom right-aligned split-pill 'Join Now' CTA: Left side is a white circular button with right-arrow (using border radius 999), right side is a translucent dark pill holding the text 'Join Now >>>'."
     },
-    "buttons": {
-      "primary": {
-        "backgroundColor": "colors.accent.gold",
-        "borderRadius": "radii.full",
-        "paddingVertical": "spacing.md",
-        "paddingHorizontal": "spacing.xl",
-        "alignItems": "center",
-        "justifyContent": "center"
+    {
+      "name": "Student Profile / Plan",
+      "purpose": "A calm dashboard greeting the student and showing upcoming structured sessions.",
+      "states": {
+        "loading": "Skeleton cards with soft rounded edges.",
+        "empty": "Illustration of a singing bowl, 'No plan active', 'Browse events' pill CTA.",
+        "error": "Failed to load plan, 'Tap to retry'."
       },
-      "auraGlow": {
-        "backgroundColor": "colors.background.primary",
-        "borderWidth": 1,
-        "borderColor": "colors.accent.cyan",
-        "borderRadius": "radii.full",
-        "shadowColor": "colors.accent.cyan",
-        "shadowOpacity": 0.5,
-        "shadowRadius": 10,
-        "elevation": 5
-      }
+      "layout": "Glassy warm beige background (surface). Top header with circular avatar (left) and 3-dots menu (right). Warm greeting 'Hello, [Name] 😊' (muted) above large title 'Your healthy training plan is ready'. An 'Add to Calendar' pill button (dark/brandPrimary) next to overlapping avatars. Below: Soft white rounded (lg: 24) horizontal cards showing classes ('Yoga 45 min', 'Breath 15 min') with tiny monoline icons. Full width 'Meditation' card at the bottom."
     },
-    "tabBar": {
-      "backgroundColor": "colors.background.tabBar",
-      "borderTopWidth": 1,
-      "borderTopColor": "colors.border.subtle",
-      "activeTintColor": "colors.accent.gold",
-      "inactiveTintColor": "colors.text.secondary",
-      "height": 80,
-      "paddingBottom": "spacing.lg"
-    },
-    "levelRing": {
-      "size": 120,
-      "strokeWidth": 6,
-      "activeColor": "colors.accent.cyan",
-      "inactiveColor": "colors.border.subtle",
-      "glowColor": "colors.accent.purple"
-    },
-    "stampTile": {
-      "width": 64,
-      "height": 64,
-      "borderRadius": "radii.md",
-      "backgroundColor": "colors.background.tertiary",
-      "borderWidth": 1,
-      "borderColor": "colors.accent.bronze"
+    {
+      "name": "Events Calendar",
+      "purpose": "Explore available active events using a soft grid and featured card.",
+      "states": {
+        "loading": "Skeleton calendar grid and skeleton featured card.",
+        "empty": "No events this month, generic empty illustration.",
+        "error": "Failed to load calendar."
+      },
+      "layout": "Glassy warm beige background. Top avatar + dots menu header. Large 'My Calendar' title. Filter row: Month pill ('April' + icon), dark active pill ('All'), faded pill ('Yoga'). Calendar grid: Mon-Sun headers, day numbers inside individual rounded-square cells (md: 16). Selected/Active days filled with brandPrimary (dark ink), inactive days surfaceSecondary (white). Below grid: Large featured next-event card (lg: 24 radius). Content: large photo on the right half, left half displays bold time, location 'Flower Yoga Studio', and 'Trainer' label, overlaid with gradient scrim if needed."
     }
-  },
-  "animations": {
-    "breathingGlow": {
-      "duration": 4000,
-      "easing": "ease-in-out",
-      "opacityRange": [
-        0.4,
-        1,
-        0.4
-      ],
-      "scaleRange": [
-        1,
-        1.05,
-        1
-      ]
+  ],
+  "images": {
+    "hero_sunrise": {
+      "url": "https://images.unsplash.com/photo-1503803548695-c2a7b4a5b875?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MTJ8MHwxfHNlYXJjaHwxfHxzdW5yaXNlJTIwd2VsbG5lc3N8ZW58MHx8fHwxNzk0NDA2ODg5fDA&ixlib=rb-4.1.0&q=85",
+      "dark": "https://images.unsplash.com/photo-1503803548695-c2a7b4a5b875?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MTJ8MHwxfHNlYXJjaHwxfHxzdW5yaXNlJTIwd2VsbG5lc3N8ZW58MHx8fHwxNzk0NDA2ODg5fDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Sunrise meditation"
     },
-    "particleFloats": {
-      "duration": 10000,
-      "easing": "linear",
-      "translateYRange": [
-        0,
-        -100
-      ],
-      "opacityRange": [
-        0,
-        0.8,
-        0
-      ]
+    "featured_event": {
+      "url": "https://images.unsplash.com/photo-1593810451410-8fbb422cc15e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzOTB8MHwxfHNlYXJjaHwxfHxzb3VuZCUyMGhlYWxpbmclMjBldmVudHxlbnwwfHx8fDE3OTQ0MDY4ODl8MA&ixlib=rb-4.1.0&q=85",
+      "alt": "Sound healing bowl featured image"
+    },
+    "student_avatar": {
+      "url": "https://images.unsplash.com/photo-1580489944761-15a19d654956?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTB8MHwxfHNlYXJjaHwxfHx3b21hbiUyMHNtaWxpbmclMjBwb3J0cmFpdHxlbnwwfHx8fDE3OTQ0MDY4ODl8MA&ixlib=rb-4.1.0&q=85",
+      "alt": "Smiling student avatar"
     }
-  },
-  "media": {
-    "realms": {
-      "sacred_mountain": "https://static.prod-images.emergentagent.com/jobs/c2cb8af1-2a04-4bb0-b7b5-e596a8e90f2a/images/51acd6a43b04161047311d5fed072955cff5272e899faff68886fda62be120bd.png",
-      "inner_ocean": "https://static.prod-images.emergentagent.com/jobs/c2cb8af1-2a04-4bb0-b7b5-e596a8e90f2a/images/3f6719440baf2be093bf3b152abd2db880de87352fc555cb915dd0ea80274d0d.png",
-      "sonic_forest": "https://static.prod-images.emergentagent.com/jobs/c2cb8af1-2a04-4bb0-b7b5-e596a8e90f2a/images/bd42511ade3618b8c1e4c3fd7a2428a53f4c061fe429c42274ab520dbfa4e1cb.png",
-      "himalayan_temple": "https://static.prod-images.emergentagent.com/jobs/c2cb8af1-2a04-4bb0-b7b5-e596a8e90f2a/images/cd48cdb5079d8a657abae113df6a88bb41f0e3569bf4f3c6804a8b95ce356dda.png",
-      "cosmic_path": "https://static.prod-images.emergentagent.com/jobs/c2cb8af1-2a04-4bb0-b7b5-e596a8e90f2a/images/75be05b44085856f15af9c8232168501507e733e3bbdc992125e67882c7ce5e5.png"
-    },
-    "hero": {
-      "level_up_burst": "https://static.prod-images.emergentagent.com/jobs/c2cb8af1-2a04-4bb0-b7b5-e596a8e90f2a/images/1bd03f76b9a3274608524fcf722ca0012f3ccb1fbfeb19ad566d0d022a2e0660.png",
-      "abstract_resonance": "https://static.prod-images.emergentagent.com/jobs/c2cb8af1-2a04-4bb0-b7b5-e596a8e90f2a/images/b31a2bf6323cdce4d56dd4599de8502bc6d78800b468caf8a35827946c27e6d2.png",
-      "sound_healing_bowls": "https://images.unsplash.com/photo-1593811167562-9cef47bfc4d7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MTJ8MHwxfHNlYXJjaHwyfHxzb3VuZCUyMGhlYWxpbmclMjBib3dsc3xlbnwwfHx8fDE3Nzg3Nzk3ODh8MA&ixlib=rb-4.1.0&q=85"
-    },
-    "profile_placeholder": "https://images.unsplash.com/photo-1505274664176-44ccaa7969a8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwxfHxjaW5lbWF0aWMlMjBwb3J0cmFpdCUyMGRhcmslMjBiYWNrZ3JvdW5kfGVufDB8fHx8MTc3ODc3OTc4OHww&ixlib=rb-4.1.0&q=85"
   },
   "instructions_to_main_agent": [
-    "Use expo-google-fonts to load CormorantGaramond and Inter. Apply Cormorant Garamond for main headings and Inter for body text.",
-    "Use react-native-reanimated for the 'breathing glow' and 'level-up ceremony' animations.",
-    "For floating particles, consider lightweight SVG animations or react-native-particles.",
-    "Use react-native-linear-gradient for the glowing gradients and aura lighting overlays.",
-    "Implement 'Glassmorphism' effect on cards using transparent background colors with subtle white/gold borders. (Use expo-blur or similar if supported).",
-    "All navigation components (Tab Bar, Header) should have an Obsidian Black or transparent background layered over the cinematic realm backgrounds.",
-    "Ensure the design remains cinematic and un-cluttered. Limit the amount of content per screen; use negative space generously.",
-    "All interactive elements must include a `testID` attribute mapped to `data-testid` convention, e.g., `testID='login-button'`."
-  ]
+    "Map the JSON tokens to the existing Sound Healing Greece tokens: 'champagne/sand' mapping to 'surface' for light mode, 'white' for 'surfaceSecondary', and 'ink' for 'brandPrimary'. Ensure dark mode logic inverses these to maintain readability.",
+    "Implement the 'Join Now' CTA as a split pill. It requires a Flex row container with pill-radius (999). Left element is a pure white circle containing a right arrow, right element is a translucent dark background with the text. Adjust flexbox padding to make them align perfectly.",
+    "The Events calendar must use individual rounded cells for dates. Active dates should have a background of 'brandPrimary' (dark ink in light mode, soft sand in dark mode).",
+    "Card shapes should enforce the 24px/32px large corner radii per the user's request. Avoid sharp corners on these screens.",
+    "Do not invent new fonts. The app strictly uses 'Raleway' as requested.",
+    "Remember to implement the mandatory gradient-to-dark scrim pattern whenever text overlays the full-bleed hero image or the featured event photo."
+  ],
+  "haptics": {
+    "primary_button_press": "impactLight",
+    "calendar_day_select": "selection",
+    "filter_pill_toggle": "impactLight",
+    "tab_change": "selection"
+  }
 }

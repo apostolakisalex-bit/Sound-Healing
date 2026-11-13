@@ -1,0 +1,41 @@
+{
+  "summary": "Iteration 5 — Emergent Google sign-in + Resend transactional email verified. BACKEND: 10/10 pytest passed. (C) POST /api/auth/session with {\"session_id\":\"bogus-123\"} returns HTTP 401 with Greek detail 'Μη έγκυρη ή ληγμένη σύνδεση Google.' — no 500. Empty session_id also stays 401/422 (never 500). (D) POST /api/practices succeeds (HTTP 200) BOTH with receiver_email='delivered@resend.dev' AND with empty receiver_email; both responses include a feedback_token (>20 chars). Both practices are persisted (verified via GET /api/practices). Email wiring (emailer.send_receiver_feedback_invite) never raises — core flow unaffected. (R) Member decision regression: POST /api/admin/members/{uid}/decision returned {ok:true} after seeding a pending user, recording L1 progress via PUT /admin/members/{uid}/levels/L1 (correct schema: cohort_id, credited_practice_ids, enabled, target, historical_completed, note, revision), then approving — no 500 from send_membership_decision. (R) email/password auth: admin@soundhealing.gr/temple2026 returns token + role=admin; uitest_167043@test.gr/TestPass12345 returns token + membership_status=approved. (R) Public receiver feedback: GET /api/feedback/{token} returns already_submitted=false with correct session_type/date, no auth; POST /api/feedback/{token} returns {ok:true}, no auth. FRONTEND: 'Σύνδεση με Google' secondary button is VISIBLE on BOTH /login (below primary 'Σύνδεση' at y=387 vs 447) AND /register (below primary 'Δημιουργία λογαριασμού' at y=1122 vs 1182) at 390x844 mobile viewport. Screenshots confirm correct order and styling. Did not execute a real Google OAuth round-trip (needs a real Google account). Deprecated packages detected: none. SafeAreaView issues detected: none.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "/login + /register", "issues": ["Still no testID/data-testid on email/password inputs, primary submit button, or new 'Σύνδεση με Google' button — tests rely on Greek text match. Not blocking but same finding as iteration_3/4."]}
+    ],
+    "react_native_issues": [
+      {"component": "Global StyleSheet", "issue": "'shadow*' style props still deprecated — migrate shadowColor/shadowOffset/shadowOpacity/shadowRadius to 'boxShadow'. Same finding as iteration_2/3/4; fires on /login + /register."},
+      {"component": "React DOM attribute leak", "issue": "'Received false for a non-boolean attribute accessible' React warning still fires on /login + /register via react-native-web (unchanged from iteration_3/4)."}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_google_resend_integration.py",
+    "/app/test_reports/pytest/iteration_5.xml",
+    "/app/test_reports/iteration_5.json"
+  ],
+  "action_items": [
+    "No functional fixes required for this iteration — all requested checks pass.",
+    "(Carried over, non-blocking) Add testID to email/password TextInput, primary submit button, and the new Google sign-in Pressable on /login + /register for stable automation.",
+    "(Carried over, non-blocking) Migrate deprecated shadow* props to boxShadow across frontend/**/*.tsx.",
+    "(Carried over, non-blocking) Investigate the 'non-boolean attribute accessible' React warning on /login + /register."
+  ],
+  "critical_code_review_comments": [
+    "backend/server.py:507 google_session correctly reaches https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data with X-Session-ID header, raises 401 (Greek copy) on non-200 and 502 on network failure. New Google users are inserted with membership_status='pending', auth_provider='google', pre-unlocked 'temple-of-breath' realm and admin notification — matches spec.",
+    "backend/emailer.py:107 send_email swallows all exceptions (logs + returns None); send_receiver_feedback_invite also guards on PUBLIC_WEB_URL starting with https. Confirmed the practice-create path (/api/practices with receiver_email) and member-decision path never 500 from email wiring. _assert_safe_email guardrails (no form tags, https-only links, no credential-ask patterns) correctly whitelist both templates.",
+    "frontend/src/components/AuthScreen.tsx:188 renders secondary 'Σύνδεση με Google' Button below the primary; googleSignIn handler builds https://auth.emergentagent.com/?redirect=<origin>/ and on web does window.location.href = authUrl, which is the correct Emergent OAuth entry pattern. Session hash parsing (session_id regex) handles both ?/#/& separators.",
+    "frontend/app/login.tsx + frontend/app/register.tsx remain thin wrappers around AuthScreen — single source of truth preserved."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_google_resend_integration.py (new)"
+  ],
+  "success_rate": {"backend": "100% (10/10 pytest)", "frontend": "100% (Google button visible+ordered on /login AND /register at mobile viewport 390x844)"},
+  "seed_data_creation": "Created 2 TEST_ practice sessions under existing approved student uitest_167043@test.gr (one with receiver_email=delivered@resend.dev, one without) and 1 TEST_pending_<hash>@test.gr user approved via admin flow. All prefixed TEST_ for easy cleanup; not deleted so the admin can inspect audit trail.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Google OAuth happy-path (real Google round-trip) was NOT tested — needs a real Google account; only the bogus-id → 401 contract was verified. Emergent email key (EMERGENT_EMAIL_KEY) is set in /app/backend/.env so send_email actually hits Resend; delivery was NOT asserted (no inbox), but the request succeeds and never 500s core flows. PUT /admin/members/{uid}/levels/L1 schema is {cohort_id, credited_practice_ids, enabled, target, historical_completed, note, revision} — all fields are forbid-extra (Strict). The Application model does NOT accept a 'source' field (register payloads must omit it). Reusable approved student: uitest_167043@test.gr / TestPass12345. Reusable test suite: /app/backend/tests/test_google_resend_integration.py (10 tests, ~4s runtime).",
+  "rca_of_issue": "No bugs found in this iteration."
+}

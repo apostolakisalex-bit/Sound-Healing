@@ -1,25 +1,29 @@
+import { LanguageProvider } from "@/src/components/AppNavigation";
 // Root layout: load Raleway + Cormorant, wrap in AuthProvider, route by auth.
-import { Stack, useRouter, useSegments } from 'expo-router';
-import { useEffect, useRef } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
+import { Stack, useRouter, useSegments } from "expo-router";
+import { useEffect, useRef } from "react";
+import { View, ActivityIndicator, StyleSheet, Platform } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import {
   useFonts,
   CormorantGaramond_400Regular_Italic,
   CormorantGaramond_500Medium,
   CormorantGaramond_600SemiBold,
-} from '@expo-google-fonts/cormorant-garamond';
+} from "@expo-google-fonts/cormorant-garamond";
 import {
   Raleway_400Regular,
   Raleway_500Medium,
   Raleway_600SemiBold,
   Raleway_700Bold,
-} from '@expo-google-fonts/raleway';
-import { AuthProvider, useAuth } from '@/src/auth/AuthContext';
-import { colors } from '@/src/theme';
+} from "@expo-google-fonts/raleway";
+import { AuthProvider, useAuth } from "@/src/auth/AuthContext";
+import { WelcomeToast } from "@/src/components/WelcomeToast";
+import { colors } from "@/src/theme";
+import { ThemeProvider, useTheme } from "@/src/theme/ThemeContext";
 
 function AuthGate() {
   const { user, loading } = useAuth();
+  const { colors } = useTheme();
   const segments = useSegments();
   const router = useRouter();
   const initialRouteHandled = useRef(false);
@@ -27,33 +31,32 @@ function AuthGate() {
   useEffect(() => {
     if (loading) return;
     const onLandingRoot = segments[0] === undefined;
-    const onAuthScreen = segments[0] === 'login' || segments[0] === 'register';
-    const isPublicFeedback = segments[0] === 'feedback';
-    if (isPublicFeedback) return;
+    const onAuthScreen = segments[0] === "login" || segments[0] === "register";
+    const isPublicFeedback =
+      segments[0] === "feedback" || segments[0] === "evaluation";
+    if (isPublicFeedback || segments[0] === "explore" || segments[0] === "seminar" || segments[0] === "service" || segments[0] === "treatment" || segments[0] === "treatments" || segments[0] === "article" || segments[0] === "account-action") return;
 
     // Unauthenticated: protect non-public routes
     if (!user && !onLandingRoot && !onAuthScreen) {
-      router.replace('/');
+      router.replace("/");
       return;
     }
 
-    // Authenticated: send to sanctuary from auth screens always
+    // Authenticated: send off the auth screens to the right landing spot.
     if (user && onAuthScreen) {
-      router.replace('/(tabs)/sanctuary');
+      router.replace(
+        user.membership_status && user.membership_status !== "approved"
+          ? "/(tabs)/profile"
+          : user.role === "admin" || user.role === "instructor"
+            ? "/admin"
+            : "/(tabs)/sanctuary",
+      );
       return;
-    }
-
-    // Authenticated: only auto-redirect from "/" on initial app load,
-    // so users can re-visit the public landing page via the Profile button.
-    if (user && onLandingRoot && !initialRouteHandled.current) {
-      initialRouteHandled.current = true;
-      router.replace('/(tabs)/sanctuary');
-    } else if (!initialRouteHandled.current) {
-      initialRouteHandled.current = true;
     }
   }, [user, loading, segments, router]);
 
-  if (loading) {
+  const publicRoute = segments[0] === undefined || segments[0] === "explore" || segments[0] === "seminar" || segments[0] === "service" || segments[0] === "treatment" || segments[0] === "treatments" || segments[0] === "article" || segments[0] === "account-action";
+  if (loading && !publicRoute) {
     return (
       <View style={styles.loader}>
         <ActivityIndicator size="large" color={colors.accent.gold} />
@@ -62,19 +65,35 @@ function AuthGate() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg.primary }, animation: 'fade' }}>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: colors.bg.primary },
+        animation: "fade",
+      }}
+    >
       <Stack.Screen name="index" />
       <Stack.Screen name="login" />
       <Stack.Screen name="register" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="realm/[id]" />
       <Stack.Screen name="level/[id]" />
-      <Stack.Screen name="practice/new" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="seminar/[slug]" />
+      <Stack.Screen name="service/[slug]" />
+      <Stack.Screen name="treatment/[slug]" />
+      <Stack.Screen name="treatments/index" />
+      <Stack.Screen name="article/[id]" />
+      <Stack.Screen name="practice/new" options={{ presentation: "modal" }} />
       <Stack.Screen name="practice/[id]" />
       <Stack.Screen name="feedback/[token]" />
-      <Stack.Screen name="ai-chat" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="ai-chat" options={{ presentation: "modal" }} />
     </Stack>
   );
+}
+
+function ThemedStatusBar() {
+  const { mode } = useTheme();
+  return <StatusBar style={mode === "dark" ? "light" : "dark"} />;
 }
 
 export default function RootLayout() {
@@ -88,7 +107,7 @@ export default function RootLayout() {
     Raleway_700Bold,
   });
 
-  if (!loaded && !error) {
+  if (!loaded && !error && Platform.OS !== "web") {
     return (
       <View style={styles.loader}>
         <ActivityIndicator size="large" color={colors.accent.gold} />
@@ -97,13 +116,23 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <StatusBar style="dark" />
-      <AuthGate />
-    </AuthProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <ThemedStatusBar />
+          <AuthGate />
+          <WelcomeToast />
+        </AuthProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  loader: { flex: 1, backgroundColor: colors.bg.primary, alignItems: 'center', justifyContent: 'center' },
+  loader: {
+    flex: 1,
+    backgroundColor: colors.bg.primary,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });
